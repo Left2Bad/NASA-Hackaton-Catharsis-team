@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { USE_MOCKS } from '../api/config';
 import { FALLBACK_MODE } from '../api/snapshot';
-import { useCalendar, useCurrent, useMeta, usePoints } from '../api/queries';
+import { useCalendar, useCurrent, useMeta, usePointsSpan } from '../api/queries';
 import type { Geometry, Meta, MonthValue } from '../api/types';
 import { AreaMap } from '../components/AreaMap';
 import { BurnCalendar, type CalendarMode } from '../components/BurnCalendar';
@@ -20,6 +20,7 @@ import { YearlyTotals } from '../components/YearlyTotals';
 import { boundsOf, formatBounds } from '../geo/geometry';
 import { areaKm2 } from '../geo/shapes';
 import { formatNumber, monthName, presetLabel, WARNING_LABELS } from '../labels';
+import { frpBreaks, frpColors, mergePoints, monthId, monthIndex, spanMonths } from '../map/spots';
 import { nowHeadline } from '../now/describe';
 import { buildSearch, currentSearch, parseSearch, writeSearch } from '../state/link';
 import { defaultSpotsMonth } from '../state/spots';
@@ -133,8 +134,8 @@ interface AreaPanelProps {
   period: Period;
   mode: CalendarMode;
   onModeChange: (mode: CalendarMode) => void;
-  /** The month whose hot spots are on the map, as "2020-09", or `null`. */
-  selectedMonth: string | null;
+  /** The months whose hot spots are on the map, as "2020-09". */
+  selectedMonths: ReadonlySet<string>;
   /** Absent where single detections are not available: a copy of the app without a server. */
   onSelectMonth?: (month: MonthValue) => void;
 }
@@ -145,7 +146,7 @@ function AreaPanel({
   period,
   mode,
   onModeChange,
-  selectedMonth,
+  selectedMonths,
   onSelectMonth,
 }: AreaPanelProps) {
   const sizeKm2 = areaKm2(area.geometry);
@@ -261,7 +262,7 @@ function AreaPanel({
               sources={meta.sources}
               mode={mode}
               onModeChange={onModeChange}
-              selectedMonth={selectedMonth}
+              selectedMonths={selectedMonths}
               onSelectMonth={onSelectMonth}
             />
             {data.warnings.length > 0 && (
@@ -356,11 +357,13 @@ function Workspace({ meta }: { meta: Meta }) {
   });
   // The calendar mode is kept here, so it survives a change of area or period.
   const [mode, setMode] = useState<CalendarMode>(linked.mode);
-  // The month whose hot spots are on the map (F13). It is kept with its area, so the dots
-  // of one area are never drawn over another.
-  const [spots, setSpots] = useState<{ geometry: Geometry; year: number; month: number } | null>(
+  // The months whose hot spots are on the map (F13), as month indexes. They are kept with
+  // their area, so the dots of one area are never drawn over another.
+  const [spots, setSpots] = useState<{ geometry: Geometry; first: number; last: number } | null>(
     null,
   );
+  // The weakest fire that is drawn, in MW: a click on the legend of fire power sets it.
+  const [minFrp, setMinFrp] = useState(0);
   // The area whose hot spots the user hid: its default month is not shown again.
   const [hiddenFor, setHiddenFor] = useState<Geometry | null>(null);
   const tooLarge = area !== null && areaKm2(area.geometry) > meta.limits.max_area_km2;
@@ -371,31 +374,70 @@ function Workspace({ meta }: { meta: Meta }) {
     area && FALLBACK_MODE !== 'only' && hiddenFor !== area.geometry && !calendar.isPlaceholderData
       ? defaultSpotsMonth(calendar.data?.months ?? [])
       : null;
+  const pickedSpots = spots !== null && spots.geometry === area?.geometry ? spots : null;
   const shownSpots =
-    spots !== null && spots.geometry === area?.geometry
-      ? spots
-      : area && latest
-        ? { geometry: area.geometry, year: latest.year, month: latest.month }
-        : null;
-  const points = usePoints(
-    shownSpots && !tooLarge
-      ? { geometry: shownSpots.geometry, year: shownSpots.year, month: shownSpots.month }
-      : null,
+    pickedSpots ??
+    (area && latest
+      ? {
+          geometry: area.geometry,
+          first: monthIndex(latest.year, latest.month),
+          last: monthIndex(latest.year, latest.month),
+        }
+      : null);
+  const spanOfSpots = useMemo(
+    () => (shownSpots ? spanMonths(shownSpots.first, shownSpots.last) : []),
+    // The span is two numbers: the list is rebuilt only when one of them changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [shownSpots?.first, shownSpots?.last],
   );
-  const spotsId = shownSpots
-    ? `${shownSpots.year}-${String(shownSpots.month).padStart(2, '0')}`
-    : null;
-  /** A click on the chosen month hides its hot spots again. */
-  const toggleSpots = (month: MonthValue) => {
+  const points = usePointsSpan(shownSpots && !tooLarge ? shownSpots.geometry : null, spanOfSpots);
+  // Several months become one collection; above the limit the strongest fires are kept.
+  const drawn = useMemo(
+    () => (points.data ? mergePoints(points.data, meta.limits.max_points) : undefined),
+    [points.data, meta.limits.max_points],
+  );
+  const pointStyle = useMemo(() => {
+    const breaks = frpBreaks(drawn);
+    return { breaks, colors: frpColors(breaks), minFrp };
+  }, [drawn, minFrp]);
+  // The month nobody asked for stays quiet when it cannot be loaded: the calendar already
+  // reports a server that cannot be reached, and the saved demo data has no single
+  // detections. Months the user picked still get their message.
+  const spotsVisible = shownSpots !== null && (pickedSpots !== null || !points.isError);
+  const spotsIds = useMemo(
+    () =>
+      new Set(
+        shownSpots && spotsVisible
+          ? spanMonths(shownSpots.first, shownSpots.last).map((month) =>
+              monthId(monthIndex(month.year, month.month)),
+            )
+          : [],
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [shownSpots?.first, shownSpots?.last, spotsVisible],
+  );
+  /** Shows other months: the threshold of fire power belonged to the previous ones. */
+  const showSpan = (span: { first: number; last: number }) => {
     if (!area) return;
-    const same = shownSpots?.year === month.year && shownSpots.month === month.month;
-    if (same) hideSpots();
-    else setSpots({ geometry: area.geometry, year: month.year, month: month.month });
+    setSpots({ geometry: area.geometry, ...span });
+    setHiddenFor(null);
+    setMinFrp(0);
+  };
+  /** A click on a month shows it alone; a click on the only month shown hides it again. */
+  const toggleSpots = (month: MonthValue) => {
+    const index = monthIndex(month.year, month.month);
+    if (shownSpots?.first === index && shownSpots.last === index) hideSpots();
+    else showSpan({ first: index, last: index });
   };
   function hideSpots() {
     setSpots(null);
+    setMinFrp(0);
     setHiddenFor(area?.geometry ?? null);
   }
+  const record = {
+    min: monthIndex(Number(meta.first_date.slice(0, 4)), Number(meta.first_date.slice(5, 7))),
+    max: monthIndex(Number(meta.last_date.slice(0, 4)), Number(meta.last_date.slice(5, 7))),
+  };
 
   // Every change goes back into the address, so the address always describes the screen.
   const search = buildSearch(
@@ -448,24 +490,29 @@ function Workspace({ meta }: { meta: Meta }) {
             />
           </div>
         )}
-        {shownSpots && area && (
+        {shownSpots && spotsVisible && area && (
           <SpotsBar
             geometry={shownSpots.geometry}
             presetId={area.presetId}
-            year={shownSpots.year}
-            month={shownSpots.month}
+            span={{ first: shownSpots.first, last: shownSpots.last }}
+            record={record}
             meta={meta}
-            points={points.data}
+            points={drawn}
+            breaks={pointStyle.breaks}
+            minFrp={minFrp}
             error={points.isError ? points.error : null}
-            onRetry={() => void points.refetch()}
+            onRetry={points.refetch}
             retrying={points.isFetching}
+            onSpanChange={showSpan}
+            onMinFrpChange={setMinFrp}
             onHide={hideSpots}
           />
         )}
         <div className={styles.mapSlot}>
           <AreaMap
             geometry={area?.geometry ?? null}
-            points={shownSpots ? (points.data ?? null) : null}
+            points={spotsVisible ? (drawn ?? null) : null}
+            pointStyle={pointStyle}
             // A shape drawn or edited on the map is no longer an example area.
             onChange={(geometry) => setArea(geometry ? { geometry, presetId: null } : null)}
           />
@@ -480,7 +527,7 @@ function Workspace({ meta }: { meta: Meta }) {
             period={period}
             mode={mode}
             onModeChange={setMode}
-            selectedMonth={spotsId}
+            selectedMonths={spotsIds}
             // Single detections do not fit into the saved answers, so a copy of the app
             // that never asks a server does not offer them.
             onSelectMonth={FALLBACK_MODE === 'only' ? undefined : toggleSpots}

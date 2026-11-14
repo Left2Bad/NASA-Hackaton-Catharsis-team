@@ -88,6 +88,10 @@
 }
 
 .panel {
+  /* Text hidden for screen readers is positioned absolutely. Without a positioned
+     ancestor it would escape this scroller and make the whole page scrollable: an empty
+     space would open under the app. */
+  position: relative;
   min-width: 0;
   padding: var(--space-5);
   overflow-y: auto;

@@ -306,7 +306,7 @@ describe('the hot spots of a month as a file', () => {
     await openArea(user);
 
     await user.click(container.querySelector('[data-month="2020-09"]') as HTMLElement);
-    await user.click(await screen.findByRole('button', { name: 'Download this month (CSV)' }));
+    await user.click(await screen.findByRole('button', { name: 'Download CSV of these months' }));
 
     await waitFor(() => expect(saved.files).toHaveLength(1));
     expect(bodies[0]).toMatchObject({ start_date: '2020-09-01', end_date: '2020-09-30' });
@@ -326,15 +326,15 @@ describe('the hot spots of a month as a file', () => {
     await user.click(container.querySelector('[data-month="2020-01"]') as HTMLElement);
 
     expect(await screen.findByText('No hot spots in January 2020.')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Download this month (CSV)' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Download CSV of these months' })).toBeNull();
   });
 
   it('says how many of the hot spots are drawn', () => {
     const points = pointsExample as unknown as PointsResponse;
     expect(
-      spotsSummary({ ...points, total: 1, features: points.features.slice(0, 1) }, 2020, 8),
+      spotsSummary({ ...points, total: 1, features: points.features.slice(0, 1) }, 'August 2020'),
     ).toBe('August 2020: 1 hot spot on the map, all sensors.');
-    expect(spotsSummary({ ...points, total: 165893, truncated: true }, 2020, 9)).toBe(
+    expect(spotsSummary({ ...points, total: 165893, truncated: true }, 'September 2020')).toBe(
       `September 2020: the ${points.features.length} strongest of 165,893 hot spots on the map, all sensors.`,
     );
   });

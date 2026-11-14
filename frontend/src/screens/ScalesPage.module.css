@@ -1,4 +1,6 @@
 .page {
+  /* Keeps absolutely positioned text inside this scroller (see CalendarScreen.module.css). */
+  position: relative;
   flex: 1;
   min-height: 0;
   padding: var(--space-5);

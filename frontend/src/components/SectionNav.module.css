@@ -27,6 +27,15 @@
   border-color: var(--line-strong);
 }
 
+/* Laptop: the panel scrolls and has padding, and a sticky box stops at the inner edge of
+   that padding, so the text under it would show through above the links. A negative offset
+   of the same size brings the links to the very top of the panel. */
+@media (min-width: 961px) {
+  .nav {
+    top: calc(-1 * var(--space-5));
+  }
+}
+
 /* Phone: one row that scrolls sideways, so the links do not take two lines of a small screen. */
 @media (max-width: 960px) {
   .nav {

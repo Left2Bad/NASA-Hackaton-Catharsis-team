@@ -1,6 +1,8 @@
 import { useQuery, type Query } from '@tanstack/react-query';
 import { api } from './client';
+import { ApiError } from './errors';
 import { request } from './request';
+import { snapshot, withFallback } from './snapshot';
 import type {
   AreaQuery,
   CalendarResponse,
@@ -17,28 +19,42 @@ import type {
 // Every fetcher takes the abort signal of its query, so a request whose answer is
 // no longer needed is cancelled instead of keeping the server busy.
 
+// Every fetcher also names its saved answer: when the server cannot be reached, the app
+// shows the snapshot of the example areas instead (see snapshot.ts).
+
 export async function fetchMeta(signal?: AbortSignal): Promise<Meta> {
-  return (await request((s) => api.GET('/meta', { signal: s }), signal)) as Meta;
+  return withFallback(
+    async () => (await request((s) => api.GET('/meta', { signal: s }), signal)) as Meta,
+    () => snapshot.meta(signal),
+  );
 }
 
 export async function fetchCalendar(
   query: AreaQuery,
   signal?: AbortSignal,
 ): Promise<CalendarResponse> {
-  return (await request(
-    (s) => api.POST('/calendar', { body: query, signal: s }),
-    signal,
-  )) as CalendarResponse;
+  return withFallback(
+    async () =>
+      (await request(
+        (s) => api.POST('/calendar', { body: query, signal: s }),
+        signal,
+      )) as CalendarResponse,
+    () => snapshot.calendar(query, signal),
+  );
 }
 
 export async function fetchCurrent(
   query: AreaQuery,
   signal?: AbortSignal,
 ): Promise<CurrentResponse> {
-  return (await request(
-    (s) => api.POST('/current', { body: query, signal: s }),
-    signal,
-  )) as CurrentResponse;
+  return withFallback(
+    async () =>
+      (await request(
+        (s) => api.POST('/current', { body: query, signal: s }),
+        signal,
+      )) as CurrentResponse,
+    () => snapshot.current(query, signal),
+  );
 }
 
 /** Dataset metadata: date range, sources, limits, example areas. */
@@ -86,7 +102,10 @@ export function useCurrent(geometry: Geometry | null) {
 }
 
 export async function fetchValidation(signal?: AbortSignal): Promise<ValidationResponse> {
-  return request((s) => api.GET('/method/validation', { signal: s }), signal);
+  return withFallback(
+    () => request((s) => api.GET('/method/validation', { signal: s }), signal),
+    () => snapshot.validation(signal),
+  );
 }
 
 /** The results of the quality checks for the "Method" page. They change only with the dataset. */
@@ -116,10 +135,15 @@ export const EXPORT_TIMEOUT_MS = 180_000;
 
 /** The monthly table of the calendar as a CSV file (requirement F23). */
 export async function fetchCalendarCsv(query: AreaQuery, signal?: AbortSignal): Promise<Blob> {
-  return request(
-    (s) => api.POST('/export/calendar.csv', { body: query, parseAs: 'blob', signal: s }),
-    signal,
-    EXPORT_TIMEOUT_MS,
+  return withFallback(
+    () =>
+      request(
+        (s) => api.POST('/export/calendar.csv', { body: query, parseAs: 'blob', signal: s }),
+        signal,
+        EXPORT_TIMEOUT_MS,
+      ),
+    // The monthly table is in the saved calendar, so the file can be made without the server.
+    () => snapshot.calendarCsv(query, signal),
   );
 }
 
@@ -128,9 +152,14 @@ export async function fetchPointsCsv(
   query: ExportPointsQuery,
   signal?: AbortSignal,
 ): Promise<Blob> {
-  return request(
-    (s) => api.POST('/export/points.csv', { body: query, parseAs: 'blob', signal: s }),
-    signal,
-    EXPORT_TIMEOUT_MS,
+  return withFallback(
+    () =>
+      request(
+        (s) => api.POST('/export/points.csv', { body: query, parseAs: 'blob', signal: s }),
+        signal,
+        EXPORT_TIMEOUT_MS,
+      ),
+    // Millions of points do not fit into a snapshot: this file needs the server.
+    () => Promise.reject(new ApiError('OFFLINE', 'Hot spot files are not in the saved answers', 0)),
   );
 }

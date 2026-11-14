@@ -16,9 +16,12 @@ The wording of the voice-over and of the slides is a draft. The team says it in 
 and names the AI tools it used in the "Data & Resources Usage" field of the submission
 (see [../submission/resources.md](../submission/resources.md)).
 
-Before the deck is submitted: put the names of the team on slide 7 and the address of the site,
-keep on slide 6 only the plans the team stands behind, and upload the PDF where anyone can open it
-without signing in (check the link in a private window).
+Slide 7 carries the names of the team and the address of the site. Before the deck is submitted, upload the PDF
+where anyone can open it without signing in, for example Google Drive with "Anyone with the link" (the rules do not
+accept a link to GitHub), and check the link in a private window.
+
+The deck is printed from `slides.html` with `npm run demo:slides` in `frontend/`, and the frames are taken again with
+`npm run demo:shots -- https://nasa.pin-planet.org` after any change of the interface.
 
 ## Video: 30 seconds
 

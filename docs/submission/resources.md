@@ -67,5 +67,16 @@ of AI: **Claude Code** (Anthropic, https://www.anthropic.com/claude-code), mainl
 first day of the hackathon to 14:00 on the second), many parts of the code were written with AI and then checked and
 tested by hand to avoid problems. Errors in the AI's output were fixed with the help of our mentors and by manual edits.
 
-TODO(teammate): add one or two sentences on the frontend, the slides and any images, music, video or voice-over —
-which tools were used and what was made by hand.
+The web application (`frontend/`) was built the same way. The teammate responsible for it set the tasks one by one
+and decided what the interface must do; the code, its tests and its documentation were written with **Claude Code**
+(Claude Fable 5.2). Every change came as a pull request, which was read and then checked by hand in the browser
+before it was merged.
+
+The texts were localized into English with **Google Gemini** (Hydrogene, Google, https://gemini.google.com/). Claude Code
+also translated parts of the documentation, the code comments and the API messages from Russian and edited them;
+the Russian original of the method is kept as `docs/methodology.ru.md`.
+
+The pitch deck (`docs/demo/slides/`) and the storyboard of the video (`docs/demo/README.md`) were drafted with
+Claude Code. The pictures in the deck are real screenshots of the running application on real FIRMS data, taken by a
+script (`frontend/scripts/demo-shots.mjs`); no picture of the interface and no data are generated. The deck has no
+generated illustrations, music or voice-over.

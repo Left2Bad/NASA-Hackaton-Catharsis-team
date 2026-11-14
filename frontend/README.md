@@ -85,6 +85,10 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` 
 - **Tooltip (F9):** hovering or focusing a cell shows the exact value, the likely range, the median,
   the difference, the level, the lead sensor, and notes for preliminary data, a partial month
   or a sensor outage. The wording lives in `src/calendar/describe.ts`.
+- **Modes (F10):** the switch above the legend recolors the same data. "Detections" shows how much
+  burned; "Anomaly" shows the difference from the median of the same calendar month, blue below
+  and orange above. A month that cannot be compared (a partial month, or a zero median) is hatched.
+  Switching needs no new request.
 - **Keyboard:** Tab reaches one cell, arrow keys move between cells, Home and End jump to the ends
   of a row, Escape closes the tooltip.
 - **Not color alone:** every cell has a spoken description with its numbers, preliminary months

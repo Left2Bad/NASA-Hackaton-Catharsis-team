@@ -19,7 +19,7 @@ Windows PowerShell (from the repository root):
 
 ```powershell
 python -m venv .venv
-.venv\Scripts\pip install -c backend\constraints.txt -e "backend[dev]"
+.venv\Scripts\pip install -c constraints.txt -e "backend[dev]"
 Copy-Item .env.example .env
 cd backend
 ..\.venv\Scripts\uvicorn app.main:app --port 8000 --env-file ..\.env
@@ -29,7 +29,7 @@ bash (Linux, macOS, Git Bash; use `python3` where `python` is missing):
 
 ```bash
 python -m venv .venv
-.venv/bin/pip install -c backend/constraints.txt -e "backend[dev]"    # Git Bash on Windows: .venv/Scripts/pip
+.venv/bin/pip install -c constraints.txt -e "backend[dev]"    # Git Bash on Windows: .venv/Scripts/pip
 cp .env.example .env
 cd backend
 ../.venv/bin/uvicorn app.main:app --port 8000 --env-file ../.env
@@ -52,8 +52,8 @@ Environment variables (`.env.example`): `DATA_DIR` (default: `data/` in the repo
 (default: `DATA_DIR/points_serve`; the full `data/points` also works), `CORS_ORIGINS`,
 `DUCKDB_MEMORY_LIMIT` (2GB), `DUCKDB_THREADS` (2).
 
-`constraints.txt` pins the exact versions the tests pass with; CI installs with it. The pins are for Python 3.12,
-the version CI tests, and `requires-python` is `>=3.12`.
+`constraints.txt` (repository root) pins the exact versions the tests pass with; CI installs with it and tests
+Python 3.12 and 3.13, so `requires-python` is `>=3.12`.
 
 ## What is ready
 

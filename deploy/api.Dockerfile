@@ -11,6 +11,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 COPY constraints.txt ./
 COPY contract/openapi.yaml contract/openapi.yaml
+# the lead-source rule is shared with the pipeline (backend/app/lead.py loads this file)
+COPY pipeline/lead.py pipeline/lead.py
 COPY backend backend
 RUN pip install -c constraints.txt -e ./backend \
     && useradd --system --uid 10001 --no-create-home api

@@ -19,8 +19,8 @@ PAUSE_AT, PAUSE = 11.6, 0.5
 CLICKS = (8.35, 16.05, 21.35)
 WHOOSH = (8.45, 1.55)
 MUSIC_FROM = 1.9  # s into the track: past its quiet intro, so the beat runs from frame 0
-MUSIC_UNDER_VOICE_DB = -17.0  # music level against the voice while someone speaks
-MUSIC_IN_GAPS_DB = -6.0  # ... in the pauses and under the end card
+MUSIC_UNDER_VOICE_DB = -11.0  # music level against the voice while someone speaks
+MUSIC_IN_GAPS_DB = -4.0  # ... in the pauses and under the end card
 FADE_OUT = 1.2  # s at the very end
 
 

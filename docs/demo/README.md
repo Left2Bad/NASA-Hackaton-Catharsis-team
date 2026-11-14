@@ -10,11 +10,11 @@ The pitch for the Space Apps submission is **one of two**: a video of at most 30
 | Script and storyboard of the 30-second video | this file, below |
 | Deck, 7 slides: title, problem, solution (two slides), NASA data, plans, team | [slides/burn-calendar-pitch.pdf](slides/burn-calendar-pitch.pdf), source [slides/slides.html](slides/slides.html) |
 | Frames of the demo | `screenshots/demo-NN-*.jpg`, 1920 × 1200 |
-| Video | not recorded: the pitch is submitted as the deck |
+| Video, 29.5 s, 1920 × 1080 | upload to YouTube (Unlisted) and put the link here; sources in [video/](video/) |
 
-If a video is recorded later, the team says the voice-over in its own words and names every AI tool it used (voice,
-music) in the "Data & Resources Usage" field of the submission
-(see [../submission/resources.md](../submission/resources.md)).
+The video is made from real screenshots of the live site, with zooms, highlight rings, a pointer and word-timed
+captions drawn on top; the voice-over is ElevenLabs. Every AI tool used is named in the "Data & Resources Usage" field
+of the submission (see [../submission/resources.md](../submission/resources.md)).
 
 Slide 7 carries the names of the team and the address of the site. Before the deck is submitted, upload the PDF
 where anyone can open it without signing in, for example Google Drive with "Anyone with the link" (the rules do not
@@ -25,35 +25,31 @@ The deck is printed from `slides.html` with `npm run demo:slides` in `frontend/`
 
 ## Video: 30 seconds
 
-One area carries the whole story: **Northern California**. All numbers below are what the app shows on the real
-FIRMS record with data through 2026-11-13. If the data is refreshed before recording, read the numbers from the
-screen again and change the voice-over to match.
+One area carries the story: **Northern California**, data through 2026-11-13. Times are those of the final cut.
 
-| # | Time | On screen | Frame | Voice-over |
-| --- | --- | --- | --- | --- |
-| 1 | 0:00–0:06 | Start screen with the world map; the title "Burn Calendar" over it | `demo-01-start` | Two NASA sensors count fires differently. Join their records, and fires seem to jump fourfold in 2012. |
-| 2 | 0:06–0:11 | "Method" page, the chart "What harmonization changes": dashed MODIS far below, the solid line on one scale | `demo-08-method-harmonization` | Burn Calendar converts every MODIS detection to the VIIRS scale, cell by cell. |
-| 3 | 0:11–0:16 | Click "Northern California": the calendar fills in; the pointer stops on September 2020 and the tooltip opens | `demo-02-calendar`, `demo-03-tooltip` | Pick any area: one consistent record, every month since 2000. |
-| 4 | 0:16–0:19 | Click "Anomaly": the calendar turns blue and orange | `demo-04-anomaly` | Blue is quieter than usual, orange is worse. |
-| 5 | 0:19–0:24 | Click "Now" in the links of the panel: "Above normal, +58.6 %" and the cumulative chart | `demo-05-summary-now` | Right now, Northern California runs 59 percent above normal. |
-| 6 | 0:24–0:28 | "Method" page, "How it was checked": the forecast lies on the VIIRS line; correlation 0.999 | `demo-09-method-validation` | Checked on years the method never saw: correlation 0.99. |
-| 7 | 0:28–0:30 | End card: name, team, "Data: NASA FIRMS", the address of the site | slide 1 of the deck | Burn Calendar: open source, built on NASA FIRMS. |
+| Time | On screen (live site) | Voice-over |
+| --- | --- | --- |
+| 0.0–3.3 | Method page, "What harmonization changes": MODIS (blue) far below VIIRS (purple) | Two satellite sensors count the same fires on different scales. |
+| 3.3–7.4 | Method page, "The seams of the record": the 2012 row, naive splice 3.80 | Join their records, and the world's fires seem to jump nearly fourfold in 2012. |
+| 7.4–10.5 | Calendar "Original sensors" with the 2012 step; a click on "Detections"; the MODIS years change from the bottom up | Burn Calendar converts MODIS to the VIIRS scale, cell by cell. |
+| 10.5–12.1 | The same row of the seams table: harmonized 0.97 | The jump is gone. |
+| 12.1–15.8 | Drawing tools, the From/To years, the whole calendar | Draw any area, pick any years, get every month since 2000. |
+| 15.8–20.6 | A click on "Anomaly" (blue/orange against the median); then "Now": +58.6 % against the median of the same days | Spot unusual months, and today: Northern California is fifty-nine percent above its median. |
+| 20.6–22.7 | Downloads: "Hot spots (CSV)" and the dates of the file | Every hot spot downloads as CSV. |
+| 22.7–25.75 | Method page, "How it was checked": the forecast from MODIS against real VIIRS on 2021–2025, bias +4.2 % | Tested on years it never saw: totals within four percent. |
+| 25.75–29.5 | End card: name, the address of the site, NASA FIRMS, team | Open source, built on NASA FIRMS. |
 
-The voice-over is 74 words: about 30 seconds at a calm pace. Read it once against a stopwatch before recording;
-if it runs long, drop the sentence of shot 4, which the picture explains by itself.
+### How it was made
 
-### How to record
+1. Frames: `node docs/demo/video/capture.mjs <folder>` from `frontend/` takes the live site at 1920 × 1080, 2× pixel
+   density, and writes the boxes of the elements the video points at.
+2. Voice: ElevenLabs, model eleven_v3, one take of [video/voice-lines.json](video/voice-lines.json) (the words in
+   square brackets are acting directions, not spoken); word times in [video/words.ts](video/words.ts), with a 0.5 s
+   pause added after "The jump is gone."
+3. Picture: [video/Pitch.tsx](video/Pitch.tsx), a Remotion composition (1920 × 1080, 30 fps); sound:
+   [video/mix.py](video/mix.py) (voice, the pause, click sounds), loudness −16 LUFS.
 
-1. Run the app against the real API, so the screen has no "Saved demo data" strip: start the backend on the team
-   data archive (`backend/README.md`, `DATA_DIR` points to the unpacked archive, `CORS_ORIGINS=http://localhost:5174`),
-   then in `frontend/` run `npm run dev:api -- --port 5174`.
-2. Browser window 1920 × 1080, zoom 100 %, no bookmarks bar, no other tabs. Record the window, not the whole screen.
-3. Before recording, click through the whole route once: the answers are then cached and every click is instant.
-4. Record shots 2 and 6 ("Method") and shots 3 to 5 (calendar) as two separate takes and join them: the route
-   Calendar → Method → Calendar → Method wastes seconds on navigation.
-5. Move the pointer slowly and stop it before each click. Cut the pauses when editing, not while recording.
-6. Record the voice separately and lay it over the picture: it is easier to fit into 30 seconds.
-7. Export at 1080p. The file must be **30 seconds or shorter**: check the length of the exported file.
+If the data are refreshed, take the frames again and check every number in the voice-over and on the rings.
 
 ## Live demo: 2 minutes
 

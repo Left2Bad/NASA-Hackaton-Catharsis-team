@@ -13,6 +13,8 @@ data/
 │   ├── viirs-jpss1_<год>_all_countries.zip   2018–2025 (NOAA-20)
 │   └── api_2026/<сенсор>/*.csv               2026 через Area API (шаг 3)
 ├── points/<сенсор>_<год>.parquet         # все точки в единой схеме (шаг 1) — 7,1 ГБ
+├── grid_daily.parquet                    # ячейка 0,1° × день: счёты и FRP по спутникам (шаг 2a)
+├── grid_monthly.parquet                  # то же по месяцам (шаг 2a)
 └── harmonized/                           # результат гармонизации (шаг 2) — 220 МБ
     ├── grid_monthly_025deg.parquet           ячейка 0,25° × месяц: сырые счёты по сенсорам + hotspots, frp_total
     ├── country_monthly.csv                   календарь по странам
@@ -62,7 +64,7 @@ data/TASK_for_friend_claude.md → НЕ нужно
 3. `python pipeline/download_archives.py` — 48 архивов в `data/raw/`. Логин не нужен.
    Если сервер отвечает не 200 (техобслуживание FIRMS), сообщи пользователю и не ищи других источников.
 4. `python pipeline/to_parquet.py data/raw/*.zip` — одним процессом, не параллельно (память).
-5. `python pipeline/harmonize.py`.
+5. `python pipeline/harmonize.py`, затем `python pipeline/grid.py`.
 6. Проверка: 48 файлов в `data/points/`, в выводе шага 5 строка
    `validation 2019-2025 ... 'r_country_month': 0.98...` и `S-NPP outage months: [('2022-07', ...), ('2022-08', ...), ('2024-07', ...), ('2024-11', ...)]`.
 

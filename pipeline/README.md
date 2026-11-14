@@ -1,43 +1,43 @@
-# pipeline/ — зона разработчика A
+# pipeline/ — developer A zone
 
-Пайплайн данных: от архивов NASA FIRMS до единого гармонизированного ряда. Метод и метрики — `docs/methodology.md`.
-Как получить готовые данные, не пересчитывая всё, — `data/README.md`.
+The data pipeline: from the NASA FIRMS archives to a single harmonized series. Method and metrics — `docs/methodology.md`.
+How to get the ready-made data without recomputing everything — `data/README.md`.
 
-## Запуск с нуля
+## Running from scratch
 
 ```bash
 python -m venv .venv
 .venv/Scripts/pip install -e "pipeline[dev]"     # Linux/macOS: .venv/bin/pip
 ```
 
-| Шаг | Команда | Результат | Время |
+| Step | Command | Result | Time |
 | --- | --- | --- | --- |
-| 0. Загрузка архивов | `python pipeline/download_archives.py` | `data/raw/*.zip` (48 файлов, 9,3 ГБ) | ~1 ч |
-| 1. Единая схема | `python pipeline/to_parquet.py data/raw/*.zip` | `data/points/<сенсор>_<год>.parquet` (7,1 ГБ) | ~20 мин |
-| 2. Сетки | `python pipeline/grid.py` | `data/grid_daily.parquet`, `data/grid_monthly.parquet` (ячейка 0,1°) | ~5 мин |
-| 3. Гармонизация | `python pipeline/harmonize.py` | `data/coefficients.parquet`, `data/uncertainty.parquet`, `data/outage_months.csv`, `data/harmonized/` | ~10 с |
-| 4. 2026 год через API | `python pipeline/fetch_api.py` (нужен `FIRMS_MAP_KEY` в `.env`) | `data/raw/api_2026/` | 1,5–2,5 ч, упирается в лимит ключа |
-| 5. 2026 → Parquet | `python pipeline/api_to_parquet.py`, затем `grid.py --years 2026` и снова шаги 3 и 6 | `data/points/*_2026.parquet` | ~2 мин |
-| 6. Отчёт проверки | `python pipeline/validation.py` (после шага 3) | `data/validation/report.json` (схема `ValidationResponse`) | ~1 с |
+| 0. Download archives | `python pipeline/download_archives.py` | `data/raw/*.zip` (48 files, 9.3 GB) | ~1 h |
+| 1. Common schema | `python pipeline/to_parquet.py data/raw/*.zip` | `data/points/<sensor>_<year>.parquet` (7.1 GB) | ~20 min |
+| 2. Grids | `python pipeline/grid.py` | `data/grid_daily.parquet`, `data/grid_monthly.parquet` (0.1° cell) | ~5 min |
+| 3. Harmonization | `python pipeline/harmonize.py` | `data/coefficients.parquet`, `data/uncertainty.parquet`, `data/outage_months.csv`, `data/harmonized/` | ~10 s |
+| 4. 2026 via the API | `python pipeline/fetch_api.py` (needs `FIRMS_MAP_KEY` in `.env`) | `data/raw/api_2026/` | 1.5–2.5 h, bounded by the key's rate limit |
+| 5. 2026 → Parquet | `python pipeline/api_to_parquet.py`, then `grid.py --years 2026` and steps 3 and 6 again | `data/points/*_2026.parquet` | ~2 min |
+| 6. Validation report | `python pipeline/validation.py` (after step 3) | `data/validation/report.json` (schema `ValidationResponse`) | ~1 s |
 
-- Шаг 1 запускать **одним процессом**: большие годы VIIRS (≈20 млн точек) требуют ~9 ГБ RAM.
-- Шаги 0 и 4 можно перезапускать: готовые файлы пропускаются, недокачанные докачиваются.
-  Две копии одного шага одновременно не запускать — они испортят файлы друг друга.
+- Run step 1 in **a single process**: the large VIIRS years (≈20 million detections) need ~9 GB of RAM.
+- Steps 0 and 4 can be restarted: finished files are skipped, partial downloads are resumed.
+  Do not run two copies of the same step at once — they would corrupt each other's files.
 
-## Отличия от исходного плана
+## Differences from the original plan
 
-- Дневная сетка 0,1° (`grid.py`) — основа для API: сырые счёты и FRP по каждому спутнику на ячейку и день,
-  уже после фильтров. Гармонизированное значение = счёт ведущего источника × коэффициент ячейки 1°.
-- Ведущий источник на дату — `lead.py` (`lead_source`, `lead_sql`, `value_sql`); бэкенд импортирует тот же модуль.
-- Коэффициенты MODIS подбираются на 2012–2020 (до дрейфа орбит Terra и Aqua), см. `docs/methodology.md`, раздел 4.
-- Постоянные источники: в архивах уже есть поле `type` (1 — вулканы, 2 — статичные, 3 — морские), фильтруем по нему.
-  Для NRT-данных 2026 года без `type` маска строится из архива (шаг 5).
+- The 0.1° daily grid (`grid.py`) is the basis for the API: raw counts and FRP per satellite per cell and day,
+  already after the filters. Harmonized value = lead-source count × the 1° cell coefficient.
+- The lead source for a date is `lead.py` (`lead_source`, `lead_sql`, `value_sql`); the backend imports the same module.
+- The MODIS coefficients are fitted on 2012–2020 (before the Terra and Aqua orbit drift), see `docs/methodology.md`, section 4.
+- Permanent sources: the archives already have a `type` field (1 — volcanoes, 2 — static, 3 — offshore), and we filter on it.
+  For the 2026 NRT data without `type`, the mask is built from the archive (step 5).
 
-## Проверки (как в CI)
+## Checks (as in CI)
 
 ```bash
 cd pipeline
 ruff check . && ruff format --check . && pytest -q
 ```
 
-Тесты работают на крошечных синтетических архивах, настоящие данные для них не нужны.
+The tests run on tiny synthetic archives; no real data is needed for them.

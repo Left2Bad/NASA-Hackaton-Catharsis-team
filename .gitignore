@@ -1,4 +1,4 @@
-# --- Данные и секреты: никогда не попадают в git ---
+# --- Data and secrets: never committed to git ---
 data/*
 !data/README.md
 .env
@@ -18,7 +18,7 @@ build/
 dist/
 .ipynb_checkpoints/
 
-# --- Фронтенд (frontend/) ---
+# --- Frontend (frontend/) ---
 node_modules/
 frontend/dist/
 frontend/coverage/
@@ -26,13 +26,13 @@ frontend/playwright-report/
 frontend/test-results/
 *.tsbuildinfo
 
-# --- Локальные базы и крупные файлы ---
+# --- Local databases and large files ---
 *.duckdb
 *.duckdb.wal
 *.parquet
 *.zip
 
-# --- Редакторы и ОС ---
+# --- Editors and OS ---
 .vscode/*
 !.vscode/extensions.json
 .idea/

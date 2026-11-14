@@ -1,8 +1,8 @@
 name: backend
 
-# Зона разработчика A. Запускается только при изменениях в pipeline/, backend/ или contract/,
-# поэтому поломка здесь не блокирует PR фронтенда.
-# Шаги пропускаются, пока в папке нет pyproject.toml, — разработчик A настроит их под себя.
+# Developer A zone. Runs only on changes in pipeline/, backend/ or contract/,
+# so a failure here does not block frontend PRs.
+# Steps are skipped while the folder has no pyproject.toml; developer A will set them up.
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: pipeline — линтер и тесты
+      - name: pipeline — linter and tests
         if: hashFiles('pipeline/pyproject.toml') != ''
         working-directory: pipeline
         run: |
@@ -37,7 +37,7 @@ jobs:
           ruff format --check .
           pytest -q
 
-      - name: backend — линтер и тесты
+      - name: backend — linter and tests
         if: hashFiles('backend/pyproject.toml') != ''
         working-directory: backend
         run: |

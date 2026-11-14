@@ -19,10 +19,10 @@ SNPP_END = dt.date(2026, 10, 31)  # S-NPP stops reporting in early November 2026
 N20_FIRST = dt.date(2018, 4, 1)  # first month of NOAA-20 standard data
 
 LABELS = {
-    "MODIS_T": "MODIS Terra × коэффициент",
-    "MODIS_TA": "MODIS Terra + Aqua × коэффициент",
-    "VIIRS_SNPP": "VIIRS Suomi NPP (эталон)",
-    "VIIRS_N20": "VIIRS NOAA-20 × коэффициент",
+    "MODIS_T": "MODIS Terra × coefficient",
+    "MODIS_TA": "MODIS Terra + Aqua × coefficient",
+    "VIIRS_SNPP": "VIIRS Suomi NPP (reference)",
+    "VIIRS_N20": "VIIRS NOAA-20 × coefficient",
 }
 
 PERIODS = [  # (id, start, end) — end None means "until now"

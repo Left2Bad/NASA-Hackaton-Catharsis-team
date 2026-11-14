@@ -1,17 +1,18 @@
-# Владельцы зон. GitHub автоматически запрашивает их ревью в PR.
+# Zone owners. GitHub automatically requests their review on PRs.
 #
 
-# Зона разработчика A: данные, гармонизация, бэкенд
+# Developer A zone: data, harmonization, backend
 /pipeline/                      @Left2Bad
 /backend/                       @Left2Bad
 /docs/methodology.md            @Left2Bad
+/docs/methodology.ru.md         @Left2Bad
 /.github/workflows/backend.yml  @Left2Bad
 
-# Зона разработчика B: интерфейс
+# Developer B zone: interface
 /frontend/                      @Miraculum-ADA
 /docs/demo/                     @Miraculum-ADA
 /.github/workflows/frontend.yml @Miraculum-ADA
 
-# Общая зона: правки только отдельным PR с одобрением второго
+# Shared zone: changes only in a separate PR approved by the other developer
 /contract/                      @Left2Bad @Miraculum-ADA
 /README.md                      @Left2Bad @Miraculum-ADA

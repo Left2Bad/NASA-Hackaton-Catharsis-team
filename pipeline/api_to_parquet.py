@@ -58,7 +58,7 @@ def chunk_files(folder: Path, con=None) -> list[dict]:
         c = {"path": f, "first": first, "last": last, "quality": quality, "mtime": f.stat().st_mtime}
         (old if last is None else chunks).append(c)
     old.sort(key=lambda c: c["first"])
-    for c, nxt in zip(old, old[1:] + [None], strict=True):
+    for c, nxt in zip(old, [*old[1:], None][: len(old)], strict=True):
         if nxt is not None:
             c["last"] = nxt["first"] - dt.timedelta(days=1)
         else:  # the last chunk of an old-style run: its data end where it ends
@@ -121,6 +121,13 @@ def convert(con, src: str, days: dict[dt.date, dict], out: Path, mask: Path) -> 
         "INSERT INTO pick VALUES (?, ?, ?)", [(c["path"].as_posix(), d, c["quality"]) for d, c in days.items()]
     )
     file_list = "[" + ", ".join(f"'{f}'" for f in files) + "]"
+    cols = {
+        r[0]
+        for r in con.execute(
+            f"DESCRIBE SELECT * FROM read_csv({file_list}, all_varchar=true, header=true, union_by_name=true)"
+        ).fetchall()
+    }
+    sp_type = "TRY_CAST(p.type AS TINYINT)" if "type" in cols else "NULL"  # NRT chunks have no type column
     part = out.with_suffix(".part")
     con.execute(f"""
     COPY (
@@ -135,7 +142,7 @@ def convert(con, src: str, days: dict[dt.date, dict], out: Path, mask: Path) -> 
              {conf} conf_class, CAST(confidence AS VARCHAR) conf_raw,
              CAST({b1} AS FLOAT) bright, CAST({b2} AS FLOAT) bright2, CAST(frp AS FLOAT) frp,
              CAST(scan AS FLOAT) scan, CAST(track AS FLOAT) track, CAST(daynight AS VARCHAR) daynight,
-             CAST(coalesce(TRY_CAST(p.type AS TINYINT), m.type, 0) AS TINYINT) type,
+             CAST(coalesce({sp_type}, m.type, 0) AS TINYINT) type,
              NULL::VARCHAR country, p.quality
       FROM p
       LEFT JOIN read_parquet('{mask.as_posix()}') m

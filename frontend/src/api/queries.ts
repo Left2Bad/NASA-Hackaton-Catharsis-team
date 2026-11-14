@@ -8,6 +8,7 @@ import type {
   ExportPointsQuery,
   Geometry,
   Meta,
+  ValidationResponse,
 } from './types';
 
 // openapi-fetch returns coordinates as number[], while the contract defines a pair
@@ -80,6 +81,32 @@ export function useCurrent(geometry: Geometry | null) {
   return useQuery({
     queryKey: ['current', geometry],
     queryFn: ({ signal }) => fetchCurrent({ geometry: geometry as Geometry }, signal),
+    enabled: geometry !== null,
+  });
+}
+
+export async function fetchValidation(signal?: AbortSignal): Promise<ValidationResponse> {
+  return request((s) => api.GET('/method/validation', { signal: s }), signal);
+}
+
+/** The results of the quality checks for the "Method" page. They change only with the dataset. */
+export function useValidation() {
+  return useQuery({
+    queryKey: ['validation'],
+    queryFn: ({ signal }) => fetchValidation(signal),
+    staleTime: Infinity,
+  });
+}
+
+/**
+ * The whole record of an area with the raw counts of every sensor next to the harmonized
+ * value (`series=raw`), for the "before and after" chart of the "Method" page.
+ */
+export function useRawCalendar(geometry: Geometry | null) {
+  return useQuery({
+    queryKey: ['calendar-raw', geometry],
+    queryFn: ({ signal }) =>
+      fetchCalendar({ geometry: geometry as Geometry, series: 'raw' }, signal),
     enabled: geometry !== null,
   });
 }

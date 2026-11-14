@@ -28,7 +28,7 @@ uvicorn app.main:app --port 8000
 | --- | --- |
 | `GET /health`, `GET /meta` | готово |
 | `POST /calendar`, `POST /export/calendar.csv` | готово |
-| `POST /current`, `POST /daily` | следующий шаг |
+| `POST /current`, `POST /daily` | готово |
 | `POST /points`, `POST /export/points.csv` | следующий шаг (нужны облегчённые точки) |
 | `GET /method/validation` | следующий шаг (отчёт проверки из пайплайна) |
 
@@ -37,6 +37,7 @@ uvicorn app.main:app --port 8000
 - `app/geometry.py` — проверка GeoJSON, геодезическая площадь (WGS84), ячейки 0,1° с центром внутри области.
 - `app/series.py` — сумма по ячейкам области: сырой счёт ведущего источника × коэффициент ячейки 1°
   (`data/coefficients.parquet`). Правило ведущего источника — общий модуль `pipeline/lead.py`.
+- `app/daily_service.py` — `/current`: накопление с 1-го числа против тех же дней базовых лет; `/daily`: значения по дням года.
 - `app/calendar_service.py` — медианы и перцентили по базовым годам, категории, интервалы `low`/`high`
   (`data/uncertainty.parquet`), годовые суммы, тренд (МНК), предупреждения.
 - Ответы `/calendar` кешируются в памяти (200 последних запросов).

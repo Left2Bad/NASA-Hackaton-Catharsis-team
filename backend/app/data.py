@@ -96,7 +96,7 @@ class Data:
             if "quality" in cols:
                 d = self.con.execute(
                     f"SELECT max(acq_date) FROM read_parquet('{(points / f'*_{self.last_date.year}.parquet').as_posix()}', "
-                    "union_by_name=true) WHERE quality = 'SP'"
+                    "union_by_name=true) WHERE quality = 'SP' AND source <> 'modis'"  # VIIRS leads since 2012
                 ).fetchone()[0]
                 return d or self.last_date
         return self.last_date  # yearly archives are all standard processing

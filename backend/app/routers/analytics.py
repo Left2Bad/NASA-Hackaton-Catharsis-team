@@ -7,8 +7,8 @@ from threading import Lock
 from fastapi import APIRouter, Request
 from fastapi.responses import Response
 
-from .. import calendar_service
-from ..schemas import AreaQuery
+from .. import calendar_service, daily_service
+from ..schemas import AreaQuery, DailyQuery
 
 router = APIRouter()
 
@@ -35,6 +35,16 @@ def cached_calendar(request: Request, q: AreaQuery) -> dict:
 @router.post("/calendar", tags=["analytics"])
 def post_calendar(q: AreaQuery, request: Request) -> dict:
     return cached_calendar(request, q)
+
+
+@router.post("/current", tags=["analytics"])
+def post_current(q: AreaQuery, request: Request) -> dict:
+    return daily_service.current(request.app.state.data, q)
+
+
+@router.post("/daily", tags=["analytics"])
+def post_daily(q: DailyQuery, request: Request) -> dict:
+    return daily_service.daily(request.app.state.data, q)
 
 
 @router.post("/export/calendar.csv", tags=["export"])

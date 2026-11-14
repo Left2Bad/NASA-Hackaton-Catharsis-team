@@ -1,6 +1,6 @@
 """Read-only access to pipeline outputs in DATA_DIR (see data/README.md).
 
-Files used: grid_daily.parquet, grid_monthly.parquet, coefficients.parquet, uncertainty.parquet,
+Files used: grid_daily.parquet, grid_monthly.parquet, coefficients.parquet, uncertainty.parquet, static_mask.parquet,
 outage_months.csv, gap_days.csv, harmonized/summary.json, validation/report.json; hotspot points (points_serve/) are
 read by points_service.py. Small tables are loaded into memory once; the grids stay
 on disk and are scanned per request (sorted by iy, so a latitude band reads only its row groups).
@@ -70,6 +70,7 @@ class Data:
             self.con.execute(f"CREATE VIEW {name} AS SELECT * FROM read_parquet('{path.as_posix()}')")
         coef = (self.dir / "coefficients.parquet").as_posix()
         self.con.execute(f"CREATE TABLE coef AS SELECT * FROM read_parquet('{coef}')")
+        self._load_static_mask()
         self.global_coef = self.con.execute(
             "SELECT median(w_count_ta), median(w_count_t), median(w_count_n20), "
             "median(w_frp_ta), median(w_frp_t), median(w_frp_n20) FROM coef"
@@ -132,6 +133,16 @@ class Data:
         SELECT d.* EXCLUDE (date), d.date AS month
         FROM {daily} d SEMI JOIN substituted_months s ON date_trunc('month', d.date)::DATE = s.m""")
         return "grid_monthly_lead"
+
+    def _load_static_mask(self) -> None:
+        """Table static_mask (ky, kx): the ~1 km cells the grids leave out (pipeline/grid.py, static_mask.parquet).
+
+        Loaded once (~0.5 million cells, a few MB). Hot spots in these cells weigh 0 in points_service.py, so the
+        weights add up to the grids. A data folder without the file (an old or sample folder) gets an empty table.
+        """
+        path = self.dir / "static_mask.parquet"
+        src = f"read_parquet('{path.as_posix()}')" if path.exists() else "(SELECT 0 AS ky, 0 AS kx WHERE false)"
+        self.con.execute(f"CREATE TABLE static_mask AS SELECT ky::INTEGER AS ky, kx::INTEGER AS kx FROM {src}")
 
     def cursor(self) -> duckdb.DuckDBPyConnection:
         with self._lock:

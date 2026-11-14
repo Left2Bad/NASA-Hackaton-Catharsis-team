@@ -51,7 +51,13 @@ FILES = {
         viirs(21.0, 10.5, "2023-03-05", 101, "viirs-snpp"),
         viirs(20.5, 10.5, "2023-03-05", 102, "viirs-snpp"),
     ],
+    # the second point lies in a cell of the static-source mask (MASK): the grids leave it out, so it weighs 0
+    "viirs-snpp_2024": [
+        viirs(20.5, 10.5, "2024-03-05", 100, "viirs-snpp"),
+        viirs(20.3, 10.3, "2024-03-05", 101, "viirs-snpp"),
+    ],
 }
+MASK = [(2030, 1030, 2)]  # ky, kx (round(lat * 100), round(lon * 100)), type, as pipeline/grid.py writes it
 
 
 @pytest.fixture(scope="module")
@@ -64,6 +70,8 @@ def client(tmp_path_factory):
         con.execute(f"CREATE OR REPLACE TABLE t ({SCHEMA})")
         con.executemany(f"INSERT INTO t VALUES ({', '.join('?' * 13)})", rows)
         con.execute(f"COPY (SELECT * FROM t ORDER BY acq_date, lat) TO '{(serve / name).as_posix()}.parquet'")
+    mask = (data / "static_mask.parquet").as_posix()
+    con.execute(f"COPY (SELECT * FROM (VALUES {', '.join(map(str, MASK))}) t(ky, kx, type)) TO '{mask}'")
     # grid_daily consistent with these points (pipeline/grid.py filters), plus an empty row that keeps last_date
     con.execute(f"""COPY (
         SELECT floor((lat + 90) / 0.1)::SMALLINT AS iy, floor((lon + 180) / 0.1)::SMALLINT AS ix, acq_date AS date,
@@ -71,7 +79,9 @@ def client(tmp_path_factory):
                count(*) FILTER (WHERE source = 'viirs-snpp')::INT AS n_snpp,
                count(*) FILTER (WHERE source = 'viirs-jpss1')::INT AS n_n20,
                0::FLOAT AS f_t, 0::FLOAT AS f_a, 0::FLOAT AS f_snpp, 0::FLOAT AS f_n20
-        FROM read_parquet('{serve.as_posix()}/*.parquet') WHERE type = 0 AND conf_class <> 'l' GROUP BY ALL
+        FROM read_parquet('{serve.as_posix()}/*.parquet') p
+        ANTI JOIN read_parquet('{mask}') m ON m.ky = round(p.lat * 100)::INTEGER AND m.kx = round(p.lon * 100)::INTEGER
+        WHERE type = 0 AND conf_class <> 'l' GROUP BY ALL
         UNION ALL SELECT 0, 0, DATE '{LAST}', 0, 0, 0, 0, 0, 0, 0, 0
         ORDER BY iy, ix, date) TO '{(data / "grid_daily.parquet").as_posix()}'""")
     settings = settings_for(data, max_points=5, max_export_rows=8)
@@ -236,6 +246,18 @@ def test_border_points_belong_to_one_area(client):
     daily = client.post(f"{API}/daily", json={"geometry": AREA, "year": 2023}).json()
     day = next(d for d in daily["days"] if d["date"] == "2023-03-05")
     assert len(rows) == 1 and float(rows[0]["harmonized_weight"]) == day["value"] == 1.0
+
+
+def test_static_source_mask_weighs_zero(client):
+    """A point in a cell of the static-source mask stays in the files with weight 0, as the grids leave it out."""
+    p = props(post_points(client, 2024, 3))
+    assert [x["harmonized_weight"] for x in p] == [1.0, 0.0]
+    rows = list(csv.DictReader(io.StringIO(export(client, "2024-03-01", "2024-03-31").text)))
+    assert [(r["lat"], r["type"], r["harmonized_weight"]) for r in rows] == [("20.5", "0", "1.0"), ("20.3", "0", "0.0")]
+    # the weights add up to the daily value (grid_daily here is built from these points with the mask)
+    daily = client.post(f"{API}/daily", json={"geometry": AREA, "year": 2024}).json()
+    day = next(d for d in daily["days"] if d["date"] == "2024-03-05")
+    assert sum(float(r["harmonized_weight"]) for r in rows) == day["value"] == 1.0
 
 
 def test_export_order_is_total_and_stable(client):

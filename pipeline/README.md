@@ -14,23 +14,23 @@ python -m venv .venv
 | --- | --- | --- | --- |
 | 0. Загрузка архивов | `python pipeline/download_archives.py` | `data/raw/*.zip` (48 файлов, 9,3 ГБ) | ~1 ч |
 | 1. Единая схема | `python pipeline/to_parquet.py data/raw/*.zip` | `data/points/<сенсор>_<год>.parquet` (7,1 ГБ) | ~20 мин |
-| 2. Гармонизация | `python pipeline/harmonize.py` | `data/harmonized/*` | ~1 мин |
-| 2a. Сетки | `python pipeline/grid.py` | `data/grid_daily.parquet`, `data/grid_monthly.parquet` (ячейка 0,1°) | ~5 мин |
-| 3. 2026 год через API | `python pipeline/fetch_api.py` (нужен `FIRMS_MAP_KEY` в `.env`) | `data/raw/api_2026/` | 1,5–2,5 ч, упирается в лимит ключа |
-| 4. 2026 → Parquet | `python pipeline/api_to_parquet.py`, затем снова шаги 2 и 2a | `data/points/*_2026.parquet` | ~2 мин |
+| 2. Сетки | `python pipeline/grid.py` | `data/grid_daily.parquet`, `data/grid_monthly.parquet` (ячейка 0,1°) | ~5 мин |
+| 3. Гармонизация | `python pipeline/harmonize.py` | `data/coefficients.parquet`, `data/uncertainty.parquet`, `data/outage_months.csv`, `data/harmonized/` | ~10 с |
+| 4. 2026 год через API | `python pipeline/fetch_api.py` (нужен `FIRMS_MAP_KEY` в `.env`) | `data/raw/api_2026/` | 1,5–2,5 ч, упирается в лимит ключа |
+| 5. 2026 → Parquet | `python pipeline/api_to_parquet.py`, затем `grid.py --years 2026` и снова шаг 3 | `data/points/*_2026.parquet` | ~2 мин |
 
 - Шаг 1 запускать **одним процессом**: большие годы VIIRS (≈20 млн точек) требуют ~9 ГБ RAM.
-- Шаги 0 и 3 можно перезапускать: готовые файлы пропускаются, недокачанные докачиваются.
+- Шаги 0 и 4 можно перезапускать: готовые файлы пропускаются, недокачанные докачиваются.
   Две копии одного шага одновременно не запускать — они испортят файлы друг друга.
 
 ## Отличия от исходного плана
 
 - Дневная сетка 0,1° (`grid.py`) — основа для API: сырые счёты и FRP по каждому спутнику на ячейку и день,
   уже после фильтров. Гармонизированное значение = счёт ведущего источника × коэффициент ячейки 1°.
-  Коэффициенты пока подбираются в `harmonize.py` на сетке 0,25° × месяц.
+- Ведущий источник на дату — `lead.py` (`lead_source`, `lead_sql`, `value_sql`); бэкенд импортирует тот же модуль.
+- Коэффициенты MODIS подбираются на 2012–2020 (до дрейфа орбит Terra и Aqua), см. `docs/methodology.md`, раздел 4.
 - Постоянные источники: в архивах уже есть поле `type` (1 — вулканы, 2 — статичные, 3 — морские), фильтруем по нему.
-  Для NRT-данных 2026 года без `type` маска строится из архива (шаг 4).
-- Выходы лежат в `data/harmonized/`, а не в корне `data/` (список файлов — в `data/README.md`).
+  Для NRT-данных 2026 года без `type` маска строится из архива (шаг 5).
 
 ## Проверки (как в CI)
 

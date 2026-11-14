@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Burn Calendar API
-  version: 0.1.0
+  version: 0.2.0
   summary: Календарь пожарной активности на гармонизированном ряду MODIS + VIIRS
   description: |
     Контракт между бэкендом (зона A) и фронтендом (зона B).
@@ -12,7 +12,10 @@ info:
     - координаты в порядке GeoJSON: сначала долгота, потом широта;
     - месяцы нумеруются 1–12;
     - значения единого ряда выражены в «эквиваленте VIIRS Suomi NPP»;
-    - отсутствующее значение передаётся как `null`, а не пропуском поля.
+    - отсутствующее значение передаётся как `null`, а не пропуском поля;
+    - тексты для человека (`message`, `label`, `name`, `description`, `limitations`) сервер отдаёт
+      на одном языке; идентификаторы (`id`, `code`, значения перечислений) стабильны, и клиент
+      может показывать по ним собственный перевод, а текст сервера — как запасной вариант.
 
     Правила изменения контракта описаны в `contract/README.md`.
 servers:
@@ -644,6 +647,12 @@ components:
         partial:
           description: true — месяц неполный (первый или текущий месяц ряда)
           type: boolean
+        sensor_gap:
+          description: |
+            true — у штатного ведущего источника в этом месяце был известный перерыв в работе:
+            значение посчитано по замещающему спутнику (см. `source`) или может быть занижено.
+            Поле необязательное: его отсутствие означает false.
+          type: boolean
         raw:
           description: Заполняется только при `series` = `raw`
           $ref: "#/components/schemas/RawValues"
@@ -701,8 +710,37 @@ components:
           description: Сумма значений за выбранный период
           type: number
         trend_pct_per_decade:
-          description: Тренд годовых сумм, % за 10 лет; `null`, если лет слишком мало
+          description: |
+            Тренд годовых сумм, % за 10 лет: наклон линейной регрессии (метод наименьших квадратов)
+            по полным годам периода, умноженный на 10 и делённый на среднюю годовую сумму этих лет.
+            `null`, если лет слишком мало.
           type: [number, "null"]
+        trend_line:
+          description: |
+            Та же линия тренда двумя точками — для графика годовых сумм.
+            Поле необязательное; `null`, если `trend_pct_per_decade` равен `null`.
+          oneOf:
+            - $ref: "#/components/schemas/TrendLine"
+            - type: "null"
+
+    TrendLine:
+      description: Концы линии тренда годовых сумм в единицах ряда
+      type: object
+      additionalProperties: false
+      required: [start_year, start_value, end_year, end_value]
+      properties:
+        start_year:
+          description: Первый полный год периода
+          type: integer
+        start_value:
+          description: Значение линии тренда в `start_year`
+          type: number
+        end_year:
+          description: Последний полный год периода
+          type: integer
+        end_value:
+          description: Значение линии тренда в `end_year`
+          type: number
 
     CalendarResponse:
       type: object

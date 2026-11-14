@@ -68,8 +68,12 @@ mkdir -p /srv/burn-calendar/spill && chown 10001:10001 /srv/burn-calendar/spill 
    There are no secrets: the API reads only public prepared data.
 6. **Deploy**. The first build takes a few minutes; `web` starts after `api` is healthy.
 
-The DNS record of the domain must point at the server (an `A` record; with Cloudflare, "DNS only" lets Coolify's
-Traefik get the Let's Encrypt certificate itself).
+The DNS record of the domain must point at the server (an `A` record). If the proxy already holds a certificate that
+covers the domain, Traefik serves it instead of asking Let's Encrypt. On the demo server that is a Cloudflare Origin
+certificate for `*.pin-planet.org`, so the record `nasa` must be **Proxied** in Cloudflare (SSL mode Full): with
+"DNS only" browsers reject the certificate. Without such a certificate, "DNS only" lets Traefik get one from
+Let's Encrypt. Cloudflare closes a proxied request that sends nothing for 100 s; the largest allowed export starts
+answering in about 5 s.
 
 The same stack runs without Coolify: `docker compose up -d --build` in the repository root, with your own reverse proxy
 in front of `web`.
@@ -91,3 +95,18 @@ Open the site: the calendars of the three example areas show real data and the "
 
 Replace the files in `/srv/burn-calendar/data` (stop the stack first or swap the whole folder) and restart the
 resource in Coolify: the API reads the data folder at start.
+
+## Measured on the demo server (2026-11-14)
+
+8 GB RAM, 2 cores, other services running; requests through Cloudflare.
+
+| Request | Answer | Time |
+| --- | --- | --- |
+| `/calendar`, 4 areas at once (3 presets + 2.7 million km²), first time | 70 KB each | 2.0–3.0 s |
+| the same, from the cache | 70 KB each | 0.4–0.5 s |
+| `/points`, 2.7 million km² of the Amazon, one month (capped at 20,000 points) | 5.1 MB | 1.7–2.6 s |
+| `/export/points.csv`, one year, ~470,000 rows (just under the 500,000 limit) | 37 MB | 10.8 s (first byte 3.8 s) |
+| export + `/points` + 8 `/calendar` at once | — | export 10 s, points 2–8 s |
+
+Peak memory of `api` under this load: 912 MB of its 2.5 GB cap (idle: about 100 MB, after the load about 700 MB of
+DuckDB cache); no swap used, no restarts, the lowest available memory on the host 2.9 GB.

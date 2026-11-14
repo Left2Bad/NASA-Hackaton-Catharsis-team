@@ -1,0 +1,19 @@
+# Единые концы строк (LF) для всех текстовых файлов.
+# Без этого на Windows git показывает изменёнными файлы целиком.
+* text=auto eol=lf
+
+# Скрипты Windows остаются с CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Бинарные файлы
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff2 binary
+*.parquet binary
+*.duckdb binary

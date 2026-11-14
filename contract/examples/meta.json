@@ -1,0 +1,146 @@
+{
+  "data_version": "synthetic-example-0.1",
+  "unit": "viirs_snpp_equivalent_detections",
+  "grid_deg": 0.1,
+  "first_date": "2000-11-01",
+  "last_date": "2026-11-13",
+  "last_standard_date": "2026-06-30",
+  "sources": [
+    {
+      "id": "MODIS_T",
+      "label": "MODIS Terra × коэффициент",
+      "start": "2000-11-01",
+      "end": "2002-07-31"
+    },
+    {
+      "id": "MODIS_TA",
+      "label": "MODIS Terra + Aqua × коэффициент",
+      "start": "2002-08-01",
+      "end": "2012-01-31"
+    },
+    {
+      "id": "VIIRS_SNPP",
+      "label": "VIIRS Suomi NPP (эталон)",
+      "start": "2012-02-01",
+      "end": "2026-10-31"
+    },
+    {
+      "id": "VIIRS_N20",
+      "label": "VIIRS NOAA-20 × коэффициент",
+      "start": "2026-11-01",
+      "end": null
+    }
+  ],
+  "limits": {
+    "max_area_km2": 3000000,
+    "min_cells_warning": 9,
+    "max_export_rows": 500000,
+    "max_points": 20000
+  },
+  "coverage": {
+    "global": false,
+    "regions": [
+      "Kazakhstan",
+      "Brazil",
+      "United States"
+    ]
+  },
+  "presets": [
+    {
+      "id": "kz-steppe",
+      "name": "Северный Казахстан",
+      "description": "Степные и сельскохозяйственные палы весной и в конце лета",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              61.0,
+              51.0
+            ],
+            [
+              71.0,
+              51.0
+            ],
+            [
+              71.0,
+              55.0
+            ],
+            [
+              61.0,
+              55.0
+            ],
+            [
+              61.0,
+              51.0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "amazon-south",
+      "name": "Южная Амазония",
+      "description": "Сезон выжигания в августе–сентябре",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -62.0,
+              -13.0
+            ],
+            [
+              -52.0,
+              -13.0
+            ],
+            [
+              -52.0,
+              -7.0
+            ],
+            [
+              -62.0,
+              -7.0
+            ],
+            [
+              -62.0,
+              -13.0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "california-north",
+      "name": "Северная Калифорния",
+      "description": "Крупные лесные пожары летом и осенью",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -124.0,
+              38.5
+            ],
+            [
+              -120.0,
+              38.5
+            ],
+            [
+              -120.0,
+              42.0
+            ],
+            [
+              -124.0,
+              42.0
+            ],
+            [
+              -124.0,
+              38.5
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

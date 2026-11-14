@@ -1,0 +1,1327 @@
+{
+  "calibration_period": {
+    "start_year": 2012,
+    "end_year": 2020
+  },
+  "test_period": {
+    "start_year": 2021,
+    "end_year": 2025
+  },
+  "regions": [
+    {
+      "id": "kz-steppe",
+      "name": "Северный Казахстан",
+      "metrics": {
+        "pearson_r": 0.992,
+        "bias_pct": 7.6,
+        "mape_pct": 9.4,
+        "n_months": 60
+      },
+      "series": [
+        {
+          "year": 2021,
+          "month": 1,
+          "modis_raw": 2.1,
+          "viirs_raw": 6.1,
+          "harmonized": 7.5
+        },
+        {
+          "year": 2021,
+          "month": 2,
+          "modis_raw": 2.4,
+          "viirs_raw": 8.8,
+          "harmonized": 8.5
+        },
+        {
+          "year": 2021,
+          "month": 3,
+          "modis_raw": 11.6,
+          "viirs_raw": 51.9,
+          "harmonized": 55.6
+        },
+        {
+          "year": 2021,
+          "month": 4,
+          "modis_raw": 52.6,
+          "viirs_raw": 264.7,
+          "harmonized": 284.2
+        },
+        {
+          "year": 2021,
+          "month": 5,
+          "modis_raw": 159.3,
+          "viirs_raw": 891.7,
+          "harmonized": 795.5
+        },
+        {
+          "year": 2021,
+          "month": 6,
+          "modis_raw": 40.1,
+          "viirs_raw": 135.6,
+          "harmonized": 167.0
+        },
+        {
+          "year": 2021,
+          "month": 7,
+          "modis_raw": 57.7,
+          "viirs_raw": 189.5,
+          "harmonized": 228.2
+        },
+        {
+          "year": 2021,
+          "month": 8,
+          "modis_raw": 157.2,
+          "viirs_raw": 573.7,
+          "harmonized": 637.7
+        },
+        {
+          "year": 2021,
+          "month": 9,
+          "modis_raw": 150.7,
+          "viirs_raw": 699.5,
+          "harmonized": 642.4
+        },
+        {
+          "year": 2021,
+          "month": 10,
+          "modis_raw": 37.5,
+          "viirs_raw": 190.0,
+          "harmonized": 171.7
+        },
+        {
+          "year": 2021,
+          "month": 11,
+          "modis_raw": 12.8,
+          "viirs_raw": 51.7,
+          "harmonized": 47.8
+        },
+        {
+          "year": 2021,
+          "month": 12,
+          "modis_raw": 1.8,
+          "viirs_raw": 5.3,
+          "harmonized": 6.4
+        },
+        {
+          "year": 2022,
+          "month": 1,
+          "modis_raw": 3.6,
+          "viirs_raw": 13.4,
+          "harmonized": 12.7
+        },
+        {
+          "year": 2022,
+          "month": 2,
+          "modis_raw": 3.8,
+          "viirs_raw": 15.0,
+          "harmonized": 13.5
+        },
+        {
+          "year": 2022,
+          "month": 3,
+          "modis_raw": 18.1,
+          "viirs_raw": 88.1,
+          "harmonized": 86.7
+        },
+        {
+          "year": 2022,
+          "month": 4,
+          "modis_raw": 269.4,
+          "viirs_raw": 1374.4,
+          "harmonized": 1456.7
+        },
+        {
+          "year": 2022,
+          "month": 5,
+          "modis_raw": 241.7,
+          "viirs_raw": 1053.0,
+          "harmonized": 1206.5
+        },
+        {
+          "year": 2022,
+          "month": 6,
+          "modis_raw": 50.9,
+          "viirs_raw": 190.4,
+          "harmonized": 211.9
+        },
+        {
+          "year": 2022,
+          "month": 7,
+          "modis_raw": 138.6,
+          "viirs_raw": 416.5,
+          "harmonized": 547.9
+        },
+        {
+          "year": 2022,
+          "month": 8,
+          "modis_raw": 355.4,
+          "viirs_raw": 1187.5,
+          "harmonized": 1441.6
+        },
+        {
+          "year": 2022,
+          "month": 9,
+          "modis_raw": 325.8,
+          "viirs_raw": 1258.4,
+          "harmonized": 1389.4
+        },
+        {
+          "year": 2022,
+          "month": 10,
+          "modis_raw": 145.3,
+          "viirs_raw": 550.3,
+          "harmonized": 664.9
+        },
+        {
+          "year": 2022,
+          "month": 11,
+          "modis_raw": 14.1,
+          "viirs_raw": 48.1,
+          "harmonized": 52.9
+        },
+        {
+          "year": 2022,
+          "month": 12,
+          "modis_raw": 2.6,
+          "viirs_raw": 9.2,
+          "harmonized": 9.2
+        },
+        {
+          "year": 2023,
+          "month": 1,
+          "modis_raw": 1.2,
+          "viirs_raw": 3.3,
+          "harmonized": 4.2
+        },
+        {
+          "year": 2023,
+          "month": 2,
+          "modis_raw": 3.4,
+          "viirs_raw": 13.1,
+          "harmonized": 12.0
+        },
+        {
+          "year": 2023,
+          "month": 3,
+          "modis_raw": 10.5,
+          "viirs_raw": 52.1,
+          "harmonized": 50.2
+        },
+        {
+          "year": 2023,
+          "month": 4,
+          "modis_raw": 84.2,
+          "viirs_raw": 440.1,
+          "harmonized": 455.5
+        },
+        {
+          "year": 2023,
+          "month": 5,
+          "modis_raw": 154.6,
+          "viirs_raw": 682.5,
+          "harmonized": 771.9
+        },
+        {
+          "year": 2023,
+          "month": 6,
+          "modis_raw": 66.7,
+          "viirs_raw": 256.0,
+          "harmonized": 277.5
+        },
+        {
+          "year": 2023,
+          "month": 7,
+          "modis_raw": 118.8,
+          "viirs_raw": 357.7,
+          "harmonized": 469.6
+        },
+        {
+          "year": 2023,
+          "month": 8,
+          "modis_raw": 336.1,
+          "viirs_raw": 1300.9,
+          "harmonized": 1363.3
+        },
+        {
+          "year": 2023,
+          "month": 9,
+          "modis_raw": 130.2,
+          "viirs_raw": 585.5,
+          "harmonized": 555.1
+        },
+        {
+          "year": 2023,
+          "month": 10,
+          "modis_raw": 34.3,
+          "viirs_raw": 159.5,
+          "harmonized": 156.9
+        },
+        {
+          "year": 2023,
+          "month": 11,
+          "modis_raw": 10.6,
+          "viirs_raw": 38.2,
+          "harmonized": 39.7
+        },
+        {
+          "year": 2023,
+          "month": 12,
+          "modis_raw": 2.2,
+          "viirs_raw": 6.9,
+          "harmonized": 7.8
+        },
+        {
+          "year": 2024,
+          "month": 1,
+          "modis_raw": 0.6,
+          "viirs_raw": 2.2,
+          "harmonized": 2.1
+        },
+        {
+          "year": 2024,
+          "month": 2,
+          "modis_raw": 1.2,
+          "viirs_raw": 3.8,
+          "harmonized": 4.3
+        },
+        {
+          "year": 2024,
+          "month": 3,
+          "modis_raw": 12.2,
+          "viirs_raw": 56.4,
+          "harmonized": 58.6
+        },
+        {
+          "year": 2024,
+          "month": 4,
+          "modis_raw": 95.5,
+          "viirs_raw": 432.5,
+          "harmonized": 516.6
+        },
+        {
+          "year": 2024,
+          "month": 5,
+          "modis_raw": 109.3,
+          "viirs_raw": 411.3,
+          "harmonized": 545.8
+        },
+        {
+          "year": 2024,
+          "month": 6,
+          "modis_raw": 15.5,
+          "viirs_raw": 65.5,
+          "harmonized": 64.3
+        },
+        {
+          "year": 2024,
+          "month": 7,
+          "modis_raw": 35.4,
+          "viirs_raw": 154.0,
+          "harmonized": 140.0
+        },
+        {
+          "year": 2024,
+          "month": 8,
+          "modis_raw": 54.9,
+          "viirs_raw": 219.7,
+          "harmonized": 222.9
+        },
+        {
+          "year": 2024,
+          "month": 9,
+          "modis_raw": 81.1,
+          "viirs_raw": 333.9,
+          "harmonized": 345.8
+        },
+        {
+          "year": 2024,
+          "month": 10,
+          "modis_raw": 18.2,
+          "viirs_raw": 71.9,
+          "harmonized": 83.2
+        },
+        {
+          "year": 2024,
+          "month": 11,
+          "modis_raw": 4.5,
+          "viirs_raw": 20.0,
+          "harmonized": 16.9
+        },
+        {
+          "year": 2024,
+          "month": 12,
+          "modis_raw": 0.9,
+          "viirs_raw": 3.2,
+          "harmonized": 3.3
+        },
+        {
+          "year": 2025,
+          "month": 1,
+          "modis_raw": 2.9,
+          "viirs_raw": 10.0,
+          "harmonized": 10.2
+        },
+        {
+          "year": 2025,
+          "month": 2,
+          "modis_raw": 4.8,
+          "viirs_raw": 12.2,
+          "harmonized": 16.8
+        },
+        {
+          "year": 2025,
+          "month": 3,
+          "modis_raw": 19.8,
+          "viirs_raw": 89.4,
+          "harmonized": 94.5
+        },
+        {
+          "year": 2025,
+          "month": 4,
+          "modis_raw": 145.7,
+          "viirs_raw": 651.4,
+          "harmonized": 788.1
+        },
+        {
+          "year": 2025,
+          "month": 5,
+          "modis_raw": 179.3,
+          "viirs_raw": 1014.3,
+          "harmonized": 895.3
+        },
+        {
+          "year": 2025,
+          "month": 6,
+          "modis_raw": 66.5,
+          "viirs_raw": 307.1,
+          "harmonized": 276.6
+        },
+        {
+          "year": 2025,
+          "month": 7,
+          "modis_raw": 97.3,
+          "viirs_raw": 407.1,
+          "harmonized": 384.6
+        },
+        {
+          "year": 2025,
+          "month": 8,
+          "modis_raw": 264.5,
+          "viirs_raw": 1034.0,
+          "harmonized": 1072.6
+        },
+        {
+          "year": 2025,
+          "month": 9,
+          "modis_raw": 292.5,
+          "viirs_raw": 1132.4,
+          "harmonized": 1247.4
+        },
+        {
+          "year": 2025,
+          "month": 10,
+          "modis_raw": 89.2,
+          "viirs_raw": 379.0,
+          "harmonized": 408.1
+        },
+        {
+          "year": 2025,
+          "month": 11,
+          "modis_raw": 14.9,
+          "viirs_raw": 53.2,
+          "harmonized": 55.7
+        },
+        {
+          "year": 2025,
+          "month": 12,
+          "modis_raw": 1.2,
+          "viirs_raw": 4.9,
+          "harmonized": 4.2
+        }
+      ]
+    },
+    {
+      "id": "amazon-south",
+      "name": "Южная Амазония",
+      "metrics": {
+        "pearson_r": 0.992,
+        "bias_pct": 1.7,
+        "mape_pct": 9.5,
+        "n_months": 60
+      },
+      "series": [
+        {
+          "year": 2021,
+          "month": 1,
+          "modis_raw": 7.2,
+          "viirs_raw": 22.8,
+          "harmonized": 25.4
+        },
+        {
+          "year": 2021,
+          "month": 2,
+          "modis_raw": 30.3,
+          "viirs_raw": 105.7,
+          "harmonized": 107.1
+        },
+        {
+          "year": 2021,
+          "month": 3,
+          "modis_raw": 199.9,
+          "viirs_raw": 843.7,
+          "harmonized": 956.4
+        },
+        {
+          "year": 2021,
+          "month": 4,
+          "modis_raw": 1089.4,
+          "viirs_raw": 6205.5,
+          "harmonized": 5891.2
+        },
+        {
+          "year": 2021,
+          "month": 5,
+          "modis_raw": 1298.0,
+          "viirs_raw": 6139.0,
+          "harmonized": 6479.5
+        },
+        {
+          "year": 2021,
+          "month": 6,
+          "modis_raw": 831.3,
+          "viirs_raw": 2511.2,
+          "harmonized": 3458.1
+        },
+        {
+          "year": 2021,
+          "month": 7,
+          "modis_raw": 1059.9,
+          "viirs_raw": 3900.8,
+          "harmonized": 4188.9
+        },
+        {
+          "year": 2021,
+          "month": 8,
+          "modis_raw": 1904.3,
+          "viirs_raw": 8559.6,
+          "harmonized": 7723.9
+        },
+        {
+          "year": 2021,
+          "month": 9,
+          "modis_raw": 2166.0,
+          "viirs_raw": 9564.7,
+          "harmonized": 9235.7
+        },
+        {
+          "year": 2021,
+          "month": 10,
+          "modis_raw": 831.5,
+          "viirs_raw": 2725.3,
+          "harmonized": 3804.9
+        },
+        {
+          "year": 2021,
+          "month": 11,
+          "modis_raw": 115.7,
+          "viirs_raw": 499.6,
+          "harmonized": 433.1
+        },
+        {
+          "year": 2021,
+          "month": 12,
+          "modis_raw": 28.8,
+          "viirs_raw": 92.0,
+          "harmonized": 101.9
+        },
+        {
+          "year": 2022,
+          "month": 1,
+          "modis_raw": 6.4,
+          "viirs_raw": 25.2,
+          "harmonized": 22.8
+        },
+        {
+          "year": 2022,
+          "month": 2,
+          "modis_raw": 12.8,
+          "viirs_raw": 51.9,
+          "harmonized": 45.2
+        },
+        {
+          "year": 2022,
+          "month": 3,
+          "modis_raw": 104.9,
+          "viirs_raw": 494.8,
+          "harmonized": 501.9
+        },
+        {
+          "year": 2022,
+          "month": 4,
+          "modis_raw": 684.9,
+          "viirs_raw": 2755.4,
+          "harmonized": 3703.8
+        },
+        {
+          "year": 2022,
+          "month": 5,
+          "modis_raw": 1008.5,
+          "viirs_raw": 4692.2,
+          "harmonized": 5034.4
+        },
+        {
+          "year": 2022,
+          "month": 6,
+          "modis_raw": 355.0,
+          "viirs_raw": 1254.3,
+          "harmonized": 1476.8
+        },
+        {
+          "year": 2022,
+          "month": 7,
+          "modis_raw": 575.3,
+          "viirs_raw": 1969.6,
+          "harmonized": 2273.6
+        },
+        {
+          "year": 2022,
+          "month": 8,
+          "modis_raw": 1424.0,
+          "viirs_raw": 6423.0,
+          "harmonized": 5775.9
+        },
+        {
+          "year": 2022,
+          "month": 9,
+          "modis_raw": 1245.9,
+          "viirs_raw": 5054.4,
+          "harmonized": 5312.6
+        },
+        {
+          "year": 2022,
+          "month": 10,
+          "modis_raw": 360.9,
+          "viirs_raw": 1330.0,
+          "harmonized": 1651.3
+        },
+        {
+          "year": 2022,
+          "month": 11,
+          "modis_raw": 38.3,
+          "viirs_raw": 116.2,
+          "harmonized": 143.3
+        },
+        {
+          "year": 2022,
+          "month": 12,
+          "modis_raw": 6.8,
+          "viirs_raw": 21.6,
+          "harmonized": 24.1
+        },
+        {
+          "year": 2023,
+          "month": 1,
+          "modis_raw": 4.4,
+          "viirs_raw": 19.5,
+          "harmonized": 15.6
+        },
+        {
+          "year": 2023,
+          "month": 2,
+          "modis_raw": 13.3,
+          "viirs_raw": 49.1,
+          "harmonized": 47.0
+        },
+        {
+          "year": 2023,
+          "month": 3,
+          "modis_raw": 77.6,
+          "viirs_raw": 293.1,
+          "harmonized": 371.2
+        },
+        {
+          "year": 2023,
+          "month": 4,
+          "modis_raw": 341.6,
+          "viirs_raw": 1764.2,
+          "harmonized": 1847.1
+        },
+        {
+          "year": 2023,
+          "month": 5,
+          "modis_raw": 449.5,
+          "viirs_raw": 2457.6,
+          "harmonized": 2243.9
+        },
+        {
+          "year": 2023,
+          "month": 6,
+          "modis_raw": 298.4,
+          "viirs_raw": 1326.6,
+          "harmonized": 1241.5
+        },
+        {
+          "year": 2023,
+          "month": 7,
+          "modis_raw": 244.2,
+          "viirs_raw": 849.9,
+          "harmonized": 964.9
+        },
+        {
+          "year": 2023,
+          "month": 8,
+          "modis_raw": 688.8,
+          "viirs_raw": 2858.4,
+          "harmonized": 2793.8
+        },
+        {
+          "year": 2023,
+          "month": 9,
+          "modis_raw": 998.3,
+          "viirs_raw": 4214.6,
+          "harmonized": 4256.8
+        },
+        {
+          "year": 2023,
+          "month": 10,
+          "modis_raw": 393.2,
+          "viirs_raw": 1577.6,
+          "harmonized": 1799.4
+        },
+        {
+          "year": 2023,
+          "month": 11,
+          "modis_raw": 58.7,
+          "viirs_raw": 195.2,
+          "harmonized": 219.8
+        },
+        {
+          "year": 2023,
+          "month": 12,
+          "modis_raw": 6.5,
+          "viirs_raw": 22.8,
+          "harmonized": 22.9
+        },
+        {
+          "year": 2024,
+          "month": 1,
+          "modis_raw": 5.0,
+          "viirs_raw": 14.4,
+          "harmonized": 17.7
+        },
+        {
+          "year": 2024,
+          "month": 2,
+          "modis_raw": 5.8,
+          "viirs_raw": 23.4,
+          "harmonized": 20.5
+        },
+        {
+          "year": 2024,
+          "month": 3,
+          "modis_raw": 26.4,
+          "viirs_raw": 134.9,
+          "harmonized": 126.1
+        },
+        {
+          "year": 2024,
+          "month": 4,
+          "modis_raw": 301.8,
+          "viirs_raw": 1827.9,
+          "harmonized": 1632.2
+        },
+        {
+          "year": 2024,
+          "month": 5,
+          "modis_raw": 349.8,
+          "viirs_raw": 1892.4,
+          "harmonized": 1746.3
+        },
+        {
+          "year": 2024,
+          "month": 6,
+          "modis_raw": 168.4,
+          "viirs_raw": 619.3,
+          "harmonized": 700.6
+        },
+        {
+          "year": 2024,
+          "month": 7,
+          "modis_raw": 227.8,
+          "viirs_raw": 857.6,
+          "harmonized": 900.3
+        },
+        {
+          "year": 2024,
+          "month": 8,
+          "modis_raw": 711.5,
+          "viirs_raw": 2651.5,
+          "harmonized": 2885.8
+        },
+        {
+          "year": 2024,
+          "month": 9,
+          "modis_raw": 811.0,
+          "viirs_raw": 3270.5,
+          "harmonized": 3458.2
+        },
+        {
+          "year": 2024,
+          "month": 10,
+          "modis_raw": 100.5,
+          "viirs_raw": 575.9,
+          "harmonized": 459.8
+        },
+        {
+          "year": 2024,
+          "month": 11,
+          "modis_raw": 32.0,
+          "viirs_raw": 124.7,
+          "harmonized": 119.6
+        },
+        {
+          "year": 2024,
+          "month": 12,
+          "modis_raw": 7.2,
+          "viirs_raw": 23.2,
+          "harmonized": 25.4
+        },
+        {
+          "year": 2025,
+          "month": 1,
+          "modis_raw": 9.9,
+          "viirs_raw": 26.7,
+          "harmonized": 34.9
+        },
+        {
+          "year": 2025,
+          "month": 2,
+          "modis_raw": 51.8,
+          "viirs_raw": 162.6,
+          "harmonized": 183.2
+        },
+        {
+          "year": 2025,
+          "month": 3,
+          "modis_raw": 85.8,
+          "viirs_raw": 422.1,
+          "harmonized": 410.4
+        },
+        {
+          "year": 2025,
+          "month": 4,
+          "modis_raw": 586.4,
+          "viirs_raw": 3103.0,
+          "harmonized": 3171.3
+        },
+        {
+          "year": 2025,
+          "month": 5,
+          "modis_raw": 2230.0,
+          "viirs_raw": 12442.7,
+          "harmonized": 11132.1
+        },
+        {
+          "year": 2025,
+          "month": 6,
+          "modis_raw": 519.2,
+          "viirs_raw": 2071.4,
+          "harmonized": 2159.9
+        },
+        {
+          "year": 2025,
+          "month": 7,
+          "modis_raw": 319.3,
+          "viirs_raw": 1334.5,
+          "harmonized": 1261.9
+        },
+        {
+          "year": 2025,
+          "month": 8,
+          "modis_raw": 1057.7,
+          "viirs_raw": 4235.9,
+          "harmonized": 4290.1
+        },
+        {
+          "year": 2025,
+          "month": 9,
+          "modis_raw": 1493.7,
+          "viirs_raw": 6669.7,
+          "harmonized": 6369.2
+        },
+        {
+          "year": 2025,
+          "month": 10,
+          "modis_raw": 363.9,
+          "viirs_raw": 1385.5,
+          "harmonized": 1665.3
+        },
+        {
+          "year": 2025,
+          "month": 11,
+          "modis_raw": 44.0,
+          "viirs_raw": 154.0,
+          "harmonized": 164.9
+        },
+        {
+          "year": 2025,
+          "month": 12,
+          "modis_raw": 9.0,
+          "viirs_raw": 29.9,
+          "harmonized": 31.7
+        }
+      ]
+    },
+    {
+      "id": "california-north",
+      "name": "Северная Калифорния",
+      "metrics": {
+        "pearson_r": 0.996,
+        "bias_pct": 3.3,
+        "mape_pct": 8.7,
+        "n_months": 60
+      },
+      "series": [
+        {
+          "year": 2021,
+          "month": 1,
+          "modis_raw": 0.4,
+          "viirs_raw": 2.0,
+          "harmonized": 1.6
+        },
+        {
+          "year": 2021,
+          "month": 2,
+          "modis_raw": 0.9,
+          "viirs_raw": 2.5,
+          "harmonized": 3.0
+        },
+        {
+          "year": 2021,
+          "month": 3,
+          "modis_raw": 5.1,
+          "viirs_raw": 23.4,
+          "harmonized": 24.6
+        },
+        {
+          "year": 2021,
+          "month": 4,
+          "modis_raw": 32.9,
+          "viirs_raw": 162.6,
+          "harmonized": 177.7
+        },
+        {
+          "year": 2021,
+          "month": 5,
+          "modis_raw": 55.2,
+          "viirs_raw": 271.2,
+          "harmonized": 275.7
+        },
+        {
+          "year": 2021,
+          "month": 6,
+          "modis_raw": 15.8,
+          "viirs_raw": 83.7,
+          "harmonized": 65.7
+        },
+        {
+          "year": 2021,
+          "month": 7,
+          "modis_raw": 21.3,
+          "viirs_raw": 75.8,
+          "harmonized": 84.3
+        },
+        {
+          "year": 2021,
+          "month": 8,
+          "modis_raw": 63.3,
+          "viirs_raw": 260.7,
+          "harmonized": 256.8
+        },
+        {
+          "year": 2021,
+          "month": 9,
+          "modis_raw": 79.9,
+          "viirs_raw": 343.1,
+          "harmonized": 340.5
+        },
+        {
+          "year": 2021,
+          "month": 10,
+          "modis_raw": 13.7,
+          "viirs_raw": 75.9,
+          "harmonized": 62.5
+        },
+        {
+          "year": 2021,
+          "month": 11,
+          "modis_raw": 2.5,
+          "viirs_raw": 8.3,
+          "harmonized": 9.4
+        },
+        {
+          "year": 2021,
+          "month": 12,
+          "modis_raw": 1.2,
+          "viirs_raw": 3.2,
+          "harmonized": 4.3
+        },
+        {
+          "year": 2022,
+          "month": 1,
+          "modis_raw": 1.2,
+          "viirs_raw": 3.7,
+          "harmonized": 4.1
+        },
+        {
+          "year": 2022,
+          "month": 2,
+          "modis_raw": 1.4,
+          "viirs_raw": 4.2,
+          "harmonized": 4.8
+        },
+        {
+          "year": 2022,
+          "month": 3,
+          "modis_raw": 8.1,
+          "viirs_raw": 44.9,
+          "harmonized": 38.9
+        },
+        {
+          "year": 2022,
+          "month": 4,
+          "modis_raw": 65.3,
+          "viirs_raw": 323.6,
+          "harmonized": 353.3
+        },
+        {
+          "year": 2022,
+          "month": 5,
+          "modis_raw": 104.5,
+          "viirs_raw": 554.3,
+          "harmonized": 521.6
+        },
+        {
+          "year": 2022,
+          "month": 6,
+          "modis_raw": 39.7,
+          "viirs_raw": 166.1,
+          "harmonized": 165.0
+        },
+        {
+          "year": 2022,
+          "month": 7,
+          "modis_raw": 53.3,
+          "viirs_raw": 205.0,
+          "harmonized": 210.7
+        },
+        {
+          "year": 2022,
+          "month": 8,
+          "modis_raw": 68.8,
+          "viirs_raw": 259.9,
+          "harmonized": 279.2
+        },
+        {
+          "year": 2022,
+          "month": 9,
+          "modis_raw": 77.7,
+          "viirs_raw": 318.5,
+          "harmonized": 331.5
+        },
+        {
+          "year": 2022,
+          "month": 10,
+          "modis_raw": 96.3,
+          "viirs_raw": 420.7,
+          "harmonized": 440.5
+        },
+        {
+          "year": 2022,
+          "month": 11,
+          "modis_raw": 5.9,
+          "viirs_raw": 22.9,
+          "harmonized": 22.1
+        },
+        {
+          "year": 2022,
+          "month": 12,
+          "modis_raw": 1.4,
+          "viirs_raw": 4.3,
+          "harmonized": 5.0
+        },
+        {
+          "year": 2023,
+          "month": 1,
+          "modis_raw": 0.6,
+          "viirs_raw": 2.1,
+          "harmonized": 2.1
+        },
+        {
+          "year": 2023,
+          "month": 2,
+          "modis_raw": 0.7,
+          "viirs_raw": 2.0,
+          "harmonized": 2.3
+        },
+        {
+          "year": 2023,
+          "month": 3,
+          "modis_raw": 2.8,
+          "viirs_raw": 14.7,
+          "harmonized": 13.4
+        },
+        {
+          "year": 2023,
+          "month": 4,
+          "modis_raw": 46.1,
+          "viirs_raw": 268.6,
+          "harmonized": 249.5
+        },
+        {
+          "year": 2023,
+          "month": 5,
+          "modis_raw": 100.8,
+          "viirs_raw": 527.9,
+          "harmonized": 503.0
+        },
+        {
+          "year": 2023,
+          "month": 6,
+          "modis_raw": 29.8,
+          "viirs_raw": 118.6,
+          "harmonized": 124.1
+        },
+        {
+          "year": 2023,
+          "month": 7,
+          "modis_raw": 13.8,
+          "viirs_raw": 60.5,
+          "harmonized": 54.7
+        },
+        {
+          "year": 2023,
+          "month": 8,
+          "modis_raw": 62.3,
+          "viirs_raw": 239.9,
+          "harmonized": 252.5
+        },
+        {
+          "year": 2023,
+          "month": 9,
+          "modis_raw": 152.5,
+          "viirs_raw": 599.4,
+          "harmonized": 650.3
+        },
+        {
+          "year": 2023,
+          "month": 10,
+          "modis_raw": 14.8,
+          "viirs_raw": 68.5,
+          "harmonized": 67.7
+        },
+        {
+          "year": 2023,
+          "month": 11,
+          "modis_raw": 3.6,
+          "viirs_raw": 12.6,
+          "harmonized": 13.5
+        },
+        {
+          "year": 2023,
+          "month": 12,
+          "modis_raw": 0.8,
+          "viirs_raw": 3.2,
+          "harmonized": 3.0
+        },
+        {
+          "year": 2024,
+          "month": 1,
+          "modis_raw": 0.3,
+          "viirs_raw": 1.1,
+          "harmonized": 1.0
+        },
+        {
+          "year": 2024,
+          "month": 2,
+          "modis_raw": 0.9,
+          "viirs_raw": 3.2,
+          "harmonized": 3.1
+        },
+        {
+          "year": 2024,
+          "month": 3,
+          "modis_raw": 3.5,
+          "viirs_raw": 18.2,
+          "harmonized": 16.8
+        },
+        {
+          "year": 2024,
+          "month": 4,
+          "modis_raw": 16.6,
+          "viirs_raw": 98.6,
+          "harmonized": 89.6
+        },
+        {
+          "year": 2024,
+          "month": 5,
+          "modis_raw": 30.9,
+          "viirs_raw": 153.7,
+          "harmonized": 154.3
+        },
+        {
+          "year": 2024,
+          "month": 6,
+          "modis_raw": 14.8,
+          "viirs_raw": 68.7,
+          "harmonized": 61.4
+        },
+        {
+          "year": 2024,
+          "month": 7,
+          "modis_raw": 33.8,
+          "viirs_raw": 133.2,
+          "harmonized": 133.6
+        },
+        {
+          "year": 2024,
+          "month": 8,
+          "modis_raw": 61.8,
+          "viirs_raw": 265.3,
+          "harmonized": 250.6
+        },
+        {
+          "year": 2024,
+          "month": 9,
+          "modis_raw": 74.0,
+          "viirs_raw": 281.3,
+          "harmonized": 315.6
+        },
+        {
+          "year": 2024,
+          "month": 10,
+          "modis_raw": 11.2,
+          "viirs_raw": 49.3,
+          "harmonized": 51.2
+        },
+        {
+          "year": 2024,
+          "month": 11,
+          "modis_raw": 3.2,
+          "viirs_raw": 10.6,
+          "harmonized": 11.9
+        },
+        {
+          "year": 2024,
+          "month": 12,
+          "modis_raw": 0.4,
+          "viirs_raw": 1.1,
+          "harmonized": 1.3
+        },
+        {
+          "year": 2025,
+          "month": 1,
+          "modis_raw": 0.8,
+          "viirs_raw": 2.3,
+          "harmonized": 2.7
+        },
+        {
+          "year": 2025,
+          "month": 2,
+          "modis_raw": 1.5,
+          "viirs_raw": 4.9,
+          "harmonized": 5.3
+        },
+        {
+          "year": 2025,
+          "month": 3,
+          "modis_raw": 7.4,
+          "viirs_raw": 37.8,
+          "harmonized": 35.2
+        },
+        {
+          "year": 2025,
+          "month": 4,
+          "modis_raw": 74.4,
+          "viirs_raw": 366.8,
+          "harmonized": 402.2
+        },
+        {
+          "year": 2025,
+          "month": 5,
+          "modis_raw": 151.8,
+          "viirs_raw": 656.4,
+          "harmonized": 757.7
+        },
+        {
+          "year": 2025,
+          "month": 6,
+          "modis_raw": 21.3,
+          "viirs_raw": 102.3,
+          "harmonized": 88.4
+        },
+        {
+          "year": 2025,
+          "month": 7,
+          "modis_raw": 65.5,
+          "viirs_raw": 231.5,
+          "harmonized": 258.8
+        },
+        {
+          "year": 2025,
+          "month": 8,
+          "modis_raw": 84.4,
+          "viirs_raw": 307.0,
+          "harmonized": 342.4
+        },
+        {
+          "year": 2025,
+          "month": 9,
+          "modis_raw": 99.7,
+          "viirs_raw": 402.5,
+          "harmonized": 425.2
+        },
+        {
+          "year": 2025,
+          "month": 10,
+          "modis_raw": 43.7,
+          "viirs_raw": 177.9,
+          "harmonized": 200.0
+        },
+        {
+          "year": 2025,
+          "month": 11,
+          "modis_raw": 4.5,
+          "viirs_raw": 14.1,
+          "harmonized": 16.8
+        },
+        {
+          "year": 2025,
+          "month": 12,
+          "modis_raw": 0.8,
+          "viirs_raw": 2.8,
+          "harmonized": 2.7
+        }
+      ]
+    }
+  ],
+  "seams": [
+    {
+      "id": "modis_to_snpp_2012",
+      "label": "Переход MODIS → Suomi NPP, 2009–2011 против 2012–2014",
+      "ratio_harmonized": 1.04,
+      "ratio_naive": 4.31
+    },
+    {
+      "id": "snpp_to_n20_2026",
+      "label": "Переход Suomi NPP → NOAA-20, проверка на 2024–2025",
+      "ratio_harmonized": 1.01,
+      "ratio_naive": 1.03
+    }
+  ],
+  "limitations": [
+    "Пожары, которые MODIS не увидел совсем, коэффициент не восстанавливает.",
+    "Для областей меньше нескольких ячеек сетки ряд шумный.",
+    "Перерывы в работе спутников выглядят как периоды низкой активности."
+  ]
+}

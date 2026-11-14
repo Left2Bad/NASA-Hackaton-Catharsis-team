@@ -1,0 +1,1066 @@
+openapi: 3.1.0
+info:
+  title: Burn Calendar API
+  version: 0.1.0
+  summary: Календарь пожарной активности на гармонизированном ряду MODIS + VIIRS
+  description: |
+    Контракт между бэкендом (зона A) и фронтендом (зона B).
+
+    Соглашения:
+    - имена полей в `snake_case`;
+    - даты в ISO 8601 (`YYYY-MM-DD`), время в UTC;
+    - координаты в порядке GeoJSON: сначала долгота, потом широта;
+    - месяцы нумеруются 1–12;
+    - значения единого ряда выражены в «эквиваленте VIIRS Suomi NPP»;
+    - отсутствующее значение передаётся как `null`, а не пропуском поля.
+
+    Правила изменения контракта описаны в `contract/README.md`.
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Локальный запуск
+tags:
+  - name: service
+    description: Служебные эндпоинты
+  - name: analytics
+    description: Календарь и аналитика по области
+  - name: export
+    description: Выгрузка файлов
+  - name: method
+    description: Данные для страницы «Метод»
+
+paths:
+  /health:
+    get:
+      tags: [service]
+      operationId: getHealth
+      summary: Проверка, что сервис жив
+      responses:
+        "200":
+          description: Сервис работает
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+
+  /meta:
+    get:
+      tags: [service]
+      operationId: getMeta
+      summary: Диапазон дат, шаг сетки, лимиты и области-примеры
+      responses:
+        "200":
+          description: Метаданные набора данных
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meta"
+
+  /calendar:
+    post:
+      tags: [analytics]
+      operationId: postCalendar
+      summary: Месячная сетка «год × месяц», медианы, годовые суммы и сводка
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AreaQuery"
+      responses:
+        "200":
+          description: Календарь для области. Область без пожаров — тоже 200, со значениями 0.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalendarResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NoData"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+
+  /current:
+    post:
+      tags: [analytics]
+      operationId: postCurrent
+      summary: Текущий месяц с его начала против тех же дней прошлых лет
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AreaQuery"
+      responses:
+        "200":
+          description: Состояние текущего месяца
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NoData"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+
+  /points:
+    post:
+      tags: [analytics]
+      operationId: postPoints
+      summary: Точки одного месяца для карты (приоритет «Желательно»)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PointsQuery"
+      responses:
+        "200":
+          description: Точки в GeoJSON. Если точек больше лимита, `truncated` = true.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PointsResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NoData"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+
+  /daily:
+    post:
+      tags: [analytics]
+      operationId: postDaily
+      summary: Дневные значения одного года (приоритет «Если успеем»)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DailyQuery"
+      responses:
+        "200":
+          description: Значение единого ряда на каждый день года
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NoData"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+
+  /export/points.csv:
+    post:
+      tags: [export]
+      operationId: exportPointsCsv
+      summary: Выгрузка горячих точек за запрос в CSV
+      description: |
+        Колонки: `lat, lon, acq_datetime, sensor, satellite, conf_class, frp, daynight,
+        pixel_km2, type, quality, harmonized_weight`. Пример — `examples/export_points.csv`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportPointsQuery"
+      responses:
+        "200":
+          description: Файл CSV (UTF-8, разделитель — запятая, первая строка — заголовки)
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              description: attachment; filename="hotspots.csv"
+          content:
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NoData"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+
+  /export/calendar.csv:
+    post:
+      tags: [export]
+      operationId: exportCalendarCsv
+      summary: Выгрузка месячной таблицы календаря в CSV
+      description: |
+        Колонки: `year, month, value, low, high, median, anomaly_pct, percentile, category,
+        source, preliminary, partial`. Пример — `examples/export_calendar.csv`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AreaQuery"
+      responses:
+        "200":
+          description: Файл CSV (UTF-8, разделитель — запятая, первая строка — заголовки)
+          content:
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NoData"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+
+  /method/validation:
+    get:
+      tags: [method]
+      operationId: getMethodValidation
+      summary: Метрики и ряды проверки гармонизации для страницы «Метод»
+      responses:
+        "200":
+          description: Результаты проверки качества
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResponse"
+
+components:
+  responses:
+    BadRequest:
+      description: Некорректный запрос. Код `INVALID_GEOMETRY` или `INVALID_REQUEST`.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NoData:
+      description: Область вне покрытия набора данных. Код `NO_DATA`.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    TooLarge:
+      description: Слишком большой запрос. Код `AREA_TOO_LARGE` или `EXPORT_TOO_LARGE`.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    # ---------- Общие типы ----------
+    Position:
+      description: Координата GeoJSON — [долгота, широта]
+      type: array
+      minItems: 2
+      maxItems: 2
+      prefixItems:
+        - type: number
+          minimum: -180
+          maximum: 180
+        - type: number
+          minimum: -90
+          maximum: 90
+
+    LinearRing:
+      description: Замкнутое кольцо — первая и последняя точки совпадают
+      type: array
+      minItems: 4
+      items:
+        $ref: "#/components/schemas/Position"
+
+    Polygon:
+      type: object
+      additionalProperties: false
+      required: [type, coordinates]
+      properties:
+        type:
+          const: Polygon
+        coordinates:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/LinearRing"
+
+    MultiPolygon:
+      type: object
+      additionalProperties: false
+      required: [type, coordinates]
+      properties:
+        type:
+          const: MultiPolygon
+        coordinates:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/LinearRing"
+
+    Geometry:
+      description: Область интереса — полигон или мультиполигон GeoJSON
+      oneOf:
+        - $ref: "#/components/schemas/Polygon"
+        - $ref: "#/components/schemas/MultiPolygon"
+
+    YearRange:
+      type: object
+      additionalProperties: false
+      required: [start_year, end_year]
+      properties:
+        start_year:
+          type: integer
+          minimum: 2000
+        end_year:
+          type: integer
+          minimum: 2000
+
+    Metric:
+      description: "`count` — число горячих точек, `frp` — суммарная мощность излучения, МВт"
+      type: string
+      enum: [count, frp]
+
+    Series:
+      description: |
+        `harmonized` — единый ряд. `raw` — дополнительно заполняется поле `raw`
+        с исходными значениями сенсоров; `value` при этом остаётся значением единого ряда.
+      type: string
+      enum: [harmonized, raw]
+
+    Source:
+      description: |
+        Ведущий источник единого ряда в этом периоде:
+        `MODIS_T` — только Terra (до июля 2002), `MODIS_TA` — Terra + Aqua,
+        `VIIRS_SNPP` — Suomi NPP (эталон), `VIIRS_N20` — NOAA-20.
+      type: string
+      enum: [MODIS_T, MODIS_TA, VIIRS_SNPP, VIIRS_N20]
+
+    Category:
+      description: |
+        Место значения среди тех же периодов базовых лет:
+        ниже 25-го перцентиля — `below_normal`, 25–75 — `normal`, 75–90 — `above_normal`,
+        выше 90 — `high`, выше максимума базового периода — `record`.
+      type: string
+      enum: [below_normal, normal, above_normal, high, record]
+
+    Warning:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [AREA_SMALL, PRELIMINARY_DATA, SENSOR_GAP, PARTIAL_COVERAGE]
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - INVALID_GEOMETRY
+                - INVALID_REQUEST
+                - AREA_TOO_LARGE
+                - EXPORT_TOO_LARGE
+                - NO_DATA
+                - INTERNAL
+            message:
+              type: string
+
+    # ---------- Запросы ----------
+    AreaQuery:
+      description: Общее тело запроса — область, период и параметры ряда
+      type: object
+      additionalProperties: false
+      required: [geometry]
+      properties:
+        geometry:
+          $ref: "#/components/schemas/Geometry"
+        start_year:
+          description: Первый год периода. По умолчанию — первый год набора данных.
+          type: integer
+          minimum: 2000
+        end_year:
+          description: Последний год периода. По умолчанию — текущий год.
+          type: integer
+          minimum: 2000
+        baseline:
+          description: Базовый период для медиан. По умолчанию — все полные годы с 2001.
+          $ref: "#/components/schemas/YearRange"
+        metric:
+          $ref: "#/components/schemas/Metric"
+          default: count
+        series:
+          $ref: "#/components/schemas/Series"
+          default: harmonized
+
+    PointsQuery:
+      type: object
+      additionalProperties: false
+      required: [geometry, year, month]
+      properties:
+        geometry:
+          $ref: "#/components/schemas/Geometry"
+        year:
+          type: integer
+          minimum: 2000
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+
+    DailyQuery:
+      type: object
+      additionalProperties: false
+      required: [geometry, year]
+      properties:
+        geometry:
+          $ref: "#/components/schemas/Geometry"
+        year:
+          type: integer
+          minimum: 2000
+        metric:
+          $ref: "#/components/schemas/Metric"
+          default: count
+
+    ExportPointsQuery:
+      type: object
+      additionalProperties: false
+      required: [geometry, start_date, end_date]
+      properties:
+        geometry:
+          $ref: "#/components/schemas/Geometry"
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+
+    # ---------- Ответы ----------
+    Health:
+      type: object
+      additionalProperties: false
+      required: [status, data_version]
+      properties:
+        status:
+          const: ok
+        data_version:
+          description: Версия набора данных, меняется при каждом пересчёте пайплайна
+          type: string
+
+    SourceInfo:
+      type: object
+      additionalProperties: false
+      required: [id, label, start, end]
+      properties:
+        id:
+          $ref: "#/components/schemas/Source"
+        label:
+          type: string
+        start:
+          description: Первый день, когда источник ведёт единый ряд
+          type: string
+          format: date
+        end:
+          description: Последний день; `null` — источник ведёт ряд сейчас
+          type: [string, "null"]
+          format: date
+
+    Preset:
+      type: object
+      additionalProperties: false
+      required: [id, name, geometry]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        geometry:
+          $ref: "#/components/schemas/Geometry"
+
+    Limits:
+      type: object
+      additionalProperties: false
+      required: [max_area_km2, min_cells_warning, max_export_rows, max_points]
+      properties:
+        max_area_km2:
+          description: Больше этой площади запрос отклоняется с `AREA_TOO_LARGE`
+          type: number
+        min_cells_warning:
+          description: Меньше этого числа ячеек сетки — предупреждение `AREA_SMALL`
+          type: integer
+        max_export_rows:
+          description: Больше этого числа строк выгрузка отклоняется с `EXPORT_TOO_LARGE`
+          type: integer
+        max_points:
+          description: Максимум точек в ответе `/points`
+          type: integer
+
+    Coverage:
+      type: object
+      additionalProperties: false
+      required: [global, regions]
+      properties:
+        global:
+          description: true — данные загружены по всему миру
+          type: boolean
+        regions:
+          description: Названия загруженных стран, если покрытие не глобальное
+          type: array
+          items:
+            type: string
+
+    Meta:
+      type: object
+      additionalProperties: false
+      required:
+        - data_version
+        - unit
+        - grid_deg
+        - first_date
+        - last_date
+        - last_standard_date
+        - sources
+        - limits
+        - coverage
+        - presets
+      properties:
+        data_version:
+          type: string
+        unit:
+          description: Единица значений единого ряда
+          type: string
+        grid_deg:
+          description: Шаг сетки в градусах
+          type: number
+        first_date:
+          type: string
+          format: date
+        last_date:
+          description: Последний день, за который есть данные
+          type: string
+          format: date
+        last_standard_date:
+          description: Последний день со стандартной обработкой; позже — предварительные данные
+          type: string
+          format: date
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceInfo"
+        limits:
+          $ref: "#/components/schemas/Limits"
+        coverage:
+          $ref: "#/components/schemas/Coverage"
+        presets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Preset"
+
+    RawValues:
+      description: Исходные значения сенсоров без гармонизации; `null` — сенсор в этот период не работал
+      type: object
+      additionalProperties: false
+      required: [modis, viirs_snpp, viirs_n20]
+      properties:
+        modis:
+          type: [number, "null"]
+        viirs_snpp:
+          type: [number, "null"]
+        viirs_n20:
+          type: [number, "null"]
+
+    MonthValue:
+      type: object
+      additionalProperties: false
+      required:
+        - year
+        - month
+        - value
+        - low
+        - high
+        - median
+        - anomaly_pct
+        - percentile
+        - category
+        - source
+        - preliminary
+        - partial
+      properties:
+        year:
+          type: integer
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+        value:
+          description: Значение единого ряда за месяц
+          type: number
+          minimum: 0
+        low:
+          description: Нижняя граница интервала; для эталонного сенсора равна `value`
+          type: number
+          minimum: 0
+        high:
+          description: Верхняя граница интервала; для эталонного сенсора равна `value`
+          type: number
+          minimum: 0
+        median:
+          description: Медиана этого календарного месяца по базовым годам
+          type: [number, "null"]
+        anomaly_pct:
+          description: (value − median) / median × 100; `null`, если медиана равна нулю
+          type: [number, "null"]
+        percentile:
+          description: Перцентиль значения среди тех же месяцев базовых лет, 0–100
+          type: [number, "null"]
+          minimum: 0
+          maximum: 100
+        category:
+          oneOf:
+            - $ref: "#/components/schemas/Category"
+            - type: "null"
+        source:
+          $ref: "#/components/schemas/Source"
+        preliminary:
+          description: true — месяц посчитан по оперативным данным (NRT)
+          type: boolean
+        partial:
+          description: true — месяц неполный (первый или текущий месяц ряда)
+          type: boolean
+        raw:
+          description: Заполняется только при `series` = `raw`
+          $ref: "#/components/schemas/RawValues"
+
+    MonthBaseline:
+      type: object
+      additionalProperties: false
+      required: [month, median, p10, p25, p75, p90, max, n_years]
+      properties:
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+        median:
+          type: number
+        p10:
+          type: number
+        p25:
+          type: number
+        p75:
+          type: number
+        p90:
+          type: number
+        max:
+          type: number
+        n_years:
+          description: Сколько базовых лет вошло в расчёт
+          type: integer
+
+    YearTotal:
+      type: object
+      additionalProperties: false
+      required: [year, total, complete]
+      properties:
+        year:
+          type: integer
+        total:
+          type: number
+        complete:
+          description: false — год неполный (2000 и текущий)
+          type: boolean
+
+    CalendarSummary:
+      type: object
+      additionalProperties: false
+      required: [peak_year, peak_month, total, trend_pct_per_decade]
+      properties:
+        peak_year:
+          description: Самый активный полный год; `null`, если в области нет пожаров
+          type: [integer, "null"]
+        peak_month:
+          description: Календарный месяц с наибольшей медианой, 1–12
+          type: [integer, "null"]
+        total:
+          description: Сумма значений за выбранный период
+          type: number
+        trend_pct_per_decade:
+          description: Тренд годовых сумм, % за 10 лет; `null`, если лет слишком мало
+          type: [number, "null"]
+
+    CalendarResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - area_km2
+        - cells
+        - unit
+        - metric
+        - series
+        - baseline
+        - data_through
+        - months
+        - monthly_baseline
+        - yearly
+        - summary
+        - warnings
+      properties:
+        area_km2:
+          type: number
+        cells:
+          description: Число ячеек сетки, попавших в область
+          type: integer
+        unit:
+          type: string
+        metric:
+          $ref: "#/components/schemas/Metric"
+        series:
+          $ref: "#/components/schemas/Series"
+        baseline:
+          description: Фактически использованный базовый период
+          $ref: "#/components/schemas/YearRange"
+        data_through:
+          description: Последний день, вошедший в расчёт
+          type: string
+          format: date
+        months:
+          description: Все месяцы выбранного периода по возрастанию даты
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthValue"
+        monthly_baseline:
+          description: Ровно 12 элементов, по одному на календарный месяц
+          type: array
+          minItems: 12
+          maxItems: 12
+          items:
+            $ref: "#/components/schemas/MonthBaseline"
+        yearly:
+          type: array
+          items:
+            $ref: "#/components/schemas/YearTotal"
+        summary:
+          $ref: "#/components/schemas/CalendarSummary"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Warning"
+
+    SameDaysBaseline:
+      description: Статистика за те же дни месяца в базовых годах
+      type: object
+      additionalProperties: false
+      required: [median, p25, p75, p90, max, n_years]
+      properties:
+        median:
+          type: number
+        p25:
+          type: number
+        p75:
+          type: number
+        p90:
+          type: number
+        max:
+          type: number
+        n_years:
+          type: integer
+
+    CumulativeDay:
+      type: object
+      additionalProperties: false
+      required: [day, value, median]
+      properties:
+        day:
+          description: День месяца
+          type: integer
+          minimum: 1
+          maximum: 31
+        value:
+          description: Накопленное значение текущего месяца на этот день
+          type: number
+        median:
+          description: Медиана накопленного значения на этот день по базовым годам
+          type: number
+
+    CurrentResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - as_of
+        - year
+        - month
+        - days_elapsed
+        - value
+        - baseline_same_days
+        - anomaly_pct
+        - percentile
+        - category
+        - source
+        - preliminary
+        - cumulative
+        - warnings
+      properties:
+        as_of:
+          description: Последний день с данными
+          type: string
+          format: date
+        year:
+          type: integer
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+        days_elapsed:
+          description: Сколько дней месяца вошло в расчёт
+          type: integer
+          minimum: 1
+          maximum: 31
+        value:
+          description: Значение единого ряда с начала месяца
+          type: number
+          minimum: 0
+        baseline_same_days:
+          $ref: "#/components/schemas/SameDaysBaseline"
+        anomaly_pct:
+          type: [number, "null"]
+        percentile:
+          type: [number, "null"]
+          minimum: 0
+          maximum: 100
+        category:
+          oneOf:
+            - $ref: "#/components/schemas/Category"
+            - type: "null"
+        source:
+          $ref: "#/components/schemas/Source"
+        preliminary:
+          type: boolean
+        cumulative:
+          description: Накопление по дням — для небольшого графика на панели «Сейчас»
+          type: array
+          items:
+            $ref: "#/components/schemas/CumulativeDay"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Warning"
+
+    PointProperties:
+      description: Свойства точки в единой схеме
+      type: object
+      additionalProperties: false
+      required:
+        - acq_datetime
+        - sensor
+        - satellite
+        - conf_class
+        - frp
+        - daynight
+        - quality
+        - harmonized_weight
+      properties:
+        acq_datetime:
+          type: string
+          format: date-time
+        sensor:
+          type: string
+          enum: [MODIS, VIIRS]
+        satellite:
+          description: T — Terra, A — Aqua, N — Suomi NPP, N20 — NOAA-20, N21 — NOAA-21
+          type: string
+          enum: [T, A, N, N20, N21]
+        conf_class:
+          type: string
+          enum: [low, nominal, high]
+        frp:
+          description: Мощность излучения, МВт
+          type: [number, "null"]
+        daynight:
+          type: string
+          enum: [D, N]
+        quality:
+          description: SP — стандартная обработка, NRT — оперативные данные
+          type: string
+          enum: [SP, NRT]
+        harmonized_weight:
+          description: Вклад точки в единый ряд; 0 — точка не от ведущего источника
+          type: number
+          minimum: 0
+
+    PointFeature:
+      type: object
+      additionalProperties: false
+      required: [type, geometry, properties]
+      properties:
+        type:
+          const: Feature
+        geometry:
+          type: object
+          additionalProperties: false
+          required: [type, coordinates]
+          properties:
+            type:
+              const: Point
+            coordinates:
+              $ref: "#/components/schemas/Position"
+        properties:
+          $ref: "#/components/schemas/PointProperties"
+
+    PointsResponse:
+      description: GeoJSON FeatureCollection с двумя дополнительными полями
+      type: object
+      additionalProperties: false
+      required: [type, features, total, truncated]
+      properties:
+        type:
+          const: FeatureCollection
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/PointFeature"
+        total:
+          description: Сколько точек всего подходит под запрос
+          type: integer
+        truncated:
+          description: true — отдана только часть точек (лимит `max_points`)
+          type: boolean
+
+    DailyValue:
+      type: object
+      additionalProperties: false
+      required: [date, value, preliminary]
+      properties:
+        date:
+          type: string
+          format: date
+        value:
+          type: number
+          minimum: 0
+        preliminary:
+          type: boolean
+
+    DailyResponse:
+      type: object
+      additionalProperties: false
+      required: [year, unit, metric, days]
+      properties:
+        year:
+          type: integer
+        unit:
+          type: string
+        metric:
+          $ref: "#/components/schemas/Metric"
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyValue"
+
+    ValidationMetrics:
+      type: object
+      additionalProperties: false
+      required: [pearson_r, bias_pct, mape_pct, n_months]
+      properties:
+        pearson_r:
+          description: Корреляция прогноза и факта по месяцам
+          type: number
+        bias_pct:
+          description: Систематическое смещение, %
+          type: number
+        mape_pct:
+          description: Медианная абсолютная ошибка, %
+          type: number
+        n_months:
+          type: integer
+
+    ValidationPoint:
+      type: object
+      additionalProperties: false
+      required: [year, month, modis_raw, viirs_raw, harmonized]
+      properties:
+        year:
+          type: integer
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+        modis_raw:
+          description: Сырой MODIS (Terra + Aqua)
+          type: [number, "null"]
+        viirs_raw:
+          description: Сырой VIIRS Suomi NPP
+          type: [number, "null"]
+        harmonized:
+          description: MODIS, пересчитанный коэффициентом, — прогноз для VIIRS
+          type: [number, "null"]
+
+    ValidationRegion:
+      type: object
+      additionalProperties: false
+      required: [id, name, metrics, series]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        metrics:
+          $ref: "#/components/schemas/ValidationMetrics"
+        series:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationPoint"
+
+    SeamTest:
+      description: |
+        Тест шва: отношение среднего после шва к среднему до шва.
+        В едином ряду оно близко к 1, при наивной склейке — заметно больше.
+      type: object
+      additionalProperties: false
+      required: [id, label, ratio_harmonized, ratio_naive]
+      properties:
+        id:
+          type: string
+          enum: [modis_to_snpp_2012, snpp_to_n20_2026]
+        label:
+          type: string
+        ratio_harmonized:
+          type: number
+        ratio_naive:
+          type: number
+
+    ValidationResponse:
+      type: object
+      additionalProperties: false
+      required: [calibration_period, test_period, regions, seams, limitations]
+      properties:
+        calibration_period:
+          $ref: "#/components/schemas/YearRange"
+        test_period:
+          $ref: "#/components/schemas/YearRange"
+        regions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationRegion"
+        seams:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeamTest"
+        limitations:
+          type: array
+          items:
+            type: string

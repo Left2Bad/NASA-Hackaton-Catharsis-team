@@ -11,11 +11,17 @@ import meta from '../../../contract/examples/meta.json';
 import validation from '../../../contract/examples/method_validation.response.json';
 import points from '../../../contract/examples/points.response.json';
 import type { paths } from '../api/schema';
-import type { AreaQuery } from '../api/types';
+import type { AreaQuery, CalendarResponse, Meta } from '../api/types';
+import { areaTooLarge, tailorCalendar } from './tailor';
 
 // The mocks answer with the examples from contract/examples. CI checks those files against
 // the contract (contract/tools/validate.py), so they are returned here as they are.
 // The numbers in the examples are synthetic and the same for every area.
+
+// JSON imports are typed by their literal content, which is looser than the contract types
+// (plain strings instead of enumerations), so the examples are cast once here.
+type CalendarExample = CalendarResponse;
+const metaExample = meta as unknown as Meta;
 
 /** URL pattern: any host, the /api/v1 prefix. */
 const url = (path: keyof paths) => `*/api/v1${path}`;
@@ -41,7 +47,12 @@ const routes = {
   '/calendar': http.post(url('/calendar'), async ({ request }) => {
     const query = (await request.json()) as AreaQuery;
     await delay();
-    return HttpResponse.json(query.series === 'raw' ? calendarRaw : calendar);
+    const tooLarge = areaTooLarge(query, metaExample);
+    if (tooLarge) return HttpResponse.json(tooLarge, { status: 413 });
+    const example = query.series === 'raw' ? calendarRaw : calendar;
+    return HttpResponse.json(
+      tailorCalendar(example as unknown as CalendarExample, query, metaExample),
+    );
   }),
 
   '/current': http.post(url('/current'), async () => {

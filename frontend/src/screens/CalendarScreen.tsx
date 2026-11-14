@@ -4,8 +4,11 @@ import { useCalendar, useMeta } from '../api/queries';
 import type { CalendarResponse, Geometry, Meta } from '../api/types';
 import { AreaMap } from '../components/AreaMap';
 import { CalendarPreview } from '../components/CalendarPreview';
+import { CoordinateForm } from '../components/CoordinateForm';
 import { ErrorNote } from '../components/ErrorNote';
+import { PeriodSelect, type Period } from '../components/PeriodSelect';
 import { boundsOf, formatBounds } from '../geo/geometry';
+import { areaKm2 } from '../geo/shapes';
 import {
   formatNumber,
   formatSignedPercent,
@@ -13,6 +16,7 @@ import {
   presetLabel,
   WARNING_LABELS,
 } from '../labels';
+import { roundSignificant } from '../theme/scales';
 import styles from './CalendarScreen.module.css';
 
 // The main screen: the map with area selection on the left, the panel with the
@@ -65,15 +69,25 @@ function StartPrompt() {
     <div className={styles.start}>
       <h1>Choose an area to see its fire calendar</h1>
       <p>
-        Draw a rectangle or a polygon on the map, or start with one of the example areas above the
-        map. The calendar shows fire activity for every month since November 2000.
+        Draw a rectangle or a polygon on the map, enter coordinates, or start with one of the
+        example areas above the map. The calendar shows fire activity for every month since November
+        2000.
       </p>
     </div>
   );
 }
 
-function AreaPanel({ area, meta }: { area: Area; meta: Meta }) {
-  const calendar = useCalendar({ geometry: area.geometry });
+function AreaPanel({ area, meta, period }: { area: Area; meta: Meta; period: Period }) {
+  const sizeKm2 = areaKm2(area.geometry);
+  const limitKm2 = meta.limits.max_area_km2;
+  const tooLarge = sizeKm2 > limitKm2;
+
+  // An area above the limit is never requested: the server would refuse it anyway (F5).
+  const calendar = useCalendar(
+    tooLarge
+      ? null
+      : { geometry: area.geometry, start_year: period.startYear, end_year: period.endYear },
+  );
 
   const preset = meta.presets.find((item) => item.id === area.presetId);
   const label = preset ? presetLabel(preset) : { name: 'Custom area', description: '' };
@@ -92,7 +106,13 @@ function AreaPanel({ area, meta }: { area: Area; meta: Meta }) {
         )}
       </header>
 
-      {calendar.isPending && <p role="status">Loading the calendar…</p>}
+      {tooLarge && (
+        <p className={styles.limit} role="alert">
+          This area is about {formatNumber(roundSignificant(sizeKm2, 3))} km². The limit is{' '}
+          {formatNumber(limitKm2)} km². Draw or enter a smaller area.
+        </p>
+      )}
+      {!tooLarge && calendar.isPending && <p role="status">Loading the calendar…</p>}
       {calendar.isError && <ErrorNote error={calendar.error} />}
       {calendar.data && (
         <>
@@ -129,9 +149,14 @@ function AreaPanel({ area, meta }: { area: Area; meta: Meta }) {
 
 function Workspace({ meta }: { meta: Meta }) {
   const [area, setArea] = useState<Area | null>(null);
+  const [coordinatesOpen, setCoordinatesOpen] = useState(false);
 
-  const firstYear = meta.first_date.slice(0, 4);
-  const lastYear = meta.last_date.slice(0, 4);
+  // The whole record is the default period (F4).
+  const range: Period = {
+    startYear: Number(meta.first_date.slice(0, 4)),
+    endYear: Number(meta.last_date.slice(0, 4)),
+  };
+  const [period, setPeriod] = useState<Period>(range);
 
   return (
     <main className={styles.screen}>
@@ -149,22 +174,40 @@ function Workspace({ meta }: { meta: Meta }) {
               </button>
             ))}
           </div>
-          <p className={styles.period}>
-            Period{' '}
-            <strong>
-              {firstYear} to {lastYear}
-            </strong>
-          </p>
+          <button
+            type="button"
+            className={styles.coordinatesToggle}
+            aria-expanded={coordinatesOpen}
+            aria-controls="coordinate-form"
+            onClick={() => setCoordinatesOpen(!coordinatesOpen)}
+          >
+            Enter coordinates
+          </button>
+          <PeriodSelect range={range} value={period} onChange={setPeriod} />
         </div>
-        <AreaMap
-          geometry={area?.geometry ?? null}
-          // A shape drawn or edited on the map is no longer an example area.
-          onChange={(geometry) => setArea(geometry ? { geometry, presetId: null } : null)}
-        />
+        {coordinatesOpen && (
+          <div id="coordinate-form">
+            <CoordinateForm
+              geometry={area?.geometry ?? null}
+              onSubmit={(geometry) => {
+                setArea({ geometry, presetId: null });
+                setCoordinatesOpen(false);
+              }}
+              onCancel={() => setCoordinatesOpen(false)}
+            />
+          </div>
+        )}
+        <div className={styles.mapSlot}>
+          <AreaMap
+            geometry={area?.geometry ?? null}
+            // A shape drawn or edited on the map is no longer an example area.
+            onChange={(geometry) => setArea(geometry ? { geometry, presetId: null } : null)}
+          />
+        </div>
       </section>
 
       <section className={styles.panel} aria-label="Fire activity">
-        {area ? <AreaPanel area={area} meta={meta} /> : <StartPrompt />}
+        {area ? <AreaPanel area={area} meta={meta} period={period} /> : <StartPrompt />}
 
         <footer className={styles.footer}>
           <p>

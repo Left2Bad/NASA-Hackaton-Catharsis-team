@@ -25,3 +25,6 @@ The `screenshots/` folder. File names start with the task a screenshot belongs t
 | `b4-map-editing.jpg` | A selected area: handles on the corners and on the middle of each side |
 | `b4-map-satellite.jpg` | NASA Blue Marble satellite imagery as the basemap |
 | `b4-map-phone.jpg` | The map on a phone |
+| `b5-coordinate-form.jpg` | The form for setting the area by bounds or by a point with a radius |
+| `b5-point-and-radius.jpg` | An area set as a point with a 150 km radius |
+| `b5-area-limit.jpg` | The message for an area above the size limit |

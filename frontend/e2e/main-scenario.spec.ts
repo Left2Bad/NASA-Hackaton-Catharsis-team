@@ -80,6 +80,15 @@ test('main scenario: area, calendar, anomalies, now, period, downloads, method, 
   );
   await expect(grid(page, /^Fire anomalies by month/)).toBeVisible();
 
+  // The "original sensors" view shows the same months before harmonization: the saved
+  // answers carry the raw counts, so it works without a server too.
+  await modes.getByRole('button', { name: 'Original sensors' }).click();
+  await expect(grid(page, /^Fire detections by month as the sensors recorded them/)).toBeVisible();
+  await modes.getByRole('button', { name: 'Anomaly' }).click();
+  await expect(grid(page, /^Fire anomalies by month/)).toBeVisible();
+  // Single hot spots need a server: this copy of the app does not offer them.
+  await expect(page.getByText('Click a month to see its hot spots on the map.')).toHaveCount(0);
+
   // 4. The "Now" panel compares the current month with the usual one.
   const now = page.getByRole('region', { name: 'Now' });
   await expect(now.getByRole('list', { name: 'Levels for these days of the month' })).toBeVisible();
@@ -96,6 +105,12 @@ test('main scenario: area, calendar, anomalies, now, period, downloads, method, 
   await expect(page.locator('[data-month]')).toHaveCount(months);
   await expect(page.getByRole('region', { name: 'Season profile' }).locator('svg')).toBeVisible();
   await expect(page.getByRole('region', { name: 'Yearly totals' }).locator('svg')).toBeVisible();
+
+  // The daily calendar of a year of the period: a cell for every day of a leap year.
+  const daily = page.getByRole('region', { name: 'Daily calendar' });
+  await daily.getByLabel('Year').selectOption('2020');
+  await expect(daily.getByRole('grid', { name: /^Fire detections by day, 2020/ })).toBeVisible();
+  await expect(daily.locator('[data-day]')).toHaveCount(366);
 
   // The address now describes the view.
   const view = `area=${AREA.id}&from=${PERIOD.from}&to=${PERIOD.to}&mode=anomaly`;

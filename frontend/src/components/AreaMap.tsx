@@ -1,6 +1,6 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useEffect, useRef, useState } from 'react';
-import type { Geometry } from '../api/types';
+import type { Geometry, PointsResponse } from '../api/types';
 import { boundsOf, formatBounds } from '../geo/geometry';
 import { createAreaMapEngine, type AreaMapEngine, type DrawTool } from '../map/engine';
 import styles from './AreaMap.module.css';
@@ -11,6 +11,8 @@ interface AreaMapProps {
   geometry: Geometry | null;
   /** Called when the user draws, edits or clears the area on the map. */
   onChange: (geometry: Geometry | null) => void;
+  /** Hot spots of the month chosen on the calendar, drawn as dots (F13). */
+  points?: PointsResponse | null;
 }
 
 type Status = 'loading' | 'ready' | 'failed';
@@ -33,7 +35,7 @@ function hintFor(status: Status, tool: DrawTool, geometry: Geometry | null): str
  * adjusts it and clears it (requirement F1). The drawn shape is reported upward as
  * GeoJSON and goes straight into API requests.
  */
-export function AreaMap({ geometry, onChange }: AreaMapProps) {
+export function AreaMap({ geometry, onChange, points = null }: AreaMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<AreaMapEngine | null>(null);
   // The geometry currently drawn on the map. Lets the component tell an area chosen
@@ -92,6 +94,11 @@ export function AreaMap({ geometry, onChange }: AreaMapProps) {
     engineRef.current?.showArea(geometry, { fit: true });
     shownRef.current = geometry;
   }, [geometry, status]);
+
+  // The dots follow the month chosen on the calendar; without one the layer is empty.
+  useEffect(() => {
+    if (status === 'ready') engineRef.current?.showPoints(points);
+  }, [points, status]);
 
   const chooseTool = (next: DrawTool) => {
     const value = tool === next ? 'select' : next;

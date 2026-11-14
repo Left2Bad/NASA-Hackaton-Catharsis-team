@@ -1,0 +1,99 @@
+.daily {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.control {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: var(--text-sm);
+}
+
+.control label {
+  color: var(--muted);
+}
+
+.control select {
+  padding: 4px 8px;
+  font: inherit;
+  font-weight: 500;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+
+.readout {
+  min-height: 1.4em;
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.readoutLabel,
+.readoutTotal {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* A row per month, a column per day. Cells shrink with the panel and stay square. */
+.grid {
+  --gap: 2px;
+
+  display: grid;
+  grid-template-columns: 2.4em repeat(31, minmax(0, 1fr));
+  gap: var(--gap);
+  max-width: 640px;
+  font-size: var(--text-xs);
+}
+
+/* Rows exist for screen readers; the cells are placed on the grid directly. */
+.row {
+  display: contents;
+}
+
+.dayHead {
+  color: var(--muted);
+  line-height: 1.4;
+  text-align: center;
+  /* A two-digit number is wider than a narrow cell: let it spill over evenly. */
+  white-space: nowrap;
+  justify-self: center;
+}
+
+.monthHead {
+  align-self: center;
+  color: var(--muted);
+  line-height: 1;
+}
+
+/* A thin outline keeps the lightest cells visible on a white background. */
+.cell {
+  aspect-ratio: 1;
+  border-radius: 1px;
+  box-shadow: inset 0 0 0 1px rgb(22 33 43 / 0.1);
+  cursor: default;
+}
+
+.cell[data-active],
+.cell:hover,
+.cell:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+.note {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

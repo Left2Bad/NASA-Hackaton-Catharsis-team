@@ -172,7 +172,7 @@ describe('Downloads', () => {
     expect(button('Hot spots (CSV)')).toBeEnabled();
   });
 
-  it('does not offer dates that likely exceed the row limit', async () => {
+  it('warns about dates that likely exceed the row limit', async () => {
     const user = userEvent.setup();
     const small = { ...meta, limits: { ...meta.limits, max_export_rows: 1000 } };
     renderDownloads({ meta: small });
@@ -187,7 +187,8 @@ describe('Downloads', () => {
       screen.getByText('These dates likely have more: shorten them or reduce the area.'),
     ).toBeInTheDocument();
     expect(screen.getByText(/up to 1,000 rows/)).toBeInTheDocument();
-    expect(button('Hot spots (CSV)')).toBeDisabled();
+    // A warning, not a block: the estimate is rounded up and may be wrong.
+    expect(button('Hot spots (CSV)')).toBeEnabled();
     expect(button('Monthly table (CSV)')).toBeEnabled();
   });
 
@@ -205,7 +206,6 @@ describe('Downloads', () => {
     });
 
     expect(screen.getByText(/These dates likely have more/)).toBeInTheDocument();
-    expect(button('Hot spots (CSV)')).toBeDisabled();
   });
 
   it('counts fewer rows than detections in a MODIS month', () => {

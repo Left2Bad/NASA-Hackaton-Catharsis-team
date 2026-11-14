@@ -273,7 +273,9 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
           <button
             key={action.id}
             type="button"
-            disabled={busy !== null || (action.id === 'points-csv' && (!datesValid || overLimit))}
+            // The estimate only warns: its factors are rounded up, so it may refuse a file the
+            // server would give. The server's own limit answers with a clear message.
+            disabled={busy !== null || (action.id === 'points-csv' && !datesValid)}
             aria-busy={busy === action.id}
             onClick={() => void run(action.id, action.run)}
           >

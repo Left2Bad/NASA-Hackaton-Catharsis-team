@@ -22,7 +22,7 @@ import { areaKm2 } from '../geo/shapes';
 import { formatNumber, monthName, presetLabel, WARNING_LABELS } from '../labels';
 import { frpBreaks, frpColors, mergePoints, monthId, monthIndex, spanMonths } from '../map/spots';
 import { nowHeadline } from '../now/describe';
-import { buildSearch, currentSearch, parseSearch, writeSearch } from '../state/link';
+import { buildSearch, currentSearch, onLinkChange, parseSearch, writeSearch } from '../state/link';
 import { defaultSpotsMonth } from '../state/spots';
 import { roundSignificant } from '../theme/scales';
 import styles from './CalendarScreen.module.css';
@@ -345,10 +345,13 @@ function AreaPanel({
 
 function Workspace({ meta }: { meta: Meta }) {
   // The whole record is the default period (F4).
-  const range: Period = {
-    startYear: Number(meta.first_date.slice(0, 4)),
-    endYear: Number(meta.last_date.slice(0, 4)),
-  };
+  const range = useMemo<Period>(
+    () => ({
+      startYear: Number(meta.first_date.slice(0, 4)),
+      endYear: Number(meta.last_date.slice(0, 4)),
+    }),
+    [meta.first_date, meta.last_date],
+  );
   // The screen starts from what the address asks for (F26): a shared link reopens the
   // same area, period and mode. Without a state in the address these are the defaults.
   const [linked] = useState(() => parseSearch(currentSearch(), meta, range));
@@ -482,6 +485,25 @@ function Workspace({ meta }: { meta: Meta }) {
   useEffect(() => {
     writeSearch(search);
   }, [search]);
+  // A link pasted into an open tab, or "Back" to an earlier one, changes only the address:
+  // the screen follows it. An address that asks for what is already shown changes nothing,
+  // so the screen and the address never chase each other.
+  useEffect(
+    () =>
+      onLinkChange((next) => {
+        const asked = parseSearch(next, meta, range);
+        if (buildSearch(asked, range) === search) {
+          writeSearch(search);
+          return;
+        }
+        // The same area keeps the months picked on its map.
+        const areaOnly = (value: Area | null) => buildSearch({ ...asked, area: value }, range);
+        if (areaOnly(asked.area) !== areaOnly(area)) setArea(asked.area);
+        setPeriod({ startYear: asked.startYear, endYear: asked.endYear });
+        setMode(asked.mode);
+      }),
+    [search, meta, range, area],
+  );
 
   return (
     <main className={styles.screen}>

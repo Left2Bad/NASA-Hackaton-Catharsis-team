@@ -35,6 +35,8 @@ The page opens at http://localhost:5173 and runs on mocks, so the backend does n
 | `npm run e2e` | End-to-end tests in a real browser (Playwright), see below |
 | `npm run gen:api` | TypeScript types from `contract/openapi.yaml` |
 | `npm run snapshot` | Save answers of the running API into `public/snapshot/` for the fallback mode |
+| `npm run demo:shots` | Take the frames of the demo from the running app into `docs/demo/screenshots/` |
+| `npm run demo:slides` | Print the pitch deck `docs/demo/slides/slides.html` into a PDF |
 
 CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test`, `npm run build` and `npm run e2e`.
 

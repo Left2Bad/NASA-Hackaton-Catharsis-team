@@ -2,21 +2,104 @@
 
 Materials for the presentation: the demo script, screenshots, slides and the link to the video.
 
-The demo script follows the main user scenario:
+The pitch for the Space Apps submission is **one of two**: a video of at most 30 seconds, or a deck of at most
+7 slides. Both are prepared here; everything that is uploaded is in English.
 
-1. Open the site and choose an example area.
-2. Show the year-by-month calendar and switch to the anomaly mode.
-3. Show the "Now" panel: the current month against the long-term median.
-4. Switch between the harmonized record and the original sensors to show what harmonization changed.
-5. Download the CSV and the PNG.
-6. Open the "Method" page: the validation chart on held-out years.
+| What | Where |
+| --- | --- |
+| Script and storyboard of the 30-second video | this file, below |
+| Deck, 7 slides | [slides/burn-calendar-pitch.pdf](slides/burn-calendar-pitch.pdf), source [slides/slides.html](slides/slides.html) |
+| Frames of the demo | `screenshots/demo-NN-*.jpg`, 1920 × 1200 |
+| Link to the video | TODO(team): add after the video is uploaded |
+
+The wording of the voice-over and of the slides is a draft. The team says it in its own words before recording,
+and names the AI tools it used in the "Data & Resources Usage" field of the submission
+(see [../submission/resources.md](../submission/resources.md)).
+
+## Video: 30 seconds
+
+One area carries the whole story: **Northern California**. All numbers below are what the app shows on the real
+FIRMS record with data through 2026-11-13. If the data is refreshed before recording, read the numbers from the
+screen again and change the voice-over to match.
+
+| # | Time | On screen | Frame | Voice-over |
+| --- | --- | --- | --- | --- |
+| 1 | 0:00–0:06 | Start screen with the world map; the title "Burn Calendar" over it | `demo-01-start` | Two NASA sensors count fires differently. Join their records, and fires seem to jump fourfold in 2012. |
+| 2 | 0:06–0:11 | "Method" page, the chart "What harmonization changes": dashed MODIS far below, the solid line on one scale | `demo-08-method-harmonization` | Burn Calendar converts every MODIS detection to the VIIRS scale, cell by cell. |
+| 3 | 0:11–0:16 | Click "Northern California": the calendar fills in; the pointer stops on September 2020 and the tooltip opens | `demo-02-calendar`, `demo-03-tooltip` | Pick any area: one consistent record, every month since 2000. |
+| 4 | 0:16–0:19 | Click "Anomaly": the calendar turns blue and orange | `demo-04-anomaly` | Blue is quieter than usual, orange is worse. |
+| 5 | 0:19–0:24 | Scroll to "Now": "Above normal, +58.6 %" and the cumulative chart | `demo-05-summary-now` | Right now, Northern California runs 59 percent above normal. |
+| 6 | 0:24–0:28 | "Method" page, "How it was checked": the forecast lies on the VIIRS line; correlation 0.999 | `demo-09-method-validation` | Checked on years the method never saw: correlation 0.99. |
+| 7 | 0:28–0:30 | End card: name, team, "Data: NASA FIRMS", the address of the site | slide 1 of the deck | Burn Calendar: open source, built on NASA FIRMS. |
+
+The voice-over is 74 words: about 30 seconds at a calm pace. Read it once against a stopwatch before recording;
+if it runs long, drop the sentence of shot 4, which the picture explains by itself.
+
+### How to record
+
+1. Run the app against the real API, so the screen has no "Saved demo data" strip: start the backend on the team
+   data archive (`backend/README.md`, `DATA_DIR` points to the unpacked archive, `CORS_ORIGINS=http://localhost:5174`),
+   then in `frontend/` run `npm run dev:api -- --port 5174`.
+2. Browser window 1920 × 1080, zoom 100 %, no bookmarks bar, no other tabs. Record the window, not the whole screen.
+3. Before recording, click through the whole route once: the answers are then cached and every click is instant.
+4. Record shots 2 and 6 ("Method") and shots 3 to 5 (calendar) as two separate takes and join them: the route
+   Calendar → Method → Calendar → Method wastes seconds on navigation.
+5. Move the pointer slowly and stop it before each click. Cut the pauses when editing, not while recording.
+6. Record the voice separately and lay it over the picture: it is easier to fit into 30 seconds.
+7. Export at 1080p. The file must be **30 seconds or shorter**: check the length of the exported file.
+
+## Live demo: 2 minutes
+
+For the local jury, where the app is shown by hand. The route is the main user scenario, the one the end-to-end
+test walks (`frontend/e2e/main-scenario.spec.ts`):
+
+1. Open the site and choose the example area "Northern California".
+2. The year-by-month calendar: 2020 and 2021 stand out; hover a cell for the exact numbers and the likely range.
+3. Switch to the anomaly mode: every month against the median of the same calendar month.
+4. The "Now" panel: the current month against the same days of the earlier years.
+5. The season profile and the yearly totals with the trend.
+6. Download the monthly table (CSV) and the calendar (PNG); copy the link to this view.
+7. The "Method" page: the sensors as recorded against the harmonized record, then the check on held-out years.
+
+If the server is down, the app switches to the saved answers of the real API by itself and says so under the
+header; the three example areas keep working.
+
+## Retaking the frames and the deck
+
+From `frontend/`, with the app running on real data (see "How to record"):
+
+```bash
+npm run demo:shots -- http://localhost:5174
+```
+
+```bash
+npm run demo:slides
+```
+
+The first command takes `screenshots/demo-NN-*.jpg` again, the second prints `slides/slides.html` into the PDF.
+After a change of the interface or of the data, run both and check the numbers quoted in the voice-over and on
+the slides.
 
 ## Screenshots
 
 The `screenshots/` folder. File names start with the task a screenshot belongs to.
 
+The `demo-*` files are the frames of the video and of the deck (taken by `npm run demo:shots`); the others were
+taken task by task and show the app at that stage.
+
 | File | What it shows |
 | --- | --- |
+| `demo-01-start.jpg` | Demo frame: the start screen with the world map |
+| `demo-02-calendar.jpg` | Demo frame: the burn calendar of Northern California, 2000 to 2026 (real FIRMS data through 2026-11-13) |
+| `demo-03-tooltip.jpg` | Demo frame: the tooltip of September 2020 with the value, the median and the level |
+| `demo-04-anomaly.jpg` | Demo frame: the same calendar in the anomaly mode |
+| `demo-05-summary-now.jpg` | Demo frame: the summary and the "Now" panel, November 1 to 13, 2026 |
+| `demo-06-season-yearly.jpg` | Demo frame: the season profile with 2020 over the typical season, and the yearly totals |
+| `demo-07-downloads.jpg` | Demo frame: the "Downloads" section |
+| `demo-08-method-harmonization.jpg` | Demo frame: the "Method" page, the sensors as recorded against the harmonized record |
+| `demo-09-method-validation.jpg` | Demo frame: the "Method" page, the forecast from MODIS against VIIRS on the test years |
+| `demo-10-method-seams.jpg` | Demo frame: the "Method" page, the table of the seams |
+| `demo-11-phone.jpg` | Demo frame: the anomaly calendar on a phone 360 px wide |
 | `b3-layout-laptop.jpg` | Screen layout on a laptop: the map on the left, the panel with the calendar on the right |
 | `b3-layout-phone-top.jpg`, `b3-layout-phone-calendar.jpg` | The same screen on a phone |
 | `b3-scale-detections.jpg` | The detections scale under three kinds of color-vision deficiency |

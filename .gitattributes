@@ -1,13 +1,13 @@
-# Единые концы строк (LF) для всех текстовых файлов.
-# Без этого на Windows git показывает изменёнными файлы целиком.
+# Unified line endings (LF) for all text files.
+# Without this, on Windows git shows whole files as modified.
 * text=auto eol=lf
 
-# Скрипты Windows остаются с CRLF
+# Windows scripts keep CRLF
 *.bat text eol=crlf
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
 
-# Бинарные файлы
+# Binary files
 *.png binary
 *.jpg binary
 *.jpeg binary

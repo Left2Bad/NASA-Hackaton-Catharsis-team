@@ -31,32 +31,32 @@ def _check_rings(geojson: dict) -> None:
     for poly in polys:
         for ring in poly:
             if len(ring) < 4 or ring[0] != ring[-1]:
-                raise ApiError("INVALID_GEOMETRY", "Кольцо полигона должно быть замкнутым и иметь не меньше 4 точек.")
+                raise ApiError("INVALID_GEOMETRY", "The polygon ring must be closed and have at least 4 points.")
             for pt in ring:
                 if len(pt) != 2 or not (-180 <= pt[0] <= 180 and -90 <= pt[1] <= 90):
-                    raise ApiError("INVALID_GEOMETRY", "Координаты должны быть в порядке [долгота, широта] в градусах.")
+                    raise ApiError(
+                        "INVALID_GEOMETRY", "Coordinates must be in [longitude, latitude] order, in degrees."
+                    )
 
 
 def parse(geojson: dict, max_area_km2: float) -> Area:
     if not isinstance(geojson, dict) or geojson.get("type") not in ("Polygon", "MultiPolygon"):
-        raise ApiError("INVALID_GEOMETRY", "Область должна быть полигоном или мультиполигоном GeoJSON.")
+        raise ApiError("INVALID_GEOMETRY", "The area must be a GeoJSON Polygon or MultiPolygon.")
     try:
         _check_rings(geojson)
         geom = shape(geojson)
     except ApiError:
         raise
     except Exception as exc:  # malformed nesting, non-numeric coordinates
-        raise ApiError("INVALID_GEOMETRY", "Не удалось разобрать геометрию GeoJSON.") from exc
+        raise ApiError("INVALID_GEOMETRY", "Could not parse the GeoJSON geometry.") from exc
     if geom.is_empty or not geom.is_valid:
         reason = shapely.is_valid_reason(geom)
-        raise ApiError("INVALID_GEOMETRY", f"Некорректная геометрия: {reason}.")
+        raise ApiError("INVALID_GEOMETRY", f"Invalid geometry: {reason}.")
 
     parts = geom.geoms if geom.geom_type == "MultiPolygon" else [geom]
     area_km2 = sum(abs(_GEOD.geometry_area_perimeter(p)[0]) for p in parts) / 1e6  # sign depends on ring orientation
     if area_km2 > max_area_km2:
-        raise ApiError(
-            "AREA_TOO_LARGE", f"Площадь области больше {max_area_km2:,.0f} км². Уменьшите область.".replace(",", " ")
-        )
+        raise ApiError("AREA_TOO_LARGE", f"The area is larger than {max_area_km2:,.0f} km². Reduce the area.")
     west, south, east, north = geom.bounds
     iy, ix = cells_inside(geom)
     return Area(geom=geom, area_km2=area_km2, iy=iy, ix=ix, bounds=(west, south, east, north))

@@ -25,16 +25,18 @@ def resolve_period(data: Data, q: AreaQuery) -> tuple[dt.date, dt.date, tuple[in
     start_year = q.start_year if q.start_year is not None else data.first_date.year
     end_year = q.end_year if q.end_year is not None else data.last_date.year
     if start_year > data.last_date.year:
-        raise ApiError("NO_DATA", f"Данные есть только до {data.last_date}.")
+        raise ApiError("NO_DATA", f"Data is available only up to {data.last_date}.")
     if start_year > end_year:
-        raise ApiError("INVALID_REQUEST", "start_year больше end_year.")
+        raise ApiError("INVALID_REQUEST", "start_year is greater than end_year.")
     first_full, last_full = complete_years(data)
     if q.baseline is not None:
         base = (q.baseline.start_year, q.baseline.end_year)
         if base[0] > base[1]:
-            raise ApiError("INVALID_REQUEST", "В базовом периоде start_year больше end_year.")
+            raise ApiError("INVALID_REQUEST", "In the baseline period, start_year is greater than end_year.")
         if base[0] < first_full or base[1] > last_full:
-            raise ApiError("INVALID_REQUEST", f"Базовый период должен лежать в полных годах {first_full}–{last_full}.")
+            raise ApiError(
+                "INVALID_REQUEST", f"The baseline period must lie within the full years {first_full}–{last_full}."
+            )
     else:
         base = (first_full, last_full)
     first = max(dt.date(start_year, 1, 1), data.first_date.replace(day=1))
@@ -106,14 +108,14 @@ def build(data: Data, q: AreaQuery) -> dict:
         warnings.append(
             {
                 "code": "AREA_SMALL",
-                "message": f"В область попало ячеек сетки: {area.cells}. Для такой маленькой области ряд шумный.",
+                "message": f"The area contains {area.cells} grid cells. For such a small area the series is noisy.",
             }
         )
     if any(mm["preliminary"] for mm in months):
         warnings.append(
             {
                 "code": "PRELIMINARY_DATA",
-                "message": f"Месяцы после {data.last_standard_date} посчитаны по оперативным данным и будут уточнены.",
+                "message": f"Months after {data.last_standard_date} are computed from near-real-time data and will be refined.",
             }
         )
     gaps = [f"{mm['year']}-{mm['month']:02d}" for mm in months if mm["sensor_gap"]]
@@ -121,7 +123,7 @@ def build(data: Data, q: AreaQuery) -> dict:
         warnings.append(
             {
                 "code": "SENSOR_GAP",
-                "message": "Перерывы в работе Suomi NPP, значения взяты с NOAA-20: " + ", ".join(gaps) + ".",
+                "message": "Suomi NPP outages; values are taken from NOAA-20: " + ", ".join(gaps) + ".",
             }
         )
 

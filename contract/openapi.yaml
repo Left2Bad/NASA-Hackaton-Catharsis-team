@@ -1065,8 +1065,12 @@ components:
 
     SeamTest:
       description: |
-        Seam test: the ratio of the mean after the seam to the mean before the seam.
-        In the harmonized record it is close to 1; with naive stitching it is noticeably larger.
+        Seam test: a ratio that is 1 when the record has no step at the seam.
+        `modis_to_snpp_2012`: mean of 2012–2014 over the mean of 2009–2011, for the harmonized series
+        (`ratio_harmonized`) and for the naive one, raw MODIS before and raw Suomi NPP after (`ratio_naive`).
+        `snpp_to_n20_2026`: NOAA-20 over Suomi NPP on the same days of the overlap 2024–2025, with the
+        NOAA-20 coefficient (`ratio_harmonized`) and without it (`ratio_naive`). The two sensors already
+        agree closely, so here the naive ratio can be as close to 1 as the harmonized one.
       type: object
       additionalProperties: false
       required: [id, label, ratio_harmonized, ratio_naive]

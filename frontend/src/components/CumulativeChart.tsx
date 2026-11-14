@@ -1,9 +1,11 @@
-import { useState, type KeyboardEvent, type PointerEvent } from 'react';
+import type { PointerEvent } from 'react';
 import type { CurrentResponse } from '../api/types';
+import { linePath, niceScale } from '../charts/scale';
+import { useCursor } from '../charts/useCursor';
 import { useElementWidth } from '../hooks/useElementWidth';
 import { formatNumber, monthName, monthShortName } from '../labels';
-import { dayTicks, daysInMonth, linePath, niceScale } from '../now/chart';
-import styles from './CumulativeChart.module.css';
+import { dayTicks, daysInMonth } from '../now/chart';
+import styles from './Chart.module.css';
 
 type CumulativeDay = CurrentResponse['cumulative'][number];
 
@@ -29,8 +31,8 @@ const FALLBACK_WIDTH = 480;
  */
 export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
   const [wrapRef, width] = useElementWidth<HTMLDivElement>(FALLBACK_WIDTH);
-  // Index of the day picked by the pointer or the keyboard; `null` means the latest day.
-  const [picked, setPicked] = useState<number | null>(null);
+  // With no day picked by the pointer or the keyboard, the chart reads out the latest day.
+  const cursor = useCursor(days.length, days.length - 1);
 
   if (days.length === 0) return null;
 
@@ -42,8 +44,7 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
   const y = (value: number) => MARGIN.top + (1 - value / scale.max) * plotHeight;
 
   const lastIndex = days.length - 1;
-  const activeIndex = Math.min(picked ?? lastIndex, lastIndex);
-  const active = days[activeIndex];
+  const active = days[cursor.active];
   const describe = (day: CumulativeDay) =>
     `${monthName(month)} ${day.day}: ${formatNumber(day.value)} so far, median ${formatNumber(day.median)}`;
 
@@ -54,21 +55,7 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
     days.forEach((item, index) => {
       if (Math.abs(item.day - day) < Math.abs(days[nearest].day - day)) nearest = index;
     });
-    setPicked(nearest);
-  };
-
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const target = {
-      ArrowLeft: activeIndex - 1,
-      ArrowDown: activeIndex - 1,
-      ArrowRight: activeIndex + 1,
-      ArrowUp: activeIndex + 1,
-      Home: 0,
-      End: lastIndex,
-    }[event.key];
-    if (target === undefined) return;
-    event.preventDefault();
-    setPicked(Math.max(0, Math.min(target, lastIndex)));
+    cursor.pick(nearest);
   };
 
   return (
@@ -78,11 +65,11 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
       </figcaption>
 
       <p className={styles.readout} data-testid="cumulative-readout">
-        <span className={styles.day}>
+        <span className={styles.position}>
           {monthName(month)} {active.day}
         </span>
         <span className={styles.key}>
-          <i className={styles.lineKey} data-series="month" />
+          <i className={styles.lineKey} data-series="main" />
           This month <strong>{formatNumber(active.value)}</strong>
         </span>
         <span className={styles.key}>
@@ -102,8 +89,8 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
         aria-valuemax={days[lastIndex].day}
         aria-valuenow={active.day}
         aria-valuetext={describe(active)}
-        onKeyDown={onKeyDown}
-        onBlur={() => setPicked(null)}
+        onKeyDown={cursor.onKeyDown}
+        onBlur={cursor.reset}
       >
         <svg width={width} height={HEIGHT} viewBox={`0 0 ${width} ${HEIGHT}`} aria-hidden="true">
           {scale.ticks.map((tick) => (
@@ -121,12 +108,12 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
             </g>
           ))}
           {dayTicks(monthLength).map((day) => (
-            <text key={day} className={styles.dayTick} x={x(day)} y={HEIGHT - 6}>
+            <text key={day} className={styles.xTick} x={x(day)} y={HEIGHT - 6}>
               {day === 1 ? `${monthShortName(month)} 1` : day}
             </text>
           ))}
 
-          {picked !== null && (
+          {cursor.isPicked && (
             <line
               className={styles.crosshair}
               x1={x(active.day)}
@@ -141,12 +128,12 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
             d={linePath(days.map((day) => [x(day.day), y(day.median)]))}
           />
           <path
-            className={styles.monthLine}
+            className={styles.seriesLine}
             d={linePath(days.map((day) => [x(day.day), y(day.value)]))}
           />
           {/* The dots sit on the active day; the surface-colored ring keeps them legible on the lines. */}
           <circle className={styles.medianDot} cx={x(active.day)} cy={y(active.median)} r={4} />
-          <circle className={styles.monthDot} cx={x(active.day)} cy={y(active.value)} r={4.5} />
+          <circle className={styles.seriesDot} cx={x(active.day)} cy={y(active.value)} r={4.5} />
 
           <rect
             className={styles.hitArea}
@@ -156,7 +143,7 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
             height={HEIGHT - MARGIN.bottom}
             onPointerMove={pickNearest}
             onPointerDown={pickNearest}
-            onPointerLeave={() => setPicked(null)}
+            onPointerLeave={cursor.reset}
           />
         </svg>
       </div>

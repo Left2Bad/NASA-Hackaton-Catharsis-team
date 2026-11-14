@@ -63,7 +63,6 @@ California**, every month from November 2000 to the last fetched day of 2026, pl
 for 2021–2026. You need Python 3.12 or newer, Node 22 or newer and git. Measured from a clean clone on Windows:
 about 2 minutes, plus the download.
 
-<!-- TODO(user): the link goes live once the GitHub release "data-2026-11-13" is published -->
 Sample data: https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/download/data-2026-11-13/burn-calendar-sample-data.zip
 
 **Windows PowerShell**, from the folder where the repository should go:

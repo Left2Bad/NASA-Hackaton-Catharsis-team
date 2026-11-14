@@ -54,8 +54,8 @@ MODIS_FIT_YEARS = (2012, 2020)
 OVERLAP_END = dt.date(2025, 12, 31)  # last month with complete standard data
 MIN_BIN_N = 30
 GAP_WINDOW = 15  # days on each side for the local median of a daily sensor ratio
-# a day below this share of its local ratio is a gap day. VIIRS daily ratios never fall between 0.5 and 0.6 outside
-# outages; MODIS Terra/Aqua is noisier (0.5 % of days below x0.53), so it gets a lower threshold.
+# a day below this share of its local ratio is a gap day. On the 2012-2026 data VIIRS days outside gaps stay at >= 0.56 of
+# the local median and gap days at <= 0.47; MODIS Terra/Aqua is noisier (0.5 % of days below x0.55), hence the lower value.
 GAP_RATIO = {"modis": 0.25, "viirs": 0.5}
 # Coefficient guard (R1): a 1-degree cell whose Terra + Aqua -> S-NPP count ratio (shrunk to the world value) is more
 # than COEF_BAND times off the world ratio sees different targets in MODIS and VIIRS (gas flares, lava flows, static

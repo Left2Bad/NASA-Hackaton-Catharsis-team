@@ -61,7 +61,7 @@ LIMITATIONS = [  # docs/methodology.md, section 7
     "Small fires that VIIRS (375 m) sees and MODIS (1 km) does not are recovered before 2012 only "
     "statistically: the coefficient carries over the average ratio, not individual events.",
     "In small areas (smaller than a 1° cell) the coefficient is taken from the cell or the 5° block — the estimate is coarser and the interval wider.",
-    "2000–2002: Terra only, one morning overpass — the error is 1.6–2 times higher than for Terra + Aqua, and in "
+    "2000–2002: Terra only, one morning overpass — the error is 1.7–2.1 times higher than for Terra + Aqua, and in "
     "2003–2011 the Terra-only estimate runs about 3 % below the Terra + Aqua one.",
     "Days when the lead satellite did not report are filled from another one (NOAA-20 for Suomi NPP, Terra for Aqua); "
     "Terra outages in 2000–2012 cannot be filled, so those months are flagged as sensor gaps and may be understated.",

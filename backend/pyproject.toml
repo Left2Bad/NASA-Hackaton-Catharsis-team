@@ -16,6 +16,7 @@ dependencies = [
   "pyarrow>=16",
   "shapely>=2.0",
   "pyproj>=3.6",
+  "pyyaml>=6.0",  # serves contract/openapi.yaml at /api/v1/openapi.json
 ]
 
 [project.optional-dependencies]

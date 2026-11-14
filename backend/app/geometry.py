@@ -20,6 +20,9 @@ from .errors import ApiError
 STEP = 0.1  # grid step, degrees (pipeline/grid.py)
 NY, NX = 1800, 3600  # grid rows (latitude) and columns (longitude)
 DENSIFY_DEG = STEP  # edges are split into pieces of at most this length before the geodesic area
+# point-in-polygon cost grows with the vertex count; hand-drawn areas have tens of vertices, map circles 64
+MAX_VERTICES = 5_000
+MAX_PARTS = 100
 _GEOD = Geod(ellps="WGS84")
 
 
@@ -119,6 +122,12 @@ def _merge(ranges: list[tuple[int, int, int, int]]) -> list[tuple[int, int, int,
 
 def _check_rings(geojson: dict) -> None:
     polys = [geojson["coordinates"]] if geojson["type"] == "Polygon" else geojson["coordinates"]
+    vertices = sum(len(ring) for poly in polys for ring in poly)
+    if len(polys) > MAX_PARTS or vertices > MAX_VERTICES:
+        raise ApiError(
+            "INVALID_GEOMETRY",
+            f"The area is too detailed: at most {MAX_VERTICES:,} vertices and {MAX_PARTS} polygons. Simplify it.",
+        )
     for poly in polys:
         for ring in poly:
             if len(ring) < 4 or ring[0] != ring[-1]:
@@ -160,6 +169,17 @@ def cells_area_km2(iy: np.ndarray) -> float:
         a, _ = _GEOD.polygon_area_perimeter([0, STEP, STEP, 0], [s, s, t, t])
         total += abs(a) / 1e6 * k
     return total
+
+
+def small_area_message(area: Area) -> str:
+    """AREA_SMALL text: values are sums over whole grid cells, which may be much larger than the drawn area."""
+    n = area.cells
+    cells = f"{n} whole {STEP}° grid cell" + ("" if n == 1 else "s")
+    return (
+        f"Values are summed over {cells} (about {area.cells_km2:,.0f} km²) that the area covers, "
+        f"while the area itself is about {area.area_km2:,.0f} km². "
+        "For such a small area the numbers describe those cells rather than the exact outline, and the series is noisy."
+    )
 
 
 def parse(geojson: dict, max_area_km2: float) -> Area:

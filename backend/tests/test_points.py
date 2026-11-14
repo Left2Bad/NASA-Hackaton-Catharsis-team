@@ -6,12 +6,11 @@ import io
 
 import duckdb
 import pytest
-from conftest import LAST, assert_schema, box, make_data
+from conftest import LAST, assert_schema, box, make_data, settings_for
 from fastapi.testclient import TestClient
 
 from app import geometry, points_service
 from app.main import create_app
-from app.settings import Settings
 
 API = "/api/v1"
 AREA = box(10.0, 20.0, 11.0, 21.0)  # one 1-degree coefficient cell: count_t 4, count_ta 2, count_n20 1
@@ -75,7 +74,7 @@ def client(tmp_path_factory):
         FROM read_parquet('{serve.as_posix()}/*.parquet') WHERE type = 0 AND conf_class <> 'l' GROUP BY ALL
         UNION ALL SELECT 0, 0, DATE '{LAST}', 0, 0, 0, 0, 0, 0, 0, 0
         ORDER BY iy, ix, date) TO '{(data / "grid_daily.parquet").as_posix()}'""")
-    settings = Settings(data_dir=data, max_points=5, max_export_rows=8)
+    settings = settings_for(data, max_points=5, max_export_rows=8)
     with TestClient(create_app(settings)) as c:
         yield c
 

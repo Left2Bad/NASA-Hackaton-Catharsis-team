@@ -17,7 +17,7 @@ def _warnings(data: Data, area, preliminary: bool, gap_months: list[dt.date]) ->
         out.append(
             {
                 "code": "AREA_SMALL",
-                "message": f"The area contains {area.cells} grid cells. For such a small area the series is noisy.",
+                "message": geometry.small_area_message(area),
             }
         )
     if preliminary:

@@ -91,6 +91,37 @@ describe('NowPanel (F15)', () => {
       '—',
     );
     expect(screen.queryByText('Above normal', { selector: 'strong' })).toBeNull();
+    // Five levels of "0 to 0" would say nothing: a sentence stands in for the scale.
+    expect(screen.queryByRole('list', { name: 'Levels for these days of the month' })).toBeNull();
+    expect(
+      screen.getByText(
+        'No fires were detected on these days in any of the 25 baseline years, so there are no levels to compare with.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('leaves out levels that collapse to a single value', () => {
+    // What the real API returns for an area with the same count every year.
+    render(
+      <NowPanel
+        current={withFields({
+          value: 336,
+          anomaly_pct: 50,
+          percentile: 100,
+          category: 'record',
+          baseline_same_days: { median: 224, p25: 112, p75: 224, p90: 224, max: 224, n_years: 25 },
+        })}
+      />,
+    );
+
+    const levels = within(
+      screen.getByRole('list', { name: 'Levels for these days of the month' }),
+    ).getAllByRole('listitem');
+    expect(levels.map((item) => item.textContent)).toEqual([
+      'Below normalbelow 112',
+      'Normal112 to 224',
+      'Recordabove 224',
+    ]);
   });
 });
 

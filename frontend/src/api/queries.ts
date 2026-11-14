@@ -1,40 +1,67 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type Query } from '@tanstack/react-query';
 import { api } from './client';
-import { toApiError } from './errors';
+import { request } from './request';
 import type { AreaQuery, CalendarResponse, CurrentResponse, Geometry, Meta } from './types';
 
 // openapi-fetch returns coordinates as number[], while the contract defines a pair
 // [longitude, latitude]. The `as` cast gives the response its exact schema type back.
 
-export async function fetchMeta(): Promise<Meta> {
-  const { data, error, response } = await api.GET('/meta');
-  if (data === undefined) throw toApiError(error, response);
-  return data as Meta;
+// Every fetcher takes the abort signal of its query, so a request whose answer is
+// no longer needed is cancelled instead of keeping the server busy.
+
+export async function fetchMeta(signal?: AbortSignal): Promise<Meta> {
+  return (await request((s) => api.GET('/meta', { signal: s }), signal)) as Meta;
 }
 
-export async function fetchCalendar(query: AreaQuery): Promise<CalendarResponse> {
-  const { data, error, response } = await api.POST('/calendar', { body: query });
-  if (data === undefined) throw toApiError(error, response);
-  return data as CalendarResponse;
+export async function fetchCalendar(
+  query: AreaQuery,
+  signal?: AbortSignal,
+): Promise<CalendarResponse> {
+  return (await request(
+    (s) => api.POST('/calendar', { body: query, signal: s }),
+    signal,
+  )) as CalendarResponse;
 }
 
-export async function fetchCurrent(query: AreaQuery): Promise<CurrentResponse> {
-  const { data, error, response } = await api.POST('/current', { body: query });
-  if (data === undefined) throw toApiError(error, response);
-  return data as CurrentResponse;
+export async function fetchCurrent(
+  query: AreaQuery,
+  signal?: AbortSignal,
+): Promise<CurrentResponse> {
+  return (await request(
+    (s) => api.POST('/current', { body: query, signal: s }),
+    signal,
+  )) as CurrentResponse;
 }
 
 /** Dataset metadata: date range, sources, limits, example areas. */
 export function useMeta() {
-  return useQuery({ queryKey: ['meta'], queryFn: fetchMeta, staleTime: Infinity });
+  return useQuery({
+    queryKey: ['meta'],
+    queryFn: ({ signal }) => fetchMeta(signal),
+    staleTime: Infinity,
+  });
 }
 
-/** Calendar for an area. Nothing loads while there is no query (`null`). */
+/** The geometry a calendar query was made for, read back from its key. */
+function geometryOf(query: Pick<Query, 'queryKey'> | undefined): Geometry | undefined {
+  const body = query?.queryKey[1] as AreaQuery | null | undefined;
+  return body?.geometry;
+}
+
+/**
+ * Calendar for an area. Nothing loads while there is no query (`null`).
+ *
+ * When only the period changes, the previous calendar of the same area stays on screen
+ * (`isPlaceholderData`) until the new one arrives, so the panel does not collapse and jump.
+ * For another area nothing is kept: its numbers would be shown under the wrong name.
+ */
 export function useCalendar(query: AreaQuery | null) {
   return useQuery({
     queryKey: ['calendar', query],
-    queryFn: () => fetchCalendar(query as AreaQuery),
+    queryFn: ({ signal }) => fetchCalendar(query as AreaQuery, signal),
     enabled: query !== null,
+    placeholderData: (previous: CalendarResponse | undefined, previousQuery) =>
+      query !== null && geometryOf(previousQuery) === query.geometry ? previous : undefined,
   });
 }
 
@@ -45,7 +72,7 @@ export function useCalendar(query: AreaQuery | null) {
 export function useCurrent(geometry: Geometry | null) {
   return useQuery({
     queryKey: ['current', geometry],
-    queryFn: () => fetchCurrent({ geometry: geometry as Geometry }),
+    queryFn: ({ signal }) => fetchCurrent({ geometry: geometry as Geometry }, signal),
     enabled: geometry !== null,
   });
 }

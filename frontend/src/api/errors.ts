@@ -1,11 +1,18 @@
 import type { ErrorCode, ErrorResponse } from './types';
 
-/** An API error in one shape: the contract code, the server text and the HTTP status. */
+/**
+ * Failures the contract does not describe, because they happen before or outside the API:
+ * `NETWORK` (no connection, the server is down, CORS), `TIMEOUT` (no answer in time),
+ * `UNKNOWN` (an answer that is not in the contract format, for example from a proxy).
+ */
+export type ClientErrorCode = 'NETWORK' | 'TIMEOUT' | 'UNKNOWN';
+
+/** A failed request in one shape: a code, a technical message and the HTTP status (0 without one). */
 export class ApiError extends Error {
-  readonly code: ErrorCode | 'UNKNOWN';
+  readonly code: ErrorCode | ClientErrorCode;
   readonly status: number;
 
-  constructor(code: ErrorCode | 'UNKNOWN', message: string, status: number) {
+  constructor(code: ErrorCode | ClientErrorCode, message: string, status: number) {
     super(message);
     this.name = 'ApiError';
     this.code = code;
@@ -32,4 +39,15 @@ export function toApiError(body: unknown, response: Response): ApiError {
     return new ApiError(body.error.code, body.error.message, response.status);
   }
   return new ApiError('UNKNOWN', `Request failed with status ${response.status}`, response.status);
+}
+
+/**
+ * Whether asking again can help. A lost connection, a timeout and a server fault can pass;
+ * a request the server understood and refused (too large an area, an invalid shape,
+ * no data) will be refused again.
+ */
+export function isRetryable(error: Error): boolean {
+  if (!(error instanceof ApiError)) return true;
+  if (error.code === 'NETWORK' || error.code === 'TIMEOUT') return true;
+  return error.status >= 500;
 }

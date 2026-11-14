@@ -143,3 +143,8 @@
 .notes li + li {
   margin-top: var(--space-1);
 }
+
+.noLevels {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}

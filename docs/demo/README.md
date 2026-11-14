@@ -36,3 +36,5 @@ The `screenshots/` folder. File names start with the task a screenshot belongs t
 | `b8-now-summary-phone.jpg` | The summary and the "Now" panel on a phone |
 | `b9-season-yearly-laptop.jpg` | The season profile with the year 2010 over the typical season, and the yearly totals with the trend line |
 | `b9-season-yearly-phone.jpg` | The same two charts on a phone |
+| `b10-server-unreachable.jpg` | The server cannot be reached: the message with the "Try again" button (real backend, stopped) |
+| `b10-empty-result.jpg` | An area without fires: the message in place of the calendar (real backend on its test data) |

@@ -1,3 +1,4 @@
+import type { ClientErrorCode } from './api/errors';
 import type { components } from './api/schema';
 
 // Interface labels for identifiers from the contract. Server texts come in one language,
@@ -46,6 +47,14 @@ export const ERROR_LABELS: Record<ErrorCode, string> = {
   EXPORT_TOO_LARGE: 'The export has too many rows. Shorten the period or reduce the area.',
   NO_DATA: 'The area lies outside the loaded data. Choose an area inside the covered regions.',
   INTERNAL: 'The server could not answer. Try again in a moment.',
+};
+
+/** What to tell the user when a request fails before or outside the API. */
+export const CLIENT_ERROR_LABELS: Record<ClientErrorCode, string> = {
+  NETWORK: 'The server cannot be reached. Check the connection and try again.',
+  TIMEOUT:
+    'The server is taking too long to answer. Try again, or choose a smaller area or a shorter period.',
+  UNKNOWN: 'The server answered in an unexpected way. Try again in a moment.',
 };
 
 /** English names of example areas by `id`; an unknown `id` falls back to the server text. */

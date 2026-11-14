@@ -6,6 +6,7 @@ import { AreaMap } from '../components/AreaMap';
 import { BurnCalendar, type CalendarMode } from '../components/BurnCalendar';
 import { CoordinateForm } from '../components/CoordinateForm';
 import { ErrorNote } from '../components/ErrorNote';
+import { LoadingNote } from '../components/LoadingNote';
 import { NowPanel } from '../components/NowPanel';
 import { PeriodSelect, type Period } from '../components/PeriodSelect';
 import { SeasonProfile } from '../components/SeasonProfile';
@@ -13,7 +14,7 @@ import { SummaryFacts } from '../components/SummaryFacts';
 import { YearlyTotals } from '../components/YearlyTotals';
 import { boundsOf, formatBounds } from '../geo/geometry';
 import { areaKm2 } from '../geo/shapes';
-import { formatNumber, presetLabel, WARNING_LABELS } from '../labels';
+import { formatNumber, monthName, presetLabel, WARNING_LABELS } from '../labels';
 import { roundSignificant } from '../theme/scales';
 import styles from './CalendarScreen.module.css';
 
@@ -29,16 +30,38 @@ interface Area {
 const PLANNED = ['Downloads: hot spots as CSV, the calendar as CSV, charts as PNG'];
 
 /** Shown before any area is chosen: tells the user how to start. */
-function StartPrompt() {
+function StartPrompt({ meta }: { meta: Meta }) {
+  // The first month of the record comes from the dataset, not from the text.
+  const [firstYear, firstMonth] = meta.first_date.split('-').map(Number);
   return (
     <div className={styles.start}>
       <h1>Choose an area to see its fire calendar</h1>
       <p>
         Draw a rectangle or a polygon on the map, enter coordinates, or start with one of the
-        example areas above the map. The calendar shows fire activity for every month since November
-        2000.
+        example areas above the map. The calendar shows fire activity for every month since{' '}
+        {monthName(firstMonth)} {firstYear}.
       </p>
+      {!meta.coverage.global && meta.coverage.regions.length > 0 && (
+        <p>Data is loaded for these regions only: {meta.coverage.regions.join(', ')}.</p>
+      )}
     </div>
+  );
+}
+
+/** Shown instead of the calendar when the area had no fires at all in the period. */
+function EmptyResult({ period }: { period: Period }) {
+  const years =
+    period.startYear === period.endYear
+      ? `in ${period.startYear}`
+      : `from ${period.startYear} to ${period.endYear}`;
+  return (
+    <section className={styles.empty} aria-labelledby="empty-heading">
+      <h2 id="empty-heading">No fires detected</h2>
+      <p>
+        The satellites recorded no fire detections in this area {years}. Try a larger area, a longer
+        period, or one of the example areas above the map.
+      </p>
+    </section>
   );
 }
 
@@ -66,6 +89,12 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
   // and is not asked again when the period changes.
   const current = useCurrent(tooLarge ? null : area.geometry);
 
+  const data = calendar.data;
+  // Only the period changed: the previous calendar stays on screen, dimmed, until the new one arrives.
+  const updating = calendar.isPlaceholderData;
+  // An area without fires is a valid answer (200 with zeros), not an error.
+  const empty = data !== undefined && data.summary.total === 0;
+
   const preset = meta.presets.find((item) => item.id === area.presetId);
   const label = preset ? presetLabel(preset) : { name: 'Custom area', description: '' };
 
@@ -76,9 +105,10 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
         <p className={styles.description}>
           {label.description || formatBounds(boundsOf(area.geometry))}
         </p>
-        {calendar.data && (
+        {data && (
           <p className={styles.meta}>
-            {formatNumber(calendar.data.area_km2)} km², data through {calendar.data.data_through}
+            {formatNumber(data.area_km2)} km², data through {data.data_through}
+            {updating && <span role="status"> · updating for the new period…</span>}
           </p>
         )}
       </header>
@@ -89,21 +119,36 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
           {formatNumber(limitKm2)} km². Draw or enter a smaller area.
         </p>
       )}
-      {!tooLarge && calendar.isPending && <p role="status">Loading the calendar…</p>}
-      {calendar.isError && <ErrorNote error={calendar.error} />}
-      {calendar.data && (
-        <>
+      {!tooLarge && calendar.isPending && (
+        <div className={styles.status}>
+          <LoadingNote slowHint="Still working: a large area or a long period takes longer.">
+            Loading the calendar…
+          </LoadingNote>
+        </div>
+      )}
+      {calendar.isError && (
+        <div className={styles.status}>
+          <ErrorNote
+            error={calendar.error}
+            onRetry={() => void calendar.refetch()}
+            retrying={calendar.isFetching}
+          />
+        </div>
+      )}
+      {data && empty && <EmptyResult period={period} />}
+      {data && !empty && (
+        <div className={styles.results} aria-busy={updating}>
           <section className={styles.section} aria-labelledby="calendar-heading">
             <h2 id="calendar-heading">Burn calendar</h2>
             <BurnCalendar
-              calendar={calendar.data}
+              calendar={data}
               sources={meta.sources}
               mode={mode}
               onModeChange={onModeChange}
             />
-            {calendar.data.warnings.length > 0 && (
+            {data.warnings.length > 0 && (
               <ul className={styles.warnings}>
-                {calendar.data.warnings.map((warning) => (
+                {data.warnings.map((warning) => (
                   <li key={warning.code}>{WARNING_LABELS[warning.code]}</li>
                 ))}
               </ul>
@@ -112,32 +157,38 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
 
           <section className={styles.section} aria-labelledby="summary-heading">
             <h2 id="summary-heading">Summary</h2>
-            <SummaryFacts calendar={calendar.data} />
+            <SummaryFacts calendar={data} />
           </section>
-        </>
+        </div>
       )}
 
       {!tooLarge && (
         <section className={styles.section} aria-labelledby="now-heading">
           <h2 id="now-heading">Now</h2>
-          {current.isPending && <p role="status">Loading the current month…</p>}
-          {current.isError && <ErrorNote error={current.error} />}
+          {current.isPending && <LoadingNote>Loading the current month…</LoadingNote>}
+          {current.isError && (
+            <ErrorNote
+              error={current.error}
+              onRetry={() => void current.refetch()}
+              retrying={current.isFetching}
+            />
+          )}
           {current.data && <NowPanel current={current.data} />}
         </section>
       )}
 
-      {calendar.data && (
-        <>
+      {data && !empty && (
+        <div className={styles.results} aria-busy={updating}>
           <section className={styles.section} aria-labelledby="season-heading">
             <h2 id="season-heading">Season profile</h2>
-            <SeasonProfile calendar={calendar.data} />
+            <SeasonProfile calendar={data} />
           </section>
 
           <section className={styles.section} aria-labelledby="yearly-heading">
             <h2 id="yearly-heading">Yearly totals</h2>
-            <YearlyTotals calendar={calendar.data} />
+            <YearlyTotals calendar={data} />
           </section>
-        </>
+        </div>
       )}
 
       <section className={styles.section} aria-labelledby="planned-heading">
@@ -217,7 +268,7 @@ function Workspace({ meta }: { meta: Meta }) {
         {area ? (
           <AreaPanel area={area} meta={meta} period={period} mode={mode} onModeChange={setMode} />
         ) : (
-          <StartPrompt />
+          <StartPrompt meta={meta} />
         )}
 
         <footer className={styles.footer}>
@@ -241,14 +292,18 @@ export function CalendarScreen() {
   if (meta.isPending) {
     return (
       <main className={styles.state}>
-        <p role="status">Loading the dataset…</p>
+        <LoadingNote slowHint="Still waiting for the server.">Loading the dataset…</LoadingNote>
       </main>
     );
   }
   if (meta.isError) {
     return (
       <main className={styles.state}>
-        <ErrorNote error={meta.error} />
+        <ErrorNote
+          error={meta.error}
+          onRetry={() => void meta.refetch()}
+          retrying={meta.isFetching}
+        />
       </main>
     );
   }

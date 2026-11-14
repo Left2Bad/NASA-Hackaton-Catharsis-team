@@ -102,6 +102,10 @@
   color: var(--ink-2);
 }
 
+.state {
+  max-width: 60ch;
+}
+
 .areaHeader h1 {
   font-size: var(--text-xl);
   letter-spacing: -0.02em;
@@ -126,6 +130,38 @@
   font-size: var(--text-sm);
   background: var(--plane);
   border-radius: var(--radius);
+}
+
+/* A loading note or an error that stands in for the results. */
+.status {
+  margin-top: var(--space-4);
+}
+
+/* While a new period loads, the previous results stay in place, dimmed. */
+.results {
+  transition: opacity 0.15s;
+}
+
+.results[aria-busy='true'] {
+  opacity: 0.5;
+}
+
+/* An area without fires: a calm message where the calendar would be. */
+.empty {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--plane);
+  border-radius: var(--radius);
+}
+
+.empty h2 {
+  font-size: var(--text-md);
+}
+
+.empty p {
+  max-width: 52ch;
+  margin-top: var(--space-2);
+  color: var(--ink-2);
 }
 
 .section {

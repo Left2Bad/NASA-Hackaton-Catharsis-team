@@ -1,0 +1,41 @@
+/* Stays at the top of the panel while it scrolls, above the calendar tooltip. */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: var(--space-3) calc(-1 * var(--space-2)) calc(-1 * var(--space-3));
+  padding: var(--space-2);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.nav button {
+  padding: 3px 10px;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.nav button:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+/* Phone: one row that scrolls sideways, so the links do not take two lines of a small screen. */
+@media (max-width: 960px) {
+  .nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav button {
+    flex: none;
+  }
+}

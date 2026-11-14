@@ -97,8 +97,12 @@ export const monthShortName = (month: number) =>
 
 const numberFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
 
-/** A number for display: thousands separators, at most one decimal place. */
-export const formatNumber = (value: number) => numberFormat.format(value);
+/**
+ * A number for display: thousands separators and at most one decimal place. From 100 up
+ * the decimal is dropped: "16,430.3 detections" claims a precision the record does not have.
+ */
+export const formatNumber = (value: number) =>
+  numberFormat.format(Math.abs(value) >= 100 ? Math.round(value) : value);
 
 /** A signed percentage: "+50 %", "−33 %". The minus is the typographic one. */
 export function formatSignedPercent(value: number): string {

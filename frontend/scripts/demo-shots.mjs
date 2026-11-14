@@ -36,8 +36,11 @@ async function shot(page, name) {
   console.log(`${name}.jpg`);
 }
 
-/** Scrolls the page so that the section with this heading starts at the top of its scroller. */
-async function showSection(page, heading, offset = 16) {
+/**
+ * Scrolls the page so that the section with this heading starts at the top of its scroller,
+ * under the jump links of the panel, which stay there.
+ */
+async function showSection(page, heading, offset = 64) {
   await page.getByRole('heading', { name: heading, exact: true }).evaluate((element, gap) => {
     let scroller = element.parentElement;
     while (scroller && !/auto|scroll/.test(getComputedStyle(scroller).overflowY)) {
@@ -68,7 +71,9 @@ await page.getByRole('region', { name: 'Now' }).getByRole('list').first().waitFo
 await settle(page);
 await shot(page, 'demo-02-calendar');
 
-// A cell under the pointer: the tooltip with the exact numbers.
+// A cell under the pointer: the tooltip with the exact numbers. The calendar is brought
+// to the top of the panel first, so the tooltip has room inside the frame.
+await showSection(page, 'Burn calendar');
 await page.locator('[data-month="2020-09"]').hover();
 // The tooltip repeats the spoken label of the cell, so it is hidden from the accessibility tree.
 await page.locator('[role="tooltip"]').waitFor();

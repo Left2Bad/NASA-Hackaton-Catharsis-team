@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { USE_MOCKS } from '../api/config';
 import { FALLBACK_MODE } from '../api/snapshot';
 import { useCalendar, useCurrent, useMeta, usePoints } from '../api/queries';
-import type { Geometry, Meta, MonthValue, PointsResponse } from '../api/types';
+import type { Geometry, Meta, MonthValue } from '../api/types';
 import { AreaMap } from '../components/AreaMap';
 import { BurnCalendar, type CalendarMode } from '../components/BurnCalendar';
 import { CoordinateForm } from '../components/CoordinateForm';
@@ -13,11 +13,14 @@ import { LoadingNote } from '../components/LoadingNote';
 import { NowPanel } from '../components/NowPanel';
 import { PeriodSelect, type Period } from '../components/PeriodSelect';
 import { SeasonProfile } from '../components/SeasonProfile';
+import { SectionNav, type PanelSection } from '../components/SectionNav';
+import { SpotsBar } from '../components/SpotsBar';
 import { SummaryFacts } from '../components/SummaryFacts';
 import { YearlyTotals } from '../components/YearlyTotals';
 import { boundsOf, formatBounds } from '../geo/geometry';
 import { areaKm2 } from '../geo/shapes';
 import { formatNumber, monthName, presetLabel, WARNING_LABELS } from '../labels';
+import { nowHeadline } from '../now/describe';
 import { buildSearch, currentSearch, parseSearch, writeSearch } from '../state/link';
 import { roundSignificant } from '../theme/scales';
 import styles from './CalendarScreen.module.css';
@@ -38,11 +41,20 @@ function StartPrompt({ meta }: { meta: Meta }) {
   return (
     <div className={styles.start}>
       <h1>Choose an area to see its fire calendar</h1>
-      <p>
-        Draw a rectangle or a polygon on the map, enter coordinates, or start with one of the
-        example areas above the map. The calendar shows fire activity for every month since{' '}
-        {monthName(firstMonth)} {firstYear}.
-      </p>
+      <ol>
+        <li>
+          <strong>Choose an area.</strong> Pick an example above the map, draw a rectangle or a
+          polygon on it, or enter coordinates.
+        </li>
+        <li>
+          <strong>Read its calendar.</strong> Fire activity for every month since{' '}
+          {monthName(firstMonth)} {firstYear}, on one scale across MODIS and VIIRS.
+        </li>
+        <li>
+          <strong>Compare and export.</strong> The current month against the median of past years,
+          anomalies and trends; tables as CSV, charts as PNG.
+        </li>
+      </ol>
       {!meta.coverage.global && meta.coverage.regions.length > 0 && (
         <p>Data is loaded for these regions only: {meta.coverage.regions.join(', ')}.</p>
       )}
@@ -97,17 +109,6 @@ function CopyLink() {
   );
 }
 
-/** What the strip above the map says about the hot spots that are drawn. */
-function spotsSummary(points: PointsResponse, year: number, month: number): string {
-  const when = `${monthName(month)} ${year}`;
-  if (points.total === 0) return `No hot spots in ${when}.`;
-  // Above the limit the API returns the strongest fires, so the map still covers the whole month.
-  const shown = points.truncated
-    ? `the ${formatNumber(points.features.length)} strongest of ${formatNumber(points.total)} hot spots`
-    : `${formatNumber(points.total)} hot ${points.total === 1 ? 'spot' : 'spots'}`;
-  return `${when}: ${shown} on the map, all sensors.`;
-}
-
 interface AreaPanelProps {
   area: Area;
   meta: Meta;
@@ -157,6 +158,22 @@ function AreaPanel({
   // An area without fires is a valid answer (200 with zeros), not an error.
   const empty = data !== undefined && data.summary.total === 0;
 
+  const headline = current.data ? nowHeadline(current.data) : null;
+
+  // Jump links to the sections that are on screen.
+  const sections: PanelSection[] =
+    data && !empty
+      ? [
+          { id: 'calendar-heading', label: 'Calendar' },
+          { id: 'summary-heading', label: 'Summary' },
+          { id: 'now-heading', label: 'Now' },
+          { id: 'season-heading', label: 'Season' },
+          { id: 'yearly-heading', label: 'Years' },
+          { id: 'daily-heading', label: 'Days' },
+          { id: 'downloads-heading', label: 'Downloads' },
+        ]
+      : [];
+
   const preset = meta.presets.find((item) => item.id === area.presetId);
   const label = preset ? presetLabel(preset) : { name: 'Custom area', description: '' };
 
@@ -174,6 +191,19 @@ function AreaPanel({
           </p>
         )}
         <CopyLink />
+        {data && (
+          <details className={styles.about}>
+            <summary>What is counted</summary>
+            <p>
+              Active fire detections (hot spots) from NASA FIRMS, in VIIRS Suomi NPP equivalents.
+              Counts of MODIS and of VIIRS NOAA-20 are multiplied by coefficients fitted for every
+              1° cell, so values can be fractional. Low-confidence detections and static sources
+              (volcanoes, gas flares, industry) are left out. Medians, anomalies and levels use{' '}
+              {data.baseline.start_year} to {data.baseline.end_year} as the baseline.{' '}
+              <a href="#/method">How the record is made</a>
+            </p>
+          </details>
+        )}
       </header>
 
       {tooLarge && (
@@ -199,6 +229,22 @@ function AreaPanel({
         </div>
       )}
       {data && empty && <EmptyResult period={period} />}
+      {headline && !calendar.isError && (
+        // The answer most readers come for stands first; the "Now" section has the details.
+        <p className={styles.headline} data-testid="now-headline">
+          <span className={styles.headlineLabel}>{headline.label}</span>
+          <span className={styles.headlineLevel}>
+            {headline.color && (
+              <span className={styles.headlineSwatch} style={{ background: headline.color }} />
+            )}
+            {headline.level && <strong>{headline.level}</strong>}
+            <span>{headline.detail}</span>
+          </span>
+        </p>
+      )}
+
+      <SectionNav sections={sections} />
+
       {data && !empty && (
         <div className={styles.results} aria-busy={updating}>
           <section className={styles.section} aria-labelledby="calendar-heading">
@@ -227,7 +273,7 @@ function AreaPanel({
         </div>
       )}
 
-      {!tooLarge && (
+      {!tooLarge && !calendar.isError && (
         <section className={styles.section} aria-labelledby="now-heading">
           <h2 id="now-heading">Now</h2>
           {current.isPending && <LoadingNote>Loading the current month…</LoadingNote>}
@@ -339,6 +385,9 @@ function Workspace({ meta }: { meta: Meta }) {
       <section className={styles.mapColumn} aria-label="Area selection">
         <div className={styles.areaBar}>
           <div className={styles.presets} role="group" aria-label="Example areas">
+            <span className={styles.barLabel} aria-hidden="true">
+              Examples
+            </span>
             {meta.presets.map((preset) => (
               <button
                 key={preset.id}
@@ -373,25 +422,19 @@ function Workspace({ meta }: { meta: Meta }) {
             />
           </div>
         )}
-        {shownSpots && (
-          <div className={styles.spotsBar}>
-            {points.isError ? (
-              <ErrorNote
-                error={points.error}
-                onRetry={() => void points.refetch()}
-                retrying={points.isFetching}
-              />
-            ) : (
-              <p role="status">
-                {points.data
-                  ? spotsSummary(points.data, shownSpots.year, shownSpots.month)
-                  : `Loading the hot spots of ${monthName(shownSpots.month)} ${shownSpots.year}…`}
-              </p>
-            )}
-            <button type="button" onClick={() => setSpots(null)}>
-              Hide hot spots
-            </button>
-          </div>
+        {shownSpots && area && (
+          <SpotsBar
+            geometry={shownSpots.geometry}
+            presetId={area.presetId}
+            year={shownSpots.year}
+            month={shownSpots.month}
+            meta={meta}
+            points={points.data}
+            error={points.isError ? points.error : null}
+            onRetry={() => void points.refetch()}
+            retrying={points.isFetching}
+            onHide={() => setSpots(null)}
+          />
         )}
         <div className={styles.mapSlot}>
           <AreaMap

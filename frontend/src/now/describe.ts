@@ -1,5 +1,5 @@
 import type { CurrentResponse } from '../api/types';
-import { formatNumber, formatSignedPercent, monthName } from '../labels';
+import { CATEGORY_LABELS, formatNumber, formatSignedPercent, monthName } from '../labels';
 import { ANOMALY_RAMP } from '../theme/scales';
 
 // Words and numbers of the "Now" panel (requirement F15): the current month so far against
@@ -45,6 +45,29 @@ export function comparison(current: CurrentResponse): string {
   return current.value > 0
     ? `${formatNumber(current.value)} above a median of zero`
     : 'No detections, the same as the median';
+}
+
+/**
+ * The current month in one line, for the top of the panel: the question an emergency
+ * manager opens the app with is answered before anything else. The "Now" section below
+ * has the numbers behind it.
+ */
+export function nowHeadline(current: CurrentResponse): {
+  /** "Now, November 1 to 13, 2026" */
+  label: string;
+  /** The level in words, or `null` when the month cannot be placed on the levels. */
+  level: string | null;
+  /** The color of the level, drawn as a small square next to the word. */
+  color: string | null;
+  /** The count and how it compares with the median. */
+  detail: string;
+} {
+  return {
+    label: `Now, ${periodLabel(current)}`,
+    level: current.category === null ? null : CATEGORY_LABELS[current.category],
+    color: current.category === null ? null : CATEGORY_COLORS[current.category],
+    detail: `${formatNumber(current.value)} detections, ${comparison(current)}`,
+  };
 }
 
 /** One level on the scale of the baseline years. `to` is `null` for the open-ended top level. */

@@ -71,10 +71,10 @@ describe('BurnCalendar', () => {
 
     const tip = screen.getByRole('tooltip', { hidden: true });
     expect(within(tip).getByText('August 2010')).toBeInTheDocument();
-    expect(within(tip).getByText('2,513.3')).toBeInTheDocument();
-    expect(within(tip).getByText('2,060.9 to 3,041.1')).toBeInTheDocument();
+    expect(within(tip).getByText('2,513')).toBeInTheDocument();
+    expect(within(tip).getByText('2,061 to 3,041')).toBeInTheDocument();
     expect(within(tip).getByText('Median for August')).toBeInTheDocument();
-    expect(within(tip).getByText('+272.9 % vs. median')).toBeInTheDocument();
+    expect(within(tip).getByText('+273 % vs. median')).toBeInTheDocument();
     expect(within(tip).getByText('MODIS Terra + Aqua')).toBeInTheDocument();
   });
 
@@ -105,7 +105,7 @@ describe('BurnCalendar', () => {
 
     expect(cell('2010-08')).toHaveAttribute(
       'aria-label',
-      'August 2010: 2,513.3 detections, +272.9 % against the median, high',
+      'August 2010: 2,513 detections, +273 % against the median, high',
     );
     expect(cell('2026-11').getAttribute('aria-label')).toMatch(/partial month, preliminary$/);
   });
@@ -210,7 +210,7 @@ describe('anomaly mode (F10)', () => {
     await user.click(screen.getByRole('button', { name: 'Anomaly' }));
 
     expect(screen.getByRole('grid', { name: /^Fire anomalies by month/ })).toBeInTheDocument();
-    // August 2010 is +272.9 %: the strongest "above" class. July 2026 is −36.1 %: "below".
+    // August 2010 is +273 %: the strongest "above" class. July 2026 is −36.1 %: "below".
     expect(cell('2010-08')).toHaveAttribute('data-level', '6');
     expect(cell('2026-07')).toHaveAttribute('data-level', '1');
     // November 2000 is −1.2 %: inside the neutral middle class.
@@ -252,7 +252,7 @@ describe('anomaly mode (F10)', () => {
 
     expect(cell('2012-02').getAttribute('data-seam')).toContain('left');
     fireEvent.focus(cell('2010-08'));
-    expect(screen.getByRole('tooltip', { hidden: true })).toHaveTextContent('+272.9 % vs. median');
+    expect(screen.getByRole('tooltip', { hidden: true })).toHaveTextContent('+273 % vs. median');
   });
 
   it('switches back to detections', async () => {

@@ -47,7 +47,7 @@ describe('summaryFacts (F16)', () => {
     });
     expect(factOf(calendar, 'peak_month')).toMatchObject({
       value: 'September',
-      detail: 'median 779.4',
+      detail: 'median 779',
     });
     expect(factOf(calendar, 'total')).toMatchObject({
       value: '108,872',

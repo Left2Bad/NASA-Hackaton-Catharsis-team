@@ -29,7 +29,7 @@ describe('YearlyTotals (F18)', () => {
     render(<YearlyTotals calendar={calendar} />);
 
     expect(readout()).toHaveTextContent('2025');
-    expect(readout()).toHaveTextContent('Total 3,582.5');
+    expect(readout()).toHaveTextContent('Total 3,583');
     expect(readout()).toHaveTextContent('Trend 3,699');
     expect(readout()).not.toHaveTextContent('incomplete year');
   });
@@ -52,15 +52,15 @@ describe('YearlyTotals (F18)', () => {
     slider().focus();
     await user.keyboard('{ArrowRight}');
     expect(slider()).toHaveAttribute('aria-valuenow', '2026');
-    expect(slider()).toHaveAttribute('aria-valuetext', '2026: 3,659.8 detections, incomplete year');
-    expect(readout()).toHaveTextContent('Total 3,659.8incomplete year');
+    expect(slider()).toHaveAttribute('aria-valuetext', '2026: 3,660 detections, incomplete year');
+    expect(readout()).toHaveTextContent('Total 3,660incomplete year');
     // The trend covers complete years only.
     expect(readout()).toHaveTextContent('Trend —');
 
     await user.keyboard('{Home}');
     expect(slider()).toHaveAttribute('aria-valuenow', '2000');
     await user.keyboard('{ArrowRight}');
-    expect(slider()).toHaveAttribute('aria-valuetext', '2001: 4,376.9 detections, trend 4,713');
+    expect(slider()).toHaveAttribute('aria-valuetext', '2001: 4,377 detections, trend 4,713');
   });
 
   it('gives the same numbers as a table', () => {
@@ -68,8 +68,8 @@ describe('YearlyTotals (F18)', () => {
 
     const table = screen.getByRole('table', { name: 'Detections per year and the trend line' });
     expect(within(table).getAllByRole('row')).toHaveLength(1 + calendar.yearly.length);
-    expect(within(table).getByRole('row', { name: '2010 12,877.4 yes 4,333' })).toBeInTheDocument();
-    expect(within(table).getByRole('row', { name: '2026 3,659.8 no —' })).toBeInTheDocument();
+    expect(within(table).getByRole('row', { name: '2010 12,877 yes 4,333' })).toBeInTheDocument();
+    expect(within(table).getByRole('row', { name: '2026 3,660 no —' })).toBeInTheDocument();
   });
 
   it('shows the bars without a trend when there are too few complete years', () => {

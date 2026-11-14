@@ -1,11 +1,11 @@
 import { delay } from 'msw';
 import { http, HttpResponse } from 'msw/http';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import healthExample from '../../../contract/examples/health.json';
 import { api } from './client';
 import { ApiError, isRetryable } from './errors';
 import { shouldRetry } from './queryClient';
-import { request } from './request';
+import { anySignal, request, timeoutSignal } from './request';
 import { server } from '../mocks/server';
 
 const getHealth = (signal?: AbortSignal, timeoutMs?: number) =>
@@ -100,6 +100,78 @@ describe('request', () => {
     const error = await failure(call);
     expect(error).not.toBeInstanceOf(ApiError);
     expect(error.name).toBe('AbortError');
+  });
+});
+
+describe('browsers without AbortSignal.any and AbortSignal.timeout', () => {
+  // Safari before 17.4 and Chrome before 116 have no `AbortSignal.any`.
+  /** Removes the static methods for the test, as an older browser would have them. */
+  function withoutModernSignals() {
+    const original = { any: AbortSignal.any, timeout: AbortSignal.timeout };
+    Object.assign(AbortSignal, { any: undefined, timeout: undefined });
+    return () => Object.assign(AbortSignal, original);
+  }
+  let restore: (() => void) | undefined;
+
+  afterEach(() => {
+    restore?.();
+    restore = undefined;
+    vi.restoreAllMocks();
+  });
+
+  it('still sends requests', async () => {
+    restore = withoutModernSignals();
+    expect(typeof AbortSignal.any).toBe('undefined');
+
+    await expect(getHealth(new AbortController().signal)).resolves.toEqual(healthExample);
+  });
+
+  it('still cancels a request and reports a timeout', async () => {
+    restore = withoutModernSignals();
+    server.use(
+      http.get('*/api/v1/health', async () => {
+        await delay(2000);
+        return HttpResponse.json(healthExample);
+      }),
+    );
+
+    const controller = new AbortController();
+    const cancelled = getHealth(controller.signal);
+    controller.abort();
+    expect((await failure(cancelled)).name).toBe('AbortError');
+
+    expect(await failure(getHealth(undefined, 30))).toMatchObject({ code: 'TIMEOUT' });
+  });
+
+  it('combines signals by hand: the first one that fires wins', () => {
+    restore = withoutModernSignals();
+    const first = new AbortController();
+    const second = new AbortController();
+    const combined = anySignal([first.signal, second.signal]);
+    expect(combined.aborted).toBe(false);
+
+    second.abort(new Error('second'));
+    expect(combined.aborted).toBe(true);
+    expect((combined.reason as Error).message).toBe('second');
+
+    // A signal that has already fired is passed on at once.
+    expect(anySignal([first.signal, second.signal]).aborted).toBe(true);
+  });
+
+  it('fires the hand-made timeout with the reason the request looks for', async () => {
+    restore = withoutModernSignals();
+    const signal = timeoutSignal(10);
+    expect(signal.aborted).toBe(false);
+
+    await new Promise((resolve) => signal.addEventListener('abort', resolve));
+    expect((signal.reason as DOMException).name).toBe('TimeoutError');
+  });
+
+  it('uses the built-in methods where they exist', () => {
+    const any = vi.spyOn(AbortSignal, 'any');
+    const controller = new AbortController();
+    anySignal([controller.signal]);
+    expect(any).toHaveBeenCalledOnce();
   });
 });
 

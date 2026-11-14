@@ -295,6 +295,10 @@ How the app behaves while it talks to a server (`src/api/request.ts`, `src/api/q
   button, because the answer would be the same. A timeout is not retried silently.
 - **Cancelling:** a request whose answer is no longer needed (the user chose another area) is
   cancelled, so the server is not kept busy.
+- **Older browsers:** requests combine their cancel and timeout signals with `AbortSignal.any`, which
+  browsers got only in 2023 and 2024 (Chrome 116, Safari 17.4, Firefox 124). Where it is missing the
+  signals are combined by hand (`anySignal` in `src/api/request.ts`); without that an older phone
+  would send no request at all.
 - **From the dataset, not from the text:** the first month of the record and the list of covered
   regions on the start screen come from `GET /meta`.
 - **Tooltips do not outlive their numbers:** a calendar tooltip that is still open when another area

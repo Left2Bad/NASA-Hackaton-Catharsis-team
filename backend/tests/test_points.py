@@ -262,3 +262,75 @@ def test_export_failure_after_validation_is_an_error_not_a_cut_file(client, monk
         )
     assert r.status_code == 500 and r.headers["content-type"].startswith("application/json")
     assert r.json() == {"error": {"code": "INTERNAL", "message": "Internal server error"}}
+
+
+# ---------- load: a burst of /points requests (a dragged months slider) ----------
+
+
+def test_points_run_at_most_two_at_once(monkeypatch, tmp_path):
+    """Six requests sent together: at most POINTS_SLOTS queries run at the same time, and all six are answered."""
+    import threading
+    import time
+
+    import anyio
+    import httpx
+
+    from app.routers import analytics
+
+    running, peak, lock = 0, 0, threading.Lock()
+
+    def slow_points(data, geojson, year, month):
+        nonlocal running, peak
+        with lock:
+            running += 1
+            peak = max(peak, running)
+        time.sleep(0.05)
+        with lock:
+            running -= 1
+        return {"type": "FeatureCollection", "features": [], "month": month}
+
+    monkeypatch.setattr(points_service, "points", slow_points)
+    app = create_app(settings_for(tmp_path))  # the lifespan (and so the data) does not run under ASGITransport
+    app.state.data = object()
+
+    async def burst():
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+
+            async def one(month):
+                return await client.post(f"{API}/points", json={"geometry": AREA, "year": 2010, "month": month})
+
+            results = []
+            async with anyio.create_task_group() as tg:
+                for month in range(1, 7):
+                    tg.start_soon(lambda m=month: _append(results, one(m)))
+            return results
+
+    async def _append(results, coro):
+        results.append(await coro)
+
+    responses = anyio.run(burst)
+    assert sorted(r.json()["month"] for r in responses) == [1, 2, 3, 4, 5, 6]
+    assert all(r.status_code == 200 for r in responses)
+    assert peak == analytics.POINTS_SLOTS
+
+
+def test_points_skip_a_client_that_left(monkeypatch):
+    """A request whose client disconnected while it waited for a slot runs no query."""
+    import anyio
+
+    from app.routers import analytics
+    from app.schemas import PointsQuery
+
+    calls = []
+    monkeypatch.setattr(points_service, "points", lambda *a: calls.append(a) or {})
+
+    class GoneRequest:
+        app = type("App", (), {"state": type("State", (), {})()})()
+
+        async def is_disconnected(self):
+            return True
+
+    response = anyio.run(analytics.post_points, PointsQuery(geometry=AREA, year=2010, month=8), GoneRequest())
+    assert response.status_code == analytics.CLIENT_GONE
+    assert calls == []

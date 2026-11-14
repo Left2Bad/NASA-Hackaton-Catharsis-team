@@ -268,6 +268,9 @@ describe('hot spots of a month on the map (F13)', () => {
   });
 });
 
+// The months of a moved slider are asked for once it rests (400 ms), then the mock answers.
+const SETTLED = { timeout: 3000 };
+
 describe('months and fire power of the hot spots', () => {
   it('shows a span of months when an end of the slider is moved', async () => {
     const user = userEvent.setup();
@@ -285,6 +288,8 @@ describe('months and fire power of the hot spots', () => {
     expect(
       await screen.findByText(
         `September to October 2026: ${pointsExample.total * 2} hot spots on the map, all sensors.`,
+        {},
+        SETTLED,
       ),
     ).toBeInTheDocument();
     // One request per month; October was already there and is not asked again.
@@ -301,6 +306,42 @@ describe('months and fire power of the hot spots', () => {
     }
   });
 
+  it('asks only for the months where a dragged slider rests', async () => {
+    const user = userEvent.setup();
+    const bodies = record('/points', pointsExample);
+    renderScreen();
+    await openArea(user);
+    await screen.findByText(/^October 2026: /);
+    await waitFor(() => expect(bodies).toHaveLength(1));
+
+    // A drag passes many positions within a second; each used to send its own requests,
+    // and a burst of them exhausted the memory of the server.
+    const months = screen.getByRole('group', { name: 'Months on the map' });
+    const first = within(months).getByRole('slider', { name: 'First month on the map' });
+    for (let month = 9; month >= 5; month -= 1) {
+      fireEvent.change(first, { target: { value: String(2026 * 12 + month - 1) } });
+    }
+    // The span shows at once; nothing is asked for before the slider rests.
+    expect(screen.getByText('Loading the hot spots of May to October 2026…')).toBeInTheDocument();
+    expect(bodies).toHaveLength(1);
+
+    expect(
+      await screen.findByText(
+        `May to October 2026: ${pointsExample.total * 6} hot spots on the map, all sensors.`,
+        {},
+        SETTLED,
+      ),
+    ).toBeInTheDocument();
+    // October was on the map already; each month of the resting span is asked for once.
+    expect(bodies[0]).toMatchObject({ month: 10 });
+    expect(
+      bodies
+        .slice(1)
+        .map((body) => Number(body.month))
+        .sort((a, b) => a - b),
+    ).toEqual([5, 6, 7, 8, 9]);
+  });
+
   it('never shows more than six months: the other end follows', async () => {
     const user = userEvent.setup();
     renderScreen();
@@ -314,7 +355,7 @@ describe('months and fire power of the hot spots', () => {
 
     expect(first).toHaveValue(String(2020 * 12));
     expect(last).toHaveValue(String(2020 * 12 + 5));
-    await screen.findByText(/^January to June 2020: /);
+    await screen.findByText(/^January to June 2020: /, {}, SETTLED);
   });
 
   it('steps the whole span one month earlier or later', async () => {
@@ -324,10 +365,10 @@ describe('months and fire power of the hot spots', () => {
     await screen.findByText(/^October 2026: /);
 
     await user.click(screen.getByRole('button', { name: 'One month earlier' }));
-    await screen.findByText(/^September 2026: /);
+    await screen.findByText(/^September 2026: /, {}, SETTLED);
     await user.click(screen.getByRole('button', { name: 'One month later' }));
     await user.click(screen.getByRole('button', { name: 'One month later' }));
-    await screen.findByText(/^November 2026: /);
+    await screen.findByText(/^November 2026: /, {}, SETTLED);
     // November 2026 is the last month of the record: there is nothing later.
     expect(screen.getByRole('button', { name: 'One month later' })).toBeDisabled();
   });
@@ -341,11 +382,11 @@ describe('months and fire power of the hot spots', () => {
     fireEvent.change(within(months).getByRole('slider', { name: 'First month on the map' }), {
       target: { value: String(2026 * 12 + 7) },
     });
-    await screen.findByText(/^August to October 2026: /);
+    await screen.findByText(/^August to October 2026: /, {}, SETTLED);
 
     await user.click(container.querySelector('[data-month="2021-07"]') as HTMLElement);
 
-    await screen.findByText(/^July 2021: /);
+    await screen.findByText(/^July 2021: /, {}, SETTLED);
     expect(within(months).getByRole('slider', { name: 'Last month on the map' })).toHaveValue(
       String(2021 * 12 + 6),
     );

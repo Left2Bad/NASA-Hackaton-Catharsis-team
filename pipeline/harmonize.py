@@ -114,15 +114,15 @@ def find_gap_days(con, daily_path, last_day):
       aqua   Aqua / Terra (from 2002-08)
       snpp   S-NPP / MODIS or S-NPP / NOAA-20, 2012-02 .. lead.SNPP_END
       n20    NOAA-20 / MODIS or NOAA-20 / S-NPP, from lead.N20_FIRST
-    Days with no rows at all count as zero for every sensor. Only days up to `last_day` (the last complete day) are
-    checked. Returns rows (date, sensor, ratio), ratio = the relative ratio (0 = no detections at all).
+    Days with no rows at all (from the first day in the grid) count as zero for every sensor. Only days up to
+    `last_day` (the last complete day) are checked. Returns rows (date, sensor, ratio), ratio = the relative ratio (0 = no detections at all).
     """
     w = f"(ORDER BY date ROWS BETWEEN {GAP_WINDOW} PRECEDING AND {GAP_WINDOW} FOLLOWING)"
     con.execute(f"""
     CREATE OR REPLACE TABLE gd AS
     WITH s AS (SELECT date, sum(n_t)::DOUBLE t, sum(n_a)::DOUBLE a, sum(n_snpp)::DOUBLE s, sum(n_n20)::DOUBLE n
                FROM read_parquet('{Path(daily_path).as_posix()}') GROUP BY date),
-         cal AS (SELECT unnest(generate_series(DATE '{lead.FIRST_DATE}', DATE '{last_day}', INTERVAL 1 DAY))::DATE date),
+         cal AS (SELECT unnest(generate_series(greatest(DATE '{lead.FIRST_DATE}', (SELECT min(date) FROM s)), DATE '{last_day}', INTERVAL 1 DAY))::DATE date),
          d AS (SELECT cal.date, coalesce(t, 0) t, coalesce(a, 0) a, coalesce(s, 0) s, coalesce(n, 0) n
                FROM cal LEFT JOIN s USING (date)),
          r AS (SELECT *, t + a AS m,

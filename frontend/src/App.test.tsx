@@ -565,6 +565,41 @@ describe('states of a real API (B10)', () => {
   });
 });
 
+describe('downloads (F22 to F24)', () => {
+  it('offers the files once the calendar is loaded', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+
+    const downloads = await screen.findByRole('region', { name: 'Downloads' });
+    expect(
+      within(downloads)
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual([
+      'Monthly table (CSV)',
+      'Hot spots (CSV)',
+      'Calendar (PNG)',
+      'Season profile (PNG)',
+      'Yearly totals (PNG)',
+    ]);
+    // The dates of the hot spot file follow the period and the record of the dataset.
+    expect(
+      within(downloads).getByText(
+        new RegExp(`every detection from ${metaExample.first_date} to ${metaExample.last_date}`),
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('has nothing to download before an area is chosen', async () => {
+    renderApp();
+
+    await screen.findByRole('group', { name: 'Example areas' });
+    expect(screen.queryByRole('region', { name: 'Downloads' })).toBeNull();
+  });
+});
+
 describe('coordinates (F2)', () => {
   it('sets the area from typed bounds and closes the form', async () => {
     const user = userEvent.setup();

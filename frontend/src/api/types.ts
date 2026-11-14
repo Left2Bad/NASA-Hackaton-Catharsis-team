@@ -5,6 +5,7 @@ type Schemas = components['schemas'];
 
 export type Geometry = Schemas['Geometry'];
 export type AreaQuery = Schemas['AreaQuery'];
+export type ExportPointsQuery = Schemas['ExportPointsQuery'];
 export type Meta = Schemas['Meta'];
 export type Preset = Schemas['Preset'];
 export type SourceInfo = Schemas['SourceInfo'];

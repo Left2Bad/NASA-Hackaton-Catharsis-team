@@ -149,6 +149,29 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` 
 - **Mocks** honor the period and the size of the area (`src/mocks/tailor.ts`), so these controls can
   be tried without the backend. The fire numbers stay synthetic.
 
+## Downloads
+
+The "Downloads" section of the panel (`src/components/Downloads.tsx`, helpers in `src/export/`).
+
+- **Monthly table, CSV (F23):** `POST /export/calendar.csv` for the area and the chosen years.
+- **Hot spots, CSV (F22):** `POST /export/points.csv`. The years of the period become dates, January 1
+  to December 31, cut to the record of the dataset (`exportDates`). Every row has its sensor and its
+  weight in the harmonized record. Above `limits.max_export_rows` the server answers `EXPORT_TOO_LARGE`
+  and the app says to shorten the period; when the calendar total already exceeds the limit, the
+  note under the buttons warns before the click.
+- **Images, PNG (F24):** the calendar (in the mode that is on screen), the season profile (with the
+  chosen year) and the yearly totals. Every image has a title, a legend and a caption of three lines:
+  the area with its bounds and size, the period with the data date and version, and the data source.
+- **How an image is made:** the charts are SVG already, so a copy with its styles written inline
+  (`chartSvg.ts`) is painted on a canvas. The calendar is an HTML grid on the page, so the export
+  redraws it as SVG from the same data and colors (`calendarSvg.ts`). `png.ts` adds the title, the
+  legend and the caption and saves at double resolution. No library is involved.
+- **Fonts:** an image cannot load the web font of the page, so exports use the system font.
+- **File names** say what, where and when, and carry the data source:
+  `firms-hotspots_kz-steppe_2010-2012.csv`, `firms-calendar_61E-71E_51N-55N_2025.png`.
+- **Data source in a CSV:** a comment line at the top would break opening the file in a spreadsheet,
+  so NASA FIRMS is named in the file name and in the text next to the buttons.
+
 ## Connecting to the real API
 
 1. Start the backend (see `backend/README.md`). It needs the data files in `data/` and, for a browser

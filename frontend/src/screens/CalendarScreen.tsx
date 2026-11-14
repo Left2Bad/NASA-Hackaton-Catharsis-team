@@ -5,6 +5,7 @@ import type { Geometry, Meta } from '../api/types';
 import { AreaMap } from '../components/AreaMap';
 import { BurnCalendar, type CalendarMode } from '../components/BurnCalendar';
 import { CoordinateForm } from '../components/CoordinateForm';
+import { Downloads } from '../components/Downloads';
 import { ErrorNote } from '../components/ErrorNote';
 import { LoadingNote } from '../components/LoadingNote';
 import { NowPanel } from '../components/NowPanel';
@@ -19,15 +20,13 @@ import { roundSignificant } from '../theme/scales';
 import styles from './CalendarScreen.module.css';
 
 // The main screen: the map with area selection on the left, the panel with the
-// calendar and analytics on the right. Some panel sections are still only listed.
+// calendar, the analytics and the downloads on the right.
 
 /** The area of interest: its shape and, when it came from an example, which one. */
 interface Area {
   geometry: Geometry;
   presetId: string | null;
 }
-
-const PLANNED = ['Downloads: hot spots as CSV, the calendar as CSV, charts as PNG'];
 
 /** Shown before any area is chosen: tells the user how to start. */
 function StartPrompt({ meta }: { meta: Meta }) {
@@ -191,14 +190,23 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
         </div>
       )}
 
-      <section className={styles.section} aria-labelledby="planned-heading">
-        <h2 id="planned-heading">Coming to this panel</h2>
-        <ul className={styles.planned}>
-          {PLANNED.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </section>
+      {data && !empty && (
+        <section className={styles.section} aria-labelledby="downloads-heading">
+          <h2 id="downloads-heading">Downloads</h2>
+          <Downloads
+            scope={{
+              geometry: area.geometry,
+              presetId: area.presetId,
+              startYear: period.startYear,
+              endYear: period.endYear,
+            }}
+            areaName={label.name}
+            calendar={data}
+            meta={meta}
+            mode={mode}
+          />
+        </section>
+      )}
     </>
   );
 }

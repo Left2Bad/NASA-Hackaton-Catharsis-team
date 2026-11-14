@@ -1,4 +1,4 @@
-/* Ноутбук: карта слева, панель справа, прокручивается только панель. */
+/* Laptop: the map on the left, the panel on the right, only the panel scrolls. */
 .screen {
   display: grid;
   flex: 1;
@@ -166,7 +166,7 @@
   margin-top: var(--space-2);
 }
 
-/* Телефон и узкое окно: карта и панель идут друг под другом, страница прокручивается целиком. */
+/* Phone and narrow window: the map and the panel stack, and the whole page scrolls. */
 @media (max-width: 960px) {
   .screen {
     display: block;

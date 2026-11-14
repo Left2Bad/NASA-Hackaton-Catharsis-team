@@ -1,7 +1,7 @@
 import { hexToLinear, linearToHex, type Triplet } from './color';
 
-// Симуляция нарушений цветового зрения по модели Machado, Oliveira, Fernandes (2009)
-// при полной выраженности (severity 1.0). Матрицы применяются к линейному RGB.
+// Simulation of color-vision deficiencies after Machado, Oliveira and Fernandes (2009)
+// at full severity (1.0). The matrices are applied to linear RGB.
 
 export type Vision = 'normal' | 'protanopia' | 'deuteranopia' | 'tritanopia';
 
@@ -25,7 +25,7 @@ const MATRICES: Record<Exclude<Vision, 'normal'>, Matrix> = {
   ],
 };
 
-/** Все варианты зрения, для которых проверяются шкалы. */
+/** Every kind of vision the scales are checked against. */
 export const VISIONS: readonly { id: Vision; label: string; note: string }[] = [
   { id: 'normal', label: 'Typical vision', note: 'No simulation' },
   { id: 'deuteranopia', label: 'Deuteranopia', note: 'No green cones, the most common type' },
@@ -33,7 +33,7 @@ export const VISIONS: readonly { id: Vision; label: string; note: string }[] = [
   { id: 'tritanopia', label: 'Tritanopia', note: 'No blue cones, rare' },
 ];
 
-/** Как цвет '#rrggbb' выглядит при заданном типе зрения. */
+/** How the color '#rrggbb' looks with the given kind of vision. */
 export function simulate(hex: string, vision: Vision): string {
   if (vision === 'normal') return hex.toLowerCase();
   const [r, g, b] = hexToLinear(hex);

@@ -42,7 +42,7 @@
   margin-top: var(--space-4);
 }
 
-/* Строка проверки: тип зрения, шкала, образец календаря. */
+/* A check row: the kind of vision, the scale, a calendar sample. */
 .check {
   display: grid;
   grid-template-columns: 200px minmax(0, 300px) minmax(0, 1fr);

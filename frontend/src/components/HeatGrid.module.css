@@ -1,4 +1,4 @@
-/* Сетка: столбец года, 12 месяцев, справа — необязательные подписи. */
+/* The grid: a year column, 12 months and optional labels on the right. */
 .grid {
   --cell-height: 18px;
   --gap: 2px;
@@ -33,20 +33,20 @@
   border-radius: 1px;
 }
 
-/* Месяц без данных: клетки нет, остаётся только пунктирный контур. */
+/* A month without data: no cell, only a dashed outline. */
 .empty {
   border: 1px dashed var(--line-strong);
   opacity: 0.6;
 }
 
-/* Тонкий контур держит самые светлые клетки видимыми на любом фоне. */
+/* A thin outline keeps the lightest cells visible on any background. */
 .cell {
   --outline: inset 0 0 0 1px rgb(22 33 43 / 0.1);
 
   box-shadow: var(--outline);
 }
 
-/* Швы между сенсорами: тёмная линия точно в зазоре между клетками. */
+/* Seams between sensors: a dark line exactly in the gap between cells. */
 .cell[data-seam~='left'] {
   box-shadow:
     var(--outline),

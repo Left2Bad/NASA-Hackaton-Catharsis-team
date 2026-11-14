@@ -1,13 +1,13 @@
-// Две цветовые шкалы календаря (требования F11 и F12 из ТЗ).
+// The two color scales of the calendar (requirements F11 and F12).
 //
-// Цвета подобраны расчётом в пространстве OKLCH, а не на глаз: светлота меняется
-// равномерно, поэтому порядок ступеней читается и без различения оттенков.
-// Свойства шкал закреплены тестами в scales.test.ts, в том числе при трёх типах
-// дальтонизма. Пары «красный – зелёный» в шкалах нет.
+// The colors are computed in the OKLCH space rather than picked by eye: lightness changes
+// evenly, so the order of the steps reads even without telling hues apart.
+// Tests in scales.test.ts lock these properties in, including under three kinds of
+// color-vision deficiency. Neither scale uses a red and green pair.
 
 /**
- * Шкала количества: один тёплый оттенок, от светлого к тёмному.
- * Семь классов; чем темнее, тем больше горячих точек.
+ * Detections scale: one warm hue from light to dark.
+ * Seven classes; the darker the cell, the more hot spots.
  */
 export const COUNT_RAMP = [
   '#fdf1e4',
@@ -20,8 +20,8 @@ export const COUNT_RAMP = [
 ] as const;
 
 /**
- * Шкала аномалий: синий — ниже медианы, оранжевый — выше, в середине нейтральный серый.
- * По три ступени на ветвь, светлота ветвей симметрична.
+ * Anomaly scale: blue is below the median, orange is above, neutral gray is in the middle.
+ * Three steps per branch; the two branches have matching lightness.
  */
 export const ANOMALY_RAMP = [
   '#116bb5',
@@ -33,26 +33,26 @@ export const ANOMALY_RAMP = [
   '#a74a04',
 ] as const;
 
-/** Индекс нейтральной середины в шкале аномалий. */
+/** Index of the neutral middle of the anomaly scale. */
 export const ANOMALY_MIDPOINT = 3;
 
 /**
- * Границы классов аномалии, % к медиане. Они симметричны по отношению значения
- * к медиане: −60 % и +150 % — это «в 2,5 раза меньше» и «в 2,5 раза больше».
+ * Boundaries of the anomaly classes, in % of the median. They are symmetric as ratios
+ * to the median: −60 % and +150 % mean "2.5 times less" and "2.5 times more".
  */
 export const ANOMALY_BREAKS = [-60, -33, -10, 10, 50, 150] as const;
 
-/** Месяц без пожаров: значение 0. */
+/** A month without fires: the value is 0. */
 export const ZERO_COLOR = '#ffffff';
 
-/** Номер класса: сколько границ не превышает значение. Значение на границе идёт в верхний класс. */
+/** Class number: how many boundaries the value has reached. A value on a boundary goes up. */
 export function classOf(value: number, breaks: readonly number[]): number {
   let index = 0;
   while (index < breaks.length && value >= breaks[index]) index += 1;
   return index;
 }
 
-/** Округление до заданного числа значащих цифр — чтобы в легенде были читаемые числа. */
+/** Rounds to a number of significant digits, so the legend shows readable numbers. */
 export function roundSignificant(value: number, digits = 2): number {
   if (value === 0 || !Number.isFinite(value)) return value;
   const magnitude = 10 ** (digits - 1 - Math.floor(Math.log10(Math.abs(value))));
@@ -60,9 +60,9 @@ export function roundSignificant(value: number, digits = 2): number {
 }
 
 /**
- * Границы классов по квантилям положительных значений. Распределение пожаров сильно
- * скошено, и линейная шкала скрыла бы обычные месяцы за одним экстремальным.
- * Возвращает до `classes − 1` возрастающих границ; для однообразных данных их меньше.
+ * Class boundaries at quantiles of the positive values. Fire counts are strongly skewed,
+ * and a linear scale would hide ordinary months behind one extreme month.
+ * Returns up to `classes − 1` increasing boundaries; uniform data gives fewer.
  */
 export function quantileBreaks(
   values: readonly number[],
@@ -85,17 +85,17 @@ export function quantileBreaks(
   return breaks;
 }
 
-/** Цвет ячейки в режиме «количество». Ноль получает отдельный цвет, а не первый класс. */
+/** Cell color in the detections mode. Zero gets its own color, not the first class. */
 export function countColor(value: number, breaks: readonly number[]): string {
   if (value <= 0) return ZERO_COLOR;
-  // Если границ меньше обычного, классы растягиваются на всю шкалу от светлого к тёмному.
+  // With fewer boundaries than usual, the classes stretch over the whole scale.
   const index = classOf(value, breaks);
   const last = COUNT_RAMP.length - 1;
   const scaled = breaks.length === 0 ? last : Math.round((index / breaks.length) * last);
   return COUNT_RAMP[scaled];
 }
 
-/** Цвет ячейки в режиме «аномалия». `null` — аномалию посчитать нельзя. */
+/** Cell color in the anomaly mode. `null` means the anomaly cannot be computed. */
 export function anomalyColor(anomalyPct: number | null): string | null {
   if (anomalyPct === null) return null;
   return ANOMALY_RAMP[classOf(anomalyPct, ANOMALY_BREAKS)];

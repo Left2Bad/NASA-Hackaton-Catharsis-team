@@ -18,19 +18,19 @@ import {
 } from '../theme/scales';
 import styles from './ScalesPage.module.css';
 
-// Страница показывает, как обе шкалы календаря выглядят при нарушениях цветового зрения.
-// Те же свойства проверяются автоматически в src/theme/scales.test.ts.
+// The page shows how both calendar scales look with color-vision deficiencies.
+// The same properties are checked automatically in src/theme/scales.test.ts.
 
-/** Годы для образца: экстремальный 2010 и шов между MODIS и VIIRS в 2012. */
+/** Sample years: the extreme 2010 and the MODIS to VIIRS seam in 2012. */
 const SAMPLE_YEARS = [2013, 2012, 2011, 2010, 2009, 2008];
 
-/** Наименьшая разница между соседними ступенями шкалы при заданном зрении. */
+/** The smallest difference between neighboring steps of a scale for a kind of vision. */
 function closestSteps(ramp: readonly string[], vision: Vision): number {
   const seen = ramp.map((color) => simulate(color, vision));
   return Math.min(...seen.slice(1).map((color, index) => deltaE(seen[index], color)));
 }
 
-/** Наименьшая разница между синей и оранжевой ступенью одного уровня. */
+/** The smallest difference between the blue and the orange step of the same level. */
 function closestBranches(vision: Vision): number {
   const seen = ANOMALY_RAMP.map((color) => simulate(color, vision));
   return Math.min(

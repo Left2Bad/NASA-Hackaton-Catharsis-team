@@ -4,7 +4,7 @@
   min-height: 100dvh;
 }
 
-/* На ноутбуке каркас занимает ровно высоту окна: прокручиваются панель и страницы, а не всё целиком. */
+/* On a laptop the shell is exactly as tall as the window: the panel and pages scroll, not the whole page. */
 @media (min-width: 961px) {
   .shell {
     height: 100dvh;

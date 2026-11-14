@@ -5,7 +5,7 @@ import '@fontsource-variable/geologica';
 import App from './App';
 import './index.css';
 
-/** Запускает моки до первого запроса. В сборке без моков этот код вырезается целиком. */
+/** Starts the mocks before the first request. A build without mocks drops this code entirely. */
 async function enableMocking(): Promise<void> {
   if (__API_MOCKS__) {
     const { worker } = await import('./mocks/browser');
@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
 });
 
 const root = document.getElementById('root');
-if (!root) throw new Error('В index.html нет элемента #root');
+if (!root) throw new Error('index.html has no #root element');
 
 void enableMocking().then(() => {
   createRoot(root).render(

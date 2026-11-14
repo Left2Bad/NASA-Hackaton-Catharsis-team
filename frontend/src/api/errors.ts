@@ -1,6 +1,6 @@
 import type { ErrorCode, ErrorResponse } from './types';
 
-/** Ошибка API в едином виде: код из контракта, текст сервера и статус HTTP. */
+/** An API error in one shape: the contract code, the server text and the HTTP status. */
 export class ApiError extends Error {
   readonly code: ErrorCode | 'UNKNOWN';
   readonly status: number;
@@ -26,7 +26,7 @@ function isErrorResponse(value: unknown): value is ErrorResponse {
   );
 }
 
-/** Превращает тело ответа с ошибкой в ApiError; незнакомое тело даёт код UNKNOWN. */
+/** Turns an error response body into an ApiError; an unknown body gets the code UNKNOWN. */
 export function toApiError(body: unknown, response: Response): ApiError {
   if (isErrorResponse(body)) {
     return new ApiError(body.error.code, body.error.message, response.status);

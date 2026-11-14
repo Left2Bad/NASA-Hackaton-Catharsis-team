@@ -1,8 +1,8 @@
-# Сгенерированное и собранное
+# Generated and built files
 dist
 coverage
 public/mockServiceWorker.js
 src/api/schema.d.ts
 
-# Документы с широкими таблицами правим руками
+# Documents with wide tables are formatted by hand
 *.md

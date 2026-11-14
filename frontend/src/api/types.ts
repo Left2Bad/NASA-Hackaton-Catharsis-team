@@ -1,6 +1,6 @@
 import type { components } from './schema';
 
-// Короткие имена для схем контракта. Сами типы генерируются из contract/openapi.yaml.
+// Short names for contract schemas. The types themselves are generated from contract/openapi.yaml.
 type Schemas = components['schemas'];
 
 export type Geometry = Schemas['Geometry'];

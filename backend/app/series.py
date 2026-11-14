@@ -19,7 +19,7 @@ def _joined(data: Data, table: str, time_col: str, area: Area, start: dt.date, e
       FROM {table} g
       JOIN cells c ON g.iy = c.iy AND g.ix = c.ix
       LEFT JOIN coef w ON w.cy = g.iy // 10 AND w.cx = g.ix // 10
-      WHERE g.iy BETWEEN {int(area.iy.min())} AND {int(area.iy.max())}
+      WHERE {area.cell_filter_sql("g.iy", "g.ix")}
         AND g.{time_col} BETWEEN DATE '{start}' AND DATE '{end}'"""
 
 

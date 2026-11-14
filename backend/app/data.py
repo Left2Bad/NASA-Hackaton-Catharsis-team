@@ -1,7 +1,8 @@
 """Read-only access to pipeline outputs in DATA_DIR (see data/README.md).
 
 Files used: grid_daily.parquet, grid_monthly.parquet, coefficients.parquet, uncertainty.parquet,
-outage_months.csv, harmonized/summary.json, validation/report.json. Small tables are loaded into memory once; the grids stay
+outage_months.csv, harmonized/summary.json, validation/report.json; hotspot points (points_serve/) are read by
+points_service.py. Small tables are loaded into memory once; the grids stay
 on disk and are scanned per request (sorted by iy, so a latitude band reads only its row groups).
 """
 
@@ -90,7 +91,9 @@ class Data:
 
     def _last_standard_date(self) -> dt.date:
         """Last day of standard-processing (SP) data; later days are near-real-time (NRT)."""
-        points = self.dir / "points"
+        points = self.settings.points_path  # data/points_serve on the server
+        if not any(points.glob(f"*_{self.last_date.year}.parquet")):
+            points = self.dir / "points"
         files = sorted(points.glob(f"*_{self.last_date.year}.parquet")) if points.exists() else []
         for f in files:
             cols = [r[0] for r in self.con.execute(f"DESCRIBE SELECT * FROM read_parquet('{f.as_posix()}')").fetchall()]

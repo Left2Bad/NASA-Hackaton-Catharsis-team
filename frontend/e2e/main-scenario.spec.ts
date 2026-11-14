@@ -1,0 +1,166 @@
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { expect, test, type Page } from '@playwright/test';
+
+// The main user scenario, end to end, in a real browser: the same steps as the demo
+// (docs/demo/README.md). The app runs on the saved answers of the real API, so the
+// numbers on screen are compared with those files and not with values written here:
+// the test stays valid after `npm run snapshot` refreshes them.
+
+interface SavedCalendar {
+  area_km2: number;
+  months: { year: number; month: number }[];
+  summary: { peak_year: number };
+}
+
+const AREA = { id: 'amazon-south', name: 'Southern Amazon' };
+const PERIOD = { from: 2010, to: 2020 };
+
+async function savedCalendar(): Promise<SavedCalendar> {
+  const file = fileURLToPath(
+    new URL(`../public/snapshot/calendar_${AREA.id}.json`, import.meta.url),
+  );
+  return JSON.parse(await readFile(file, 'utf8')) as SavedCalendar;
+}
+
+test.beforeEach(async ({ context, baseURL }) => {
+  // The test must not depend on other hosts (map tiles, satellite imagery): requests that
+  // leave the app are cut, and the map falls back to its plain grid.
+  const origin = new URL(baseURL ?? '').origin;
+  await context.route(
+    (url) => url.origin !== origin,
+    (route) => route.abort(),
+  );
+});
+
+/** The calendar grid in either mode. */
+const grid = (page: Page, name: RegExp) => page.getByRole('grid', { name });
+
+/** Clicks a button of the "Downloads" section and returns the file the browser received. */
+async function download(page: Page, button: string) {
+  const files = page.getByRole('group', { name: 'Files to download' });
+  const [file] = await Promise.all([
+    page.waitForEvent('download'),
+    files.getByRole('button', { name: button }).click(),
+  ]);
+  const path = await file.path();
+  return { name: file.suggestedFilename(), body: await readFile(path) };
+}
+
+test('main scenario: area, calendar, anomalies, now, period, downloads, method, link', async ({
+  page,
+  context,
+}) => {
+  const saved = await savedCalendar();
+
+  // 1. The site opens with a prompt and says it runs on saved answers.
+  await page.goto('/');
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Choose an area to see its fire calendar' }),
+  ).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Saved demo data.' })).toBeVisible();
+
+  // 2. An example area loads its calendar: one cell per month of the record.
+  await page.getByRole('button', { name: AREA.name }).click();
+  await expect(page.getByRole('heading', { level: 1, name: AREA.name })).toBeVisible();
+  await expect(grid(page, /^Fire detections by month/)).toBeVisible();
+  await expect(page.locator('[data-month]')).toHaveCount(saved.months.length);
+  await expect(page.getByText(`${saved.area_km2.toLocaleString('en-US')} km²`)).toBeVisible();
+
+  // The summary names the most active year of the saved answer.
+  const summary = page.getByRole('region', { name: 'Summary' });
+  await expect(summary.getByText(String(saved.summary.peak_year), { exact: true })).toBeVisible();
+
+  // 3. The anomaly mode recolors the same calendar.
+  const modes = page.getByRole('group', { name: 'Calendar mode' });
+  await modes.getByRole('button', { name: 'Anomaly' }).click();
+  await expect(modes.getByRole('button', { name: 'Anomaly' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(grid(page, /^Fire anomalies by month/)).toBeVisible();
+
+  // 4. The "Now" panel compares the current month with the usual one.
+  const now = page.getByRole('region', { name: 'Now' });
+  await expect(now.getByRole('list', { name: 'Levels for these days of the month' })).toBeVisible();
+  await expect(now.locator('svg').first()).toBeVisible();
+
+  // 5. A shorter period: the calendar and both charts follow it.
+  const period = page.getByRole('group', { name: 'Period' });
+  await period.getByLabel('From').selectOption(String(PERIOD.from));
+  await period.getByLabel('to').selectOption(String(PERIOD.to));
+  await expect(
+    grid(page, new RegExp(`^Fire anomalies by month, ${PERIOD.from} to ${PERIOD.to}`)),
+  ).toBeVisible();
+  const months = (PERIOD.to - PERIOD.from + 1) * 12;
+  await expect(page.locator('[data-month]')).toHaveCount(months);
+  await expect(page.getByRole('region', { name: 'Season profile' }).locator('svg')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Yearly totals' }).locator('svg')).toBeVisible();
+
+  // The address now describes the view.
+  const view = `area=${AREA.id}&from=${PERIOD.from}&to=${PERIOD.to}&mode=anomaly`;
+  await expect(page).toHaveURL(new RegExp(`#/\\?${view}$`));
+
+  // 6. Downloads: the monthly table as CSV and the calendar as PNG.
+  const years = `${PERIOD.from}-${PERIOD.to}`;
+  const table = await download(page, 'Monthly table (CSV)');
+  expect(table.name).toBe(`firms-calendar_${AREA.id}_${years}.csv`);
+  const rows = table.body.toString('utf8').trimEnd().split('\n');
+  expect(rows[0]).toMatch(/^year,month,/);
+  expect(rows).toHaveLength(1 + months);
+  expect(rows[1]).toMatch(new RegExp(`^${PERIOD.from},1,`));
+
+  const image = await download(page, 'Calendar (PNG)');
+  expect(image.name).toBe(`firms-calendar-anomaly_${AREA.id}_${years}.png`);
+  // The PNG signature, and a size no empty canvas would have.
+  expect(image.body.subarray(1, 4).toString('latin1')).toBe('PNG');
+  expect(image.body.byteLength).toBeGreaterThan(20_000);
+
+  // 7. The "Method" page shows what harmonization changes and how it was checked.
+  await page
+    .getByRole('navigation', { name: 'Sections' })
+    .getByRole('link', { name: 'Method' })
+    .click();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'How the record is made' }),
+  ).toBeVisible();
+  const effect = page.getByRole('region', { name: 'What harmonization changes' });
+  await expect(effect.locator('svg').first()).toBeVisible();
+  const checks = page.getByRole('region', { name: 'How it was checked' });
+  await expect(checks.locator('svg').first()).toBeVisible();
+  await expect(
+    checks.getByRole('heading', { level: 3, name: 'The seams of the record' }),
+  ).toBeVisible();
+
+  // Back on the calendar the view is the one that was left.
+  await page
+    .getByRole('navigation', { name: 'Sections' })
+    .getByRole('link', { name: 'Calendar' })
+    .click();
+  await expect(page.getByRole('heading', { level: 1, name: AREA.name })).toBeVisible();
+  await expect(page.locator('[data-month]')).toHaveCount(months);
+
+  // 8. The link reopens the same view in a new tab.
+  const shared = await context.newPage();
+  await shared.goto(page.url());
+  await expect(shared.getByRole('heading', { level: 1, name: AREA.name })).toBeVisible();
+  await expect(
+    grid(shared, new RegExp(`^Fire anomalies by month, ${PERIOD.from} to ${PERIOD.to}`)),
+  ).toBeVisible();
+  await expect(shared.getByRole('button', { name: AREA.name })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+});
+
+test('the same view fits a phone 360 px wide without scrolling sideways', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await page.goto(`/#/?area=${AREA.id}&mode=anomaly`);
+  await expect(grid(page, /^Fire anomalies by month/)).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Yearly totals' }).locator('svg')).toBeVisible();
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});

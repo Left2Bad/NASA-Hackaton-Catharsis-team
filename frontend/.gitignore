@@ -1,3 +1,6 @@
 # API types are generated from contract/openapi.yaml by `npm run gen:api`
 # (it also runs on `npm install`, `npm run dev` and `npm run build`).
 src/api/schema.d.ts
+
+# The build the end-to-end tests run against (`npm run e2e`)
+dist-e2e/

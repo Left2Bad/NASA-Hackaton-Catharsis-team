@@ -1,0 +1,6 @@
+[project]
+name = "firms-pipeline"
+version = "0.1.0"
+description = "FIRMS MODIS + VIIRS download, unified schema and harmonization"
+requires-python = ">=3.11"
+dependencies = ["duckdb>=1.1", "pandas>=2.2", "pyarrow>=16"]

@@ -10,7 +10,7 @@
   "regions": [
     {
       "id": "kz-steppe",
-      "name": "Северный Казахстан",
+      "name": "Northern Kazakhstan",
       "metrics": {
         "pearson_r": 0.992,
         "bias_pct": 7.6,
@@ -442,7 +442,7 @@
     },
     {
       "id": "amazon-south",
-      "name": "Южная Амазония",
+      "name": "Southern Amazon",
       "metrics": {
         "pearson_r": 0.992,
         "bias_pct": 1.7,
@@ -874,7 +874,7 @@
     },
     {
       "id": "california-north",
-      "name": "Северная Калифорния",
+      "name": "Northern California",
       "metrics": {
         "pearson_r": 0.996,
         "bias_pct": 3.3,
@@ -1308,20 +1308,20 @@
   "seams": [
     {
       "id": "modis_to_snpp_2012",
-      "label": "Переход MODIS → Suomi NPP, 2009–2011 против 2012–2014",
+      "label": "MODIS → Suomi NPP transition, 2009–2011 vs 2012–2014",
       "ratio_harmonized": 1.04,
       "ratio_naive": 4.31
     },
     {
       "id": "snpp_to_n20_2026",
-      "label": "Переход Suomi NPP → NOAA-20, проверка на 2024–2025",
+      "label": "Suomi NPP → NOAA-20 transition, checked on 2024–2025",
       "ratio_harmonized": 1.01,
       "ratio_naive": 1.03
     }
   ],
   "limitations": [
-    "Пожары, которые MODIS не увидел совсем, коэффициент не восстанавливает.",
-    "Для областей меньше нескольких ячеек сетки ряд шумный.",
-    "Перерывы в работе спутников выглядят как периоды низкой активности."
+    "Fires that MODIS missed entirely are not recovered by the coefficient.",
+    "For areas smaller than a few grid cells the series is noisy.",
+    "Satellite outages look like periods of low activity."
   ]
 }

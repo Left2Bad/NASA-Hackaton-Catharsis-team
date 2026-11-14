@@ -2,44 +2,44 @@ openapi: 3.1.0
 info:
   title: Burn Calendar API
   version: 0.2.0
-  summary: Календарь пожарной активности на гармонизированном ряду MODIS + VIIRS
+  summary: Fire activity calendar on the harmonized MODIS + VIIRS record
   description: |
-    Контракт между бэкендом (зона A) и фронтендом (зона B).
+    Contract between the backend (zone A) and the frontend (zone B).
 
-    Соглашения:
-    - имена полей в `snake_case`;
-    - даты в ISO 8601 (`YYYY-MM-DD`), время в UTC;
-    - координаты в порядке GeoJSON: сначала долгота, потом широта;
-    - месяцы нумеруются 1–12;
-    - значения единого ряда выражены в «эквиваленте VIIRS Suomi NPP»;
-    - отсутствующее значение передаётся как `null`, а не пропуском поля;
-    - тексты для человека (`message`, `label`, `name`, `description`, `limitations`) сервер отдаёт
-      на одном языке; идентификаторы (`id`, `code`, значения перечислений) стабильны, и клиент
-      может показывать по ним собственный перевод, а текст сервера — как запасной вариант.
+    Conventions:
+    - field names in `snake_case`;
+    - dates in ISO 8601 (`YYYY-MM-DD`), times in UTC;
+    - coordinates in GeoJSON order: longitude first, then latitude;
+    - months are numbered 1–12;
+    - values of the harmonized record are expressed in "VIIRS Suomi NPP equivalent";
+    - a missing value is sent as `null`, not by omitting the field;
+    - human-readable texts (`message`, `label`, `name`, `description`, `limitations`) come from the server
+      in a single language; identifiers (`id`, `code`, enum values) are stable, so the client
+      can show its own translation keyed by them and use the server text as a fallback.
 
-    Правила изменения контракта описаны в `contract/README.md`.
+    The rules for changing the contract are in `contract/README.md`.
 servers:
   - url: http://localhost:8000/api/v1
-    description: Локальный запуск
+    description: Local run
 tags:
   - name: service
-    description: Служебные эндпоинты
+    description: Service endpoints
   - name: analytics
-    description: Календарь и аналитика по области
+    description: Calendar and analytics for an area
   - name: export
-    description: Выгрузка файлов
+    description: File exports
   - name: method
-    description: Данные для страницы «Метод»
+    description: Data for the "Method" page
 
 paths:
   /health:
     get:
       tags: [service]
       operationId: getHealth
-      summary: Проверка, что сервис жив
+      summary: Check that the service is alive
       responses:
         "200":
-          description: Сервис работает
+          description: The service is running
           content:
             application/json:
               schema:
@@ -49,10 +49,10 @@ paths:
     get:
       tags: [service]
       operationId: getMeta
-      summary: Диапазон дат, шаг сетки, лимиты и области-примеры
+      summary: Date range, grid step, limits and example areas
       responses:
         "200":
-          description: Метаданные набора данных
+          description: Dataset metadata
           content:
             application/json:
               schema:
@@ -62,7 +62,7 @@ paths:
     post:
       tags: [analytics]
       operationId: postCalendar
-      summary: Месячная сетка «год × месяц», медианы, годовые суммы и сводка
+      summary: Monthly "year × month" grid, medians, yearly totals and a summary
       requestBody:
         required: true
         content:
@@ -71,7 +71,7 @@ paths:
               $ref: "#/components/schemas/AreaQuery"
       responses:
         "200":
-          description: Календарь для области. Область без пожаров — тоже 200, со значениями 0.
+          description: Calendar for the area. An area without fires is also 200, with zero values.
           content:
             application/json:
               schema:
@@ -87,7 +87,7 @@ paths:
     post:
       tags: [analytics]
       operationId: postCurrent
-      summary: Текущий месяц с его начала против тех же дней прошлых лет
+      summary: The current month since its start against the same days of past years
       requestBody:
         required: true
         content:
@@ -96,7 +96,7 @@ paths:
               $ref: "#/components/schemas/AreaQuery"
       responses:
         "200":
-          description: Состояние текущего месяца
+          description: State of the current month
           content:
             application/json:
               schema:
@@ -112,7 +112,7 @@ paths:
     post:
       tags: [analytics]
       operationId: postPoints
-      summary: Точки одного месяца для карты (приоритет «Желательно»)
+      summary: Points of one month for the map (priority "nice to have")
       requestBody:
         required: true
         content:
@@ -121,7 +121,7 @@ paths:
               $ref: "#/components/schemas/PointsQuery"
       responses:
         "200":
-          description: Точки в GeoJSON. Если точек больше лимита, `truncated` = true.
+          description: Points in GeoJSON. If there are more points than the limit, `truncated` = true.
           content:
             application/json:
               schema:
@@ -137,7 +137,7 @@ paths:
     post:
       tags: [analytics]
       operationId: postDaily
-      summary: Дневные значения одного года (приоритет «Если успеем»)
+      summary: Daily values of one year (priority "if time allows")
       requestBody:
         required: true
         content:
@@ -146,7 +146,7 @@ paths:
               $ref: "#/components/schemas/DailyQuery"
       responses:
         "200":
-          description: Значение единого ряда на каждый день года
+          description: Value of the harmonized record for every day of the year
           content:
             application/json:
               schema:
@@ -162,10 +162,10 @@ paths:
     post:
       tags: [export]
       operationId: exportPointsCsv
-      summary: Выгрузка горячих точек за запрос в CSV
+      summary: Export of the hot spots for the request as CSV
       description: |
-        Колонки: `lat, lon, acq_datetime, sensor, satellite, conf_class, frp, daynight,
-        pixel_km2, type, quality, harmonized_weight`. Пример — `examples/export_points.csv`.
+        Columns: `lat, lon, acq_datetime, sensor, satellite, conf_class, frp, daynight,
+        pixel_km2, type, quality, harmonized_weight`. Example: `examples/export_points.csv`.
       requestBody:
         required: true
         content:
@@ -174,7 +174,7 @@ paths:
               $ref: "#/components/schemas/ExportPointsQuery"
       responses:
         "200":
-          description: Файл CSV (UTF-8, разделитель — запятая, первая строка — заголовки)
+          description: CSV file (UTF-8, comma-separated, the first row is the header)
           headers:
             Content-Disposition:
               schema:
@@ -195,10 +195,10 @@ paths:
     post:
       tags: [export]
       operationId: exportCalendarCsv
-      summary: Выгрузка месячной таблицы календаря в CSV
+      summary: Export of the monthly calendar table as CSV
       description: |
-        Колонки: `year, month, value, low, high, median, anomaly_pct, percentile, category,
-        source, preliminary, partial`. Пример — `examples/export_calendar.csv`.
+        Columns: `year, month, value, low, high, median, anomaly_pct, percentile, category,
+        source, preliminary, partial`. Example: `examples/export_calendar.csv`.
       requestBody:
         required: true
         content:
@@ -207,7 +207,7 @@ paths:
               $ref: "#/components/schemas/AreaQuery"
       responses:
         "200":
-          description: Файл CSV (UTF-8, разделитель — запятая, первая строка — заголовки)
+          description: CSV file (UTF-8, comma-separated, the first row is the header)
           content:
             text/csv:
               schema:
@@ -223,10 +223,10 @@ paths:
     get:
       tags: [method]
       operationId: getMethodValidation
-      summary: Метрики и ряды проверки гармонизации для страницы «Метод»
+      summary: Metrics and series of the harmonization check for the "Method" page
       responses:
         "200":
-          description: Результаты проверки качества
+          description: Quality check results
           content:
             application/json:
               schema:
@@ -235,28 +235,28 @@ paths:
 components:
   responses:
     BadRequest:
-      description: Некорректный запрос. Код `INVALID_GEOMETRY` или `INVALID_REQUEST`.
+      description: Invalid request. Code `INVALID_GEOMETRY` or `INVALID_REQUEST`.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
     NoData:
-      description: Область вне покрытия набора данных. Код `NO_DATA`.
+      description: The area is outside the dataset coverage. Code `NO_DATA`.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
     TooLarge:
-      description: Слишком большой запрос. Код `AREA_TOO_LARGE` или `EXPORT_TOO_LARGE`.
+      description: The request is too large. Code `AREA_TOO_LARGE` or `EXPORT_TOO_LARGE`.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
 
   schemas:
-    # ---------- Общие типы ----------
+    # ---------- Common types ----------
     Position:
-      description: Координата GeoJSON — [долгота, широта]
+      description: GeoJSON coordinate — [longitude, latitude]
       type: array
       minItems: 2
       maxItems: 2
@@ -269,7 +269,7 @@ components:
           maximum: 90
 
     LinearRing:
-      description: Замкнутое кольцо — первая и последняя точки совпадают
+      description: A closed ring — the first and the last points are the same
       type: array
       minItems: 4
       items:
@@ -305,7 +305,7 @@ components:
               $ref: "#/components/schemas/LinearRing"
 
     Geometry:
-      description: Область интереса — полигон или мультиполигон GeoJSON
+      description: Area of interest — a GeoJSON Polygon or MultiPolygon
       oneOf:
         - $ref: "#/components/schemas/Polygon"
         - $ref: "#/components/schemas/MultiPolygon"
@@ -323,30 +323,30 @@ components:
           minimum: 2000
 
     Metric:
-      description: "`count` — число горячих точек, `frp` — суммарная мощность излучения, МВт"
+      description: "`count` — number of hot spots, `frp` — total fire radiative power, MW"
       type: string
       enum: [count, frp]
 
     Series:
       description: |
-        `harmonized` — единый ряд. `raw` — дополнительно заполняется поле `raw`
-        с исходными значениями сенсоров; `value` при этом остаётся значением единого ряда.
+        `harmonized` — the harmonized record. `raw` — the `raw` field is also filled
+        with the original sensor values; `value` still holds the harmonized value.
       type: string
       enum: [harmonized, raw]
 
     Source:
       description: |
-        Ведущий источник единого ряда в этом периоде:
-        `MODIS_T` — только Terra (до июля 2002), `MODIS_TA` — Terra + Aqua,
-        `VIIRS_SNPP` — Suomi NPP (эталон), `VIIRS_N20` — NOAA-20.
+        Lead source of the harmonized record in this period:
+        `MODIS_T` — Terra only (until July 2002), `MODIS_TA` — Terra + Aqua,
+        `VIIRS_SNPP` — Suomi NPP (reference), `VIIRS_N20` — NOAA-20.
       type: string
       enum: [MODIS_T, MODIS_TA, VIIRS_SNPP, VIIRS_N20]
 
     Category:
       description: |
-        Место значения среди тех же периодов базовых лет:
-        ниже 25-го перцентиля — `below_normal`, 25–75 — `normal`, 75–90 — `above_normal`,
-        выше 90 — `high`, выше максимума базового периода — `record`.
+        Position of the value among the same periods of the baseline years:
+        below the 25th percentile — `below_normal`, 25–75 — `normal`, 75–90 — `above_normal`,
+        above 90 — `high`, above the baseline maximum — `record`.
       type: string
       enum: [below_normal, normal, above_normal, high, record]
 
@@ -383,9 +383,9 @@ components:
             message:
               type: string
 
-    # ---------- Запросы ----------
+    # ---------- Requests ----------
     AreaQuery:
-      description: Общее тело запроса — область, период и параметры ряда
+      description: Common request body — area, period and series parameters
       type: object
       additionalProperties: false
       required: [geometry]
@@ -393,15 +393,15 @@ components:
         geometry:
           $ref: "#/components/schemas/Geometry"
         start_year:
-          description: Первый год периода. По умолчанию — первый год набора данных.
+          description: First year of the period. Defaults to the first year of the dataset.
           type: integer
           minimum: 2000
         end_year:
-          description: Последний год периода. По умолчанию — текущий год.
+          description: Last year of the period. Defaults to the current year.
           type: integer
           minimum: 2000
         baseline:
-          description: Базовый период для медиан. По умолчанию — все полные годы с 2001.
+          description: Baseline period for the medians. Defaults to all complete years since 2001.
           $ref: "#/components/schemas/YearRange"
         metric:
           $ref: "#/components/schemas/Metric"
@@ -453,7 +453,7 @@ components:
           type: string
           format: date
 
-    # ---------- Ответы ----------
+    # ---------- Responses ----------
     Health:
       type: object
       additionalProperties: false
@@ -462,7 +462,7 @@ components:
         status:
           const: ok
         data_version:
-          description: Версия набора данных, меняется при каждом пересчёте пайплайна
+          description: Dataset version, changes with every pipeline rerun
           type: string
 
     SourceInfo:
@@ -475,11 +475,11 @@ components:
         label:
           type: string
         start:
-          description: Первый день, когда источник ведёт единый ряд
+          description: First day on which the source leads the harmonized record
           type: string
           format: date
         end:
-          description: Последний день; `null` — источник ведёт ряд сейчас
+          description: Last day; `null` — the source leads the record now
           type: [string, "null"]
           format: date
 
@@ -503,16 +503,16 @@ components:
       required: [max_area_km2, min_cells_warning, max_export_rows, max_points]
       properties:
         max_area_km2:
-          description: Больше этой площади запрос отклоняется с `AREA_TOO_LARGE`
+          description: Requests over this area are rejected with `AREA_TOO_LARGE`
           type: number
         min_cells_warning:
-          description: Меньше этого числа ячеек сетки — предупреждение `AREA_SMALL`
+          description: Below this number of grid cells the response has the `AREA_SMALL` warning
           type: integer
         max_export_rows:
-          description: Больше этого числа строк выгрузка отклоняется с `EXPORT_TOO_LARGE`
+          description: Exports over this number of rows are rejected with `EXPORT_TOO_LARGE`
           type: integer
         max_points:
-          description: Максимум точек в ответе `/points`
+          description: Maximum number of points in a `/points` response
           type: integer
 
     Coverage:
@@ -521,10 +521,10 @@ components:
       required: [global, regions]
       properties:
         global:
-          description: true — данные загружены по всему миру
+          description: true — data are loaded for the whole world
           type: boolean
         regions:
-          description: Названия загруженных стран, если покрытие не глобальное
+          description: Names of the loaded countries when the coverage is not global
           type: array
           items:
             type: string
@@ -547,20 +547,20 @@ components:
         data_version:
           type: string
         unit:
-          description: Единица значений единого ряда
+          description: Unit of the harmonized record values
           type: string
         grid_deg:
-          description: Шаг сетки в градусах
+          description: Grid step in degrees
           type: number
         first_date:
           type: string
           format: date
         last_date:
-          description: Последний день, за который есть данные
+          description: Last day with data
           type: string
           format: date
         last_standard_date:
-          description: Последний день со стандартной обработкой; позже — предварительные данные
+          description: Last day with standard processing; later data are preliminary
           type: string
           format: date
         sources:
@@ -577,7 +577,7 @@ components:
             $ref: "#/components/schemas/Preset"
 
     RawValues:
-      description: Исходные значения сенсоров без гармонизации; `null` — сенсор в этот период не работал
+      description: Original sensor values without harmonization; `null` — the sensor was not operating in this period
       type: object
       additionalProperties: false
       required: [modis, viirs_snpp, viirs_n20]
@@ -613,25 +613,25 @@ components:
           minimum: 1
           maximum: 12
         value:
-          description: Значение единого ряда за месяц
+          description: Value of the harmonized record for the month
           type: number
           minimum: 0
         low:
-          description: Нижняя граница интервала; для эталонного сенсора равна `value`
+          description: Lower bound of the interval; equals `value` for the reference sensor
           type: number
           minimum: 0
         high:
-          description: Верхняя граница интервала; для эталонного сенсора равна `value`
+          description: Upper bound of the interval; equals `value` for the reference sensor
           type: number
           minimum: 0
         median:
-          description: Медиана этого календарного месяца по базовым годам
+          description: Median of this calendar month over the baseline years
           type: [number, "null"]
         anomaly_pct:
-          description: (value − median) / median × 100; `null`, если медиана равна нулю
+          description: (value − median) / median × 100; `null` if the median is zero
           type: [number, "null"]
         percentile:
-          description: Перцентиль значения среди тех же месяцев базовых лет, 0–100
+          description: Percentile of the value among the same months of the baseline years, 0–100
           type: [number, "null"]
           minimum: 0
           maximum: 100
@@ -642,19 +642,19 @@ components:
         source:
           $ref: "#/components/schemas/Source"
         preliminary:
-          description: true — месяц посчитан по оперативным данным (NRT)
+          description: true — the month is computed from near-real-time data (NRT)
           type: boolean
         partial:
-          description: true — месяц неполный (первый или текущий месяц ряда)
+          description: true — the month is incomplete (the first or the current month of the record)
           type: boolean
         sensor_gap:
           description: |
-            true — у штатного ведущего источника в этом месяце был известный перерыв в работе:
-            значение посчитано по замещающему спутнику (см. `source`) или может быть занижено.
-            Поле необязательное: его отсутствие означает false.
+            true — the regular lead source had a known outage in this month:
+            the value comes from the substitute satellite (see `source`) or may be underestimated.
+            The field is optional; when it is absent, it means false.
           type: boolean
         raw:
-          description: Заполняется только при `series` = `raw`
+          description: Filled only when `series` = `raw`
           $ref: "#/components/schemas/RawValues"
 
     MonthBaseline:
@@ -679,7 +679,7 @@ components:
         max:
           type: number
         n_years:
-          description: Сколько базовых лет вошло в расчёт
+          description: Number of baseline years used
           type: integer
 
     YearTotal:
@@ -692,7 +692,7 @@ components:
         total:
           type: number
         complete:
-          description: false — год неполный (2000 и текущий)
+          description: false — the year is incomplete (2000 and the current year)
           type: boolean
 
     CalendarSummary:
@@ -701,45 +701,45 @@ components:
       required: [peak_year, peak_month, total, trend_pct_per_decade]
       properties:
         peak_year:
-          description: Самый активный полный год; `null`, если в области нет пожаров
+          description: The most active complete year; `null` if the area has no fires
           type: [integer, "null"]
         peak_month:
-          description: Календарный месяц с наибольшей медианой, 1–12
+          description: Calendar month with the highest median, 1–12
           type: [integer, "null"]
         total:
-          description: Сумма значений за выбранный период
+          description: Sum of the values over the selected period
           type: number
         trend_pct_per_decade:
           description: |
-            Тренд годовых сумм, % за 10 лет: наклон линейной регрессии (метод наименьших квадратов)
-            по полным годам периода, умноженный на 10 и делённый на среднюю годовую сумму этих лет.
-            `null`, если лет слишком мало.
+            Trend of the yearly totals, % per 10 years: the slope of a linear (least-squares) regression
+            over the complete years of the period, multiplied by 10 and divided by the mean yearly total of those years.
+            `null` if there are too few years.
           type: [number, "null"]
         trend_line:
           description: |
-            Та же линия тренда двумя точками — для графика годовых сумм.
-            Поле необязательное; `null`, если `trend_pct_per_decade` равен `null`.
+            The same trend line as two points — for the chart of yearly totals.
+            The field is optional; `null` if `trend_pct_per_decade` is `null`.
           oneOf:
             - $ref: "#/components/schemas/TrendLine"
             - type: "null"
 
     TrendLine:
-      description: Концы линии тренда годовых сумм в единицах ряда
+      description: Ends of the trend line of the yearly totals, in record units
       type: object
       additionalProperties: false
       required: [start_year, start_value, end_year, end_value]
       properties:
         start_year:
-          description: Первый полный год периода
+          description: First complete year of the period
           type: integer
         start_value:
-          description: Значение линии тренда в `start_year`
+          description: Value of the trend line in `start_year`
           type: number
         end_year:
-          description: Последний полный год периода
+          description: Last complete year of the period
           type: integer
         end_value:
-          description: Значение линии тренда в `end_year`
+          description: Value of the trend line in `end_year`
           type: number
 
     CalendarResponse:
@@ -762,7 +762,7 @@ components:
         area_km2:
           type: number
         cells:
-          description: Число ячеек сетки, попавших в область
+          description: Number of grid cells inside the area
           type: integer
         unit:
           type: string
@@ -771,19 +771,19 @@ components:
         series:
           $ref: "#/components/schemas/Series"
         baseline:
-          description: Фактически использованный базовый период
+          description: Baseline period actually used
           $ref: "#/components/schemas/YearRange"
         data_through:
-          description: Последний день, вошедший в расчёт
+          description: Last day included in the calculation
           type: string
           format: date
         months:
-          description: Все месяцы выбранного периода по возрастанию даты
+          description: All months of the selected period in ascending date order
           type: array
           items:
             $ref: "#/components/schemas/MonthValue"
         monthly_baseline:
-          description: Ровно 12 элементов, по одному на календарный месяц
+          description: Exactly 12 items, one per calendar month
           type: array
           minItems: 12
           maxItems: 12
@@ -801,7 +801,7 @@ components:
             $ref: "#/components/schemas/Warning"
 
     SameDaysBaseline:
-      description: Статистика за те же дни месяца в базовых годах
+      description: Statistics for the same days of the month in the baseline years
       type: object
       additionalProperties: false
       required: [median, p25, p75, p90, max, n_years]
@@ -825,15 +825,15 @@ components:
       required: [day, value, median]
       properties:
         day:
-          description: День месяца
+          description: Day of the month
           type: integer
           minimum: 1
           maximum: 31
         value:
-          description: Накопленное значение текущего месяца на этот день
+          description: Cumulative value of the current month on this day
           type: number
         median:
-          description: Медиана накопленного значения на этот день по базовым годам
+          description: Median of the cumulative value on this day over the baseline years
           type: number
 
     CurrentResponse:
@@ -855,7 +855,7 @@ components:
         - warnings
       properties:
         as_of:
-          description: Последний день с данными
+          description: Last day with data
           type: string
           format: date
         year:
@@ -865,12 +865,12 @@ components:
           minimum: 1
           maximum: 12
         days_elapsed:
-          description: Сколько дней месяца вошло в расчёт
+          description: Number of days of the month included in the calculation
           type: integer
           minimum: 1
           maximum: 31
         value:
-          description: Значение единого ряда с начала месяца
+          description: Value of the harmonized record since the start of the month
           type: number
           minimum: 0
         baseline_same_days:
@@ -890,7 +890,7 @@ components:
         preliminary:
           type: boolean
         cumulative:
-          description: Накопление по дням — для небольшого графика на панели «Сейчас»
+          description: Daily cumulative values — for the small chart on the "Now" panel
           type: array
           items:
             $ref: "#/components/schemas/CumulativeDay"
@@ -900,7 +900,7 @@ components:
             $ref: "#/components/schemas/Warning"
 
     PointProperties:
-      description: Свойства точки в единой схеме
+      description: Point properties in the common schema
       type: object
       additionalProperties: false
       required:
@@ -927,17 +927,17 @@ components:
           type: string
           enum: [low, nominal, high]
         frp:
-          description: Мощность излучения, МВт
+          description: Fire radiative power, MW
           type: [number, "null"]
         daynight:
           type: string
           enum: [D, N]
         quality:
-          description: SP — стандартная обработка, NRT — оперативные данные
+          description: SP — standard processing, NRT — near-real-time data
           type: string
           enum: [SP, NRT]
         harmonized_weight:
-          description: Вклад точки в единый ряд; 0 — точка не от ведущего источника
+          description: Contribution of the point to the harmonized record; 0 — the point is not from the lead source
           type: number
           minimum: 0
 
@@ -961,7 +961,7 @@ components:
           $ref: "#/components/schemas/PointProperties"
 
     PointsResponse:
-      description: GeoJSON FeatureCollection с двумя дополнительными полями
+      description: GeoJSON FeatureCollection with two extra fields
       type: object
       additionalProperties: false
       required: [type, features, total, truncated]
@@ -973,10 +973,10 @@ components:
           items:
             $ref: "#/components/schemas/PointFeature"
         total:
-          description: Сколько точек всего подходит под запрос
+          description: Total number of points matching the request
           type: integer
         truncated:
-          description: true — отдана только часть точек (лимит `max_points`)
+          description: true — only part of the points is returned (limit `max_points`)
           type: boolean
 
     DailyValue:
@@ -1015,13 +1015,13 @@ components:
       required: [pearson_r, bias_pct, mape_pct, n_months]
       properties:
         pearson_r:
-          description: Корреляция прогноза и факта по месяцам
+          description: Correlation of the prediction and the observation by month
           type: number
         bias_pct:
-          description: Систематическое смещение, %
+          description: Systematic bias, %
           type: number
         mape_pct:
-          description: Медианная абсолютная ошибка, %
+          description: Median absolute error, %
           type: number
         n_months:
           type: integer
@@ -1038,13 +1038,13 @@ components:
           minimum: 1
           maximum: 12
         modis_raw:
-          description: Сырой MODIS (Terra + Aqua)
+          description: Raw MODIS (Terra + Aqua)
           type: [number, "null"]
         viirs_raw:
-          description: Сырой VIIRS Suomi NPP
+          description: Raw VIIRS Suomi NPP
           type: [number, "null"]
         harmonized:
-          description: MODIS, пересчитанный коэффициентом, — прогноз для VIIRS
+          description: MODIS scaled by the coefficient — the prediction for VIIRS
           type: [number, "null"]
 
     ValidationRegion:
@@ -1065,8 +1065,8 @@ components:
 
     SeamTest:
       description: |
-        Тест шва: отношение среднего после шва к среднему до шва.
-        В едином ряду оно близко к 1, при наивной склейке — заметно больше.
+        Seam test: the ratio of the mean after the seam to the mean before the seam.
+        In the harmonized record it is close to 1; with naive stitching it is noticeably larger.
       type: object
       additionalProperties: false
       required: [id, label, ratio_harmonized, ratio_naive]

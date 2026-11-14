@@ -27,6 +27,8 @@ pip install -e "pipeline[dev]"
 | 5. 2026 → Parquet | `python pipeline/api_to_parquet.py` | `data/points/<sensor>_2026.parquet`, `data/points/api_2026.json` | ~2 min |
 | 6. Validation report | `python pipeline/validation.py` (after step 3) | `data/validation/report.json` (schema `ValidationResponse`), `data/validation/checks.json` | ~10 s |
 | 7. Points for the server | `python pipeline/points_serve.py` | `data/points_serve/<sensor>_<year>.parquet` (5.7 GB) for `/points` and the points CSV export | ~11 min |
+| Release: sample data | `python pipeline/make_sample.py --src data --out sample_data --zip burn-calendar-sample-data.zip` | the three example regions, 53 MB zipped (data/README.md, "Sample data") | ~30 s |
+| Release: data archive | `python pipeline/pack_data.py --src data --zip FIRMS_data_<last day>.zip` | the files the backend needs, 1.03 GB (data/README.md, option A) | seconds |
 
 `to_parquet.py` without arguments converts every `data/raw/*_all_countries.zip`; it also takes file names or patterns
 (`python pipeline/to_parquet.py data/raw/modis_*.zip`) and expands them itself, so patterns work in PowerShell and cmd.

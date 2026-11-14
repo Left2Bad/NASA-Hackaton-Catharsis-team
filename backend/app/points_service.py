@@ -147,7 +147,7 @@ def points(data: Data, geojson: dict, year: int, month: int) -> dict:
     streamed in batches through the exact polygon test with a running top-N, so Python holds at most about
     two batches plus max_points rows, however many points the area has.
     """
-    area = geometry.parse(geojson, data.settings.max_area_km2)
+    area = data.parse_area(geojson)
     first = dt.date(year, month, 1)
     first, last = _check_period(data, first, first.replace(day=cal.monthrange(year, month)[1]))
     files = _files(data, first, last)
@@ -234,7 +234,7 @@ class Export:
         if start > end:
             raise ApiError("INVALID_REQUEST", "start_date is later than end_date.")
         self.data = data
-        self.area = geometry.parse(geojson, data.settings.max_area_km2)
+        self.area = data.parse_area(geojson)
         self.first, self.last = _check_period(data, start, end)
         self.files = _files(data, self.first, self.last)
         cur = data.cursor()

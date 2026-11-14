@@ -25,7 +25,8 @@ import duckdb
 import numpy as np
 import pandas as pd
 
-from . import lead
+from . import geometry, lead
+from .errors import ApiError
 from .settings import Settings
 
 COUNT_UNIT = "viirs_snpp_equivalent_detections"
@@ -92,6 +93,24 @@ class Data:
         )
         snpp_last = self.summary.get("sensor_last_dates", {}).get("viirs_snpp")
         self.snpp_last_date = dt.date.fromisoformat(snpp_last) if snpp_last else lead.SNPP_END
+        # a sample data folder (pipeline/make_sample.py) covers only these cell ranges: (iy0, iy1, ix0, ix1)
+        self.sample_ranges = [tuple(r) for r in self.summary.get("sample", {}).get("cell_ranges", [])]
+
+    def parse_area(self, geojson: dict) -> geometry.Area:
+        """geometry.parse, plus NO_DATA for an area outside the cells of a sample data folder (instead of zeros)."""
+        area = geometry.parse(geojson, self.settings.max_area_km2)
+        if self.sample_ranges and area.cells:
+            inside = np.zeros(area.iy.shape, dtype=bool)
+            for iy0, iy1, ix0, ix1 in self.sample_ranges:
+                inside |= (area.iy >= iy0) & (area.iy <= iy1) & (area.ix >= ix0) & (area.ix <= ix1)
+            if not inside.all():
+                boxes = "; ".join(str(b) for b in self.summary["sample"].get("boxes", []))
+                raise ApiError(
+                    "NO_DATA",
+                    "This server runs on the sample dataset, which covers only the preset regions "
+                    f"(west, south, east, north: {boxes}). Draw the area inside one of them, or use the full data.",
+                )
+        return area
 
     def _summary_date(self, key: str, default: dt.date) -> dt.date:
         value = self.summary.get(key)

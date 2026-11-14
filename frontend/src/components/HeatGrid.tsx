@@ -2,32 +2,32 @@ import type { CSSProperties, ReactNode } from 'react';
 import { MONTH_INITIALS } from '../labels';
 import styles from './HeatGrid.module.css';
 
-/** Одна клетка сетки «год × месяц». */
+/** One cell of the year-by-month grid. */
 export interface HeatCell {
-  /** Цвет заливки; `null` — значение есть, но цвет для него не определён. */
+  /** Fill color; `null` means there is a value but no color is defined for it. */
   color: string | null;
-  /** Шов слева: с этого месяца ряд ведёт другой сенсор. */
+  /** Seam on the left: another sensor leads the record from this month on. */
   seamLeft?: boolean;
-  /** Шов снизу: год назад этот месяц вёл другой сенсор. */
+  /** Seam below: another sensor led this month a year earlier. */
   seamBottom?: boolean;
 }
 
 interface HeatGridProps {
-  /** Годы сверху вниз. */
+  /** Years from top to bottom. */
   years: readonly number[];
-  /** Клетка месяца или `undefined`, если данных за месяц нет. */
+  /** The cell for a month, or `undefined` when the month has no data. */
   cell: (year: number, month: number) => HeatCell | undefined;
-  /** Описание сетки для программ чтения с экрана. */
+  /** Description of the grid for screen readers. */
   label: string;
-  /** Подписи справа от сетки: год, напротив которого стоит подпись, и текст. */
+  /** Labels to the right of the grid: the year each label sits next to, and its text. */
   sideLabels?: readonly { year: number; text: ReactNode }[];
-  /** Компактный вид без шапки месяцев — для образцов на странице шкал. */
+  /** Compact form without the month header, for samples on the color scales page. */
   compact?: boolean;
 }
 
 /**
- * Тепловая сетка «год × месяц»: строка — год, столбец — месяц.
- * Только рисует клетки; подсказки, итоги и медианы добавит задача B6.
+ * Year-by-month heat grid: a row per year, a column per month.
+ * It only draws the cells; tooltips, totals and medians come with task B6.
  */
 export function HeatGrid({ years, cell, label, sideLabels = [], compact = false }: HeatGridProps) {
   const firstRow = compact ? 1 : 2;

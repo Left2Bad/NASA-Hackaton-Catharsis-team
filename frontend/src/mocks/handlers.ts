@@ -13,11 +13,11 @@ import points from '../../../contract/examples/points.response.json';
 import type { paths } from '../api/schema';
 import type { AreaQuery } from '../api/types';
 
-// Моки отвечают примерами из contract/examples. Эти файлы проверяются на соответствие
-// контракту в CI (contract/tools/validate.py), поэтому здесь они отдаются как есть.
-// Числа в примерах синтетические и одинаковы для любой области.
+// The mocks answer with the examples from contract/examples. CI checks those files against
+// the contract (contract/tools/validate.py), so they are returned here as they are.
+// The numbers in the examples are synthetic and the same for every area.
 
-/** Шаблон адреса: любой хост, префикс /api/v1. */
+/** URL pattern: any host, the /api/v1 prefix. */
 const url = (path: keyof paths) => `*/api/v1${path}`;
 
 const csv = (body: string, filename: string) =>
@@ -28,8 +28,8 @@ const csv = (body: string, filename: string) =>
     },
   });
 
-// `satisfies` требует обработчик для каждого пути контракта:
-// новый эндпоинт в openapi.yaml без мока не пройдёт проверку типов.
+// `satisfies` requires a handler for every path of the contract:
+// a new endpoint in openapi.yaml without a mock fails the type check.
 const routes = {
   '/health': http.get(url('/health'), () => HttpResponse.json(health)),
 

@@ -4,7 +4,7 @@ import { SOURCE_LABELS } from '../labels';
 
 const keyOf = (year: number, month: number) => year * 12 + (month - 1);
 
-/** Годы ряда сверху вниз: самый свежий — первым. */
+/** Years of the series from top to bottom: the newest first. */
 export function yearsNewestFirst(months: readonly MonthValue[]): number[] {
   const years = months.map((m) => m.year);
   if (years.length === 0) return [];
@@ -14,12 +14,12 @@ export function yearsNewestFirst(months: readonly MonthValue[]): number[] {
 }
 
 /**
- * Готовит клетки сетки «год × месяц» и отмечает швы — места, где единый ряд
- * переходит от одного ведущего сенсора к другому.
+ * Prepares the cells of the year-by-month grid and marks the seams: the places
+ * where the harmonized record passes from one lead sensor to another.
  *
- * Шов слева — источник сменился по сравнению с предыдущим месяцем.
- * Шов снизу — тот же месяц год назад вёл другой источник.
- * Вместе они складываются в ступенчатую линию между эпохами сенсоров.
+ * A seam on the left: the source changed since the previous month.
+ * A seam below: another source led the same month a year earlier.
+ * Together they form a stepped line between sensor eras.
  */
 export function buildCells(
   months: readonly MonthValue[],
@@ -31,7 +31,7 @@ export function buildCells(
     const current = byKey.get(keyOf(year, month));
     if (!current) return undefined;
 
-    // Предыдущий месяц учитываем только в той же строке: у января сосед слева — подпись года.
+    // The previous month counts only within the same row: January has the year label on its left.
     const previous = month > 1 ? byKey.get(keyOf(year, month - 1)) : undefined;
     const yearBefore = byKey.get(keyOf(year - 1, month));
 
@@ -44,8 +44,8 @@ export function buildCells(
 }
 
 /**
- * Подписи эпох сенсоров для правого края сетки: название источника напротив
- * середины периода, когда он ведёт ряд.
+ * Sensor-era labels for the right edge of the grid: the source name next to
+ * the middle of the period in which it leads the record.
  */
 export function sourceSideLabels(
   sources: readonly SourceInfo[],
@@ -58,7 +58,7 @@ export function sourceSideLabels(
 
   const taken = new Set<number>();
   const labels: { year: number; text: string }[] = [];
-  // От свежих источников к старым: при тесноте место получает более новый.
+  // From newer sources to older ones: when rows are scarce, the newer one gets the place.
   for (const source of [...sources].reverse()) {
     const start = clamp(Number(source.start.slice(0, 4)));
     const end = clamp(source.end === null ? newest : Number(source.end.slice(0, 4)));

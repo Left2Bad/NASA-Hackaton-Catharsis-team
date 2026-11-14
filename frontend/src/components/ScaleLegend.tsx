@@ -1,21 +1,21 @@
 import styles from './ScaleLegend.module.css';
 
 interface ScaleLegendProps {
-  /** Что показывает цвет, вместе с единицей измерения. */
+  /** What the color shows, with its unit. */
   title: string;
-  /** Цвета классов слева направо. */
+  /** Class colors from left to right. */
   colors: readonly string[];
-  /** Подписи границ между классами: на одну меньше, чем цветов. */
+  /** Labels of the boundaries between classes: one fewer than the colors. */
   boundaries: readonly string[];
-  /** Подписи под краями шкалы, например «below median» и «above median». */
+  /** Labels under the ends of the scale, for example "below median" and "above median". */
   ends?: readonly [string, string];
-  /** Отдельные обозначения вне шкалы, например «нет пожаров». */
+  /** Separate keys outside the scale, for example "No fires". */
   extras?: readonly { color: string | null; label: string }[];
 }
 
 /**
- * Легенда шкалы с числами на границах классов (требование F11).
- * Числа продублированы текстом, так что цвет — не единственный носитель значения.
+ * Scale legend with numbers on the class boundaries (requirement F11).
+ * The numbers are written as text, so color is never the only carrier of a value.
  */
 export function ScaleLegend({ title, colors, boundaries, ends, extras = [] }: ScaleLegendProps) {
   const columns = { gridTemplateColumns: `repeat(${colors.length}, minmax(0, 1fr))` };

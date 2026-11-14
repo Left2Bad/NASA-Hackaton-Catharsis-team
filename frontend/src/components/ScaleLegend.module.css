@@ -28,7 +28,7 @@
 .swatches span {
   height: 12px;
   border-radius: 1px;
-  /* Тонкий контур держит самые светлые ступени видимыми на белом фоне. */
+  /* A thin outline keeps the lightest steps visible on a white background. */
   box-shadow: inset 0 0 0 1px rgb(22 33 43 / 0.12);
 }
 
@@ -39,7 +39,7 @@
   color: var(--ink-2);
 }
 
-/* Подпись стоит на границе между двумя классами, а не под серединой класса. */
+/* A label sits on the boundary between two classes, not under the middle of a class. */
 .ticks span {
   justify-self: start;
   white-space: nowrap;

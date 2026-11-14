@@ -13,14 +13,14 @@ interface CalendarPreviewProps {
 }
 
 /**
- * Календарь горения в виде для макета (задача B3): сетка, шкала количества и швы
- * между сенсорами. Подсказки, итоги по годам, медианы и режим аномалий — задачи B6 и B7.
+ * The burn calendar in its first form: the grid, the detections scale and the seams
+ * between sensors. Tooltips, yearly totals, medians and the anomaly mode come in B6 and B7.
  */
 export function CalendarPreview({ calendar, sources }: CalendarPreviewProps) {
   const { months } = calendar;
 
   const years = useMemo(() => yearsNewestFirst(months), [months]);
-  // Неполный текущий месяц не участвует в расчёте границ: он занижен по определению.
+  // The partial current month is left out of the class boundaries: it is low by definition.
   const breaks = useMemo(
     () => quantileBreaks(months.filter((m) => !m.partial).map((m) => m.value)),
     [months],

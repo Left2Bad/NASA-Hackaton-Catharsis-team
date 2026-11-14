@@ -1,22 +1,22 @@
-// Работа с цветом: перевод sRGB в линейный RGB и OKLab, разница цветов, контраст WCAG.
-// Нужна шкалам календаря и проверкам доступности.
+// Color math: sRGB to linear RGB and OKLab, color difference, WCAG contrast.
+// Used by the calendar scales and by the accessibility checks.
 
-/** Три компоненты цвета: линейный RGB либо OKLab — по контексту функции. */
+/** Three color components: linear RGB or OKLab, depending on the function. */
 export type Triplet = [number, number, number];
 
 const srgbToLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
 const linearToSrgb = (c: number) => (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055);
 
-/** '#rrggbb' → линейный RGB, компоненты 0–1. */
+/** '#rrggbb' to linear RGB, components 0 to 1. */
 export function hexToLinear(hex: string): Triplet {
   const value = hex.trim().replace(/^#/, '');
-  if (!/^[0-9a-fA-F]{6}$/.test(value)) throw new Error(`Не цвет вида #rrggbb: ${hex}`);
+  if (!/^[0-9a-fA-F]{6}$/.test(value)) throw new Error(`Not a #rrggbb color: ${hex}`);
   const channel = (start: number) =>
     srgbToLinear(parseInt(value.slice(start, start + 2), 16) / 255);
   return [channel(0), channel(2), channel(4)];
 }
 
-/** Линейный RGB → '#rrggbb'; значения вне 0–1 обрезаются. */
+/** Linear RGB to '#rrggbb'; values outside 0 to 1 are clipped. */
 export function linearToHex(rgb: Triplet): string {
   const channel = (c: number) =>
     Math.round(Math.min(1, Math.max(0, linearToSrgb(Math.min(1, Math.max(0, c))))) * 255)
@@ -25,7 +25,7 @@ export function linearToHex(rgb: Triplet): string {
   return `#${channel(rgb[0])}${channel(rgb[1])}${channel(rgb[2])}`;
 }
 
-/** Линейный RGB → OKLab (L — светлота 0–1). */
+/** Linear RGB to OKLab (L is lightness, 0 to 1). */
 export function linearToOklab([r, g, b]: Triplet): Triplet {
   const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
   const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
@@ -37,20 +37,20 @@ export function linearToOklab([r, g, b]: Triplet): Triplet {
   ];
 }
 
-/** Насыщенность цвета в OKLCH: у нейтрального серого близка к нулю. */
+/** Chroma of a color in OKLCH: close to zero for a neutral gray. */
 export function chroma(hex: string): number {
   const [, a, b] = linearToOklab(hexToLinear(hex));
   return Math.hypot(a, b);
 }
 
-/** Светлота цвета в OKLab, 0–1. */
+/** Lightness of a color in OKLab, 0 to 1. */
 export function lightness(hex: string): number {
   return linearToOklab(hexToLinear(hex))[0];
 }
 
 /**
- * Разница двух цветов: расстояние в OKLab × 100.
- * Ориентиры: меньше 6 — почти неразличимы, от 8 — уверенно различимы.
+ * Difference between two colors: the distance in OKLab × 100.
+ * As a guide: below 6 they are almost the same, from 8 up they are easy to tell apart.
  */
 export function deltaE(first: string, second: string): number {
   const a = linearToOklab(hexToLinear(first));
@@ -63,7 +63,7 @@ function relativeLuminance(hex: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
-/** Контраст по WCAG 2: от 1 до 21. Для обычного текста нужно не меньше 4,5. */
+/** WCAG 2 contrast, from 1 to 21. Normal text needs at least 4.5. */
 export function contrastRatio(first: string, second: string): number {
   const [high, low] = [relativeLuminance(first), relativeLuminance(second)].sort((a, b) => b - a);
   return (high + 0.05) / (low + 0.05);

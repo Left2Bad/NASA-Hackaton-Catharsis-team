@@ -3,7 +3,7 @@ import { useHashRoute } from './hooks/useHashRoute';
 import { CalendarScreen } from './screens/CalendarScreen';
 import { ScalesPage } from './screens/ScalesPage';
 
-/** Корень приложения: шапка и текущий раздел по адресу после решётки. */
+/** App root: the header and the section chosen by the address after the hash. */
 export default function App() {
   const route = useHashRoute();
 

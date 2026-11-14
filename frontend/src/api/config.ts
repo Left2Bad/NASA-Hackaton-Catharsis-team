@@ -1,11 +1,11 @@
 const DEFAULT_API_URL = 'http://localhost:8000/api/v1';
 
-/** true — запросы перехватывает Mock Service Worker и отвечает примерами из contract/examples. */
+/** true: Mock Service Worker intercepts requests and answers with contract/examples. */
 export const USE_MOCKS: boolean = __API_MOCKS__;
 
 /**
- * Базовый адрес API. В режиме моков запросы идут на свой же адрес страницы,
- * поэтому приложение не зависит от того, запущен ли бэкенд.
+ * Base address of the API. In mock mode requests go to the page's own origin,
+ * so the app does not depend on the backend running.
  */
 export const API_BASE_URL: string = USE_MOCKS
   ? `${window.location.origin}/api/v1`

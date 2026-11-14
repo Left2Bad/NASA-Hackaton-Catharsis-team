@@ -3,8 +3,8 @@ import { API_BASE_URL } from './config';
 import type { paths } from './schema';
 
 /**
- * Типизированный клиент API: пути, тела запросов и ответы проверяются по контракту.
- * fetch вызывается через globalThis в момент запроса, чтобы моки в тестах успели его подменить.
+ * Typed API client: paths, request bodies and responses are checked against the contract.
+ * fetch is read from globalThis at call time, so test mocks can replace it first.
  */
 export const api = createClient<paths>({
   baseUrl: API_BASE_URL,

@@ -3,8 +3,8 @@ import { api } from './client';
 import { toApiError } from './errors';
 import type { AreaQuery, CalendarResponse, Meta } from './types';
 
-// Клиент openapi-fetch отдаёт координаты как number[], хотя в контракте это пара
-// [долгота, широта]. Приведение `as` возвращает ответу точный тип из схемы.
+// openapi-fetch returns coordinates as number[], while the contract defines a pair
+// [longitude, latitude]. The `as` cast gives the response its exact schema type back.
 
 export async function fetchMeta(): Promise<Meta> {
   const { data, error, response } = await api.GET('/meta');
@@ -18,12 +18,12 @@ export async function fetchCalendar(query: AreaQuery): Promise<CalendarResponse>
   return data as CalendarResponse;
 }
 
-/** Метаданные набора данных: диапазон дат, источники, лимиты, области-примеры. */
+/** Dataset metadata: date range, sources, limits, example areas. */
 export function useMeta() {
   return useQuery({ queryKey: ['meta'], queryFn: fetchMeta, staleTime: Infinity });
 }
 
-/** Календарь для области. Пока запроса нет (`null`), ничего не загружается. */
+/** Calendar for an area. Nothing loads while there is no query (`null`). */
 export function useCalendar(query: AreaQuery | null) {
   return useQuery({
     queryKey: ['calendar', query],

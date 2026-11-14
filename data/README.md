@@ -87,7 +87,6 @@ Do not commit anything from `data/`. Do not commit keys or `.env`.
 ### Option A — a ready-made team archive is available (fast, ~5 minutes)
 
 The team publishes the data archive `FIRMS_data_2026-11-13.zip` (1.03 GB, 12 files) as a GitHub release asset:
-<!-- TODO(user): the link goes live once the GitHub release "data-2026-11-13" is published -->
 https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/download/data-2026-11-13/FIRMS_data_2026-11-13.zip
 The user downloads it (or gives you the path to a copy). Inside the archive, paths are relative to the repository root
 and all start with `data/`. It is packed from a full data folder by `python pipeline/pack_data.py --src data --zip <file>`

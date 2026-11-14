@@ -89,8 +89,9 @@ The 30-second pitch video is built from real screenshots of the live site (https
 script; nothing in it is generated except what is drawn on top: the zoom, the highlight rings, the pointer, the
 captions and the end card were made in code with Remotion (https://www.remotion.dev/), written with Claude Code
 (Claude Opus 5.5). Its voice-over is generated with **ElevenLabs** (https://elevenlabs.io, model eleven_v3) from a
-script drafted with Claude Code; the video has no music, only short synthesized click sounds. Sources:
-`docs/demo/video/`.
+script drafted with Claude Code. The background music is not generated: "Music by Dmitrii Spis from Pixabay"
+(https://pixabay.com/users/nastelbom-48128234/, track 617068, Pixabay Content License); the click sounds are
+synthesized in code. Sources: `docs/demo/video/`.
 
 Synthetic numbers exist only in `contract/examples/` (made by `contract/tools/generate_examples.py`), in the
 development mocks of the frontend and in the backend test fixtures, and they are marked as synthetic. The live site,

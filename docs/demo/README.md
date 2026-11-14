@@ -13,7 +13,7 @@ The pitch for the Space Apps submission is **one of two**: a video of at most 30
 | Video, 29.5 s, 1920 × 1080 | upload to YouTube (Unlisted) and put the link here; sources in [video/](video/) |
 
 The video is made from real screenshots of the live site, with zooms, highlight rings, a pointer and word-timed
-captions drawn on top; the voice-over is ElevenLabs. Every AI tool used is named in the "Data & Resources Usage" field
+captions drawn on top; the voice-over is ElevenLabs; the music is by Dmitrii Spis from Pixabay. Every AI tool used is named in the "Data & Resources Usage" field
 of the submission (see [../submission/resources.md](../submission/resources.md)).
 
 Slide 7 carries the names of the team and the address of the site. Before the deck is submitted, upload the PDF
@@ -47,7 +47,10 @@ One area carries the story: **Northern California**, data through 2026-11-13. Ti
    square brackets are acting directions, not spoken); word times in [video/words.ts](video/words.ts), with a 0.5 s
    pause added after "The jump is gone."
 3. Picture: [video/Pitch.tsx](video/Pitch.tsx), a Remotion composition (1920 × 1080, 30 fps); sound:
-   [video/mix.py](video/mix.py) (voice, the pause, click sounds), loudness −16 LUFS.
+   [video/mix.py](video/mix.py) (voice, the pause, click sounds and the music, which ducks under the voice),
+   loudness −16 LUFS.
+4. Music: Music by Dmitrii Spis from Pixabay (https://pixabay.com/users/nastelbom-48128234/, track 617068, Pixabay
+   Content License; attribution is not required but given). Put the same line in the YouTube description.
 
 If the data are refreshed, take the frames again and check every number in the voice-over and on the rings.
 

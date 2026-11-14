@@ -17,19 +17,23 @@ any area on the map. It is built for fire services, climate researchers and jour
 Coefficients are fitted on 2012–2020 and tested on 2021–2025 against real Suomi NPP observations
 (`data/validation/report.json`, served at `GET /api/v1/method/validation`):
 
-| Region | Pearson r | Bias | Median monthly error | Months |
-| --- | --- | --- | --- | --- |
-| Northern Kazakhstan | 0.982 | −12.8 % | 22.3 % | 56 |
-| Southern Amazon | 0.999 | +1.3 % | 18.1 % | 56 |
-| Northern California | 0.999 | +5.3 % | 23.2 % | 56 |
+| Region | Bias | Median monthly error | Same with one world coefficient | Pearson r | Months |
+| --- | --- | --- | --- | --- | --- |
+| Northern Kazakhstan | −8.8 % | 19.9 % | +24.5 % / 30.3 % | 0.990 | 56 |
+| Southern Amazon | −0.3 % | 16.3 % | +7.2 % / 38.2 % | 0.999 | 56 |
+| Northern California | +4.2 % | 21.4 % | −6.2 % / 21.6 % | 0.999 | 56 |
 
-**The 2012 seam is removed.** Worldwide, the ratio of the 2012–2014 mean to the 2009–2011 mean is **3.84** with a naive
+Bias and the median error are what the coefficients change. Pearson r mostly follows the shared seasonal cycle: raw MODIS,
+without any coefficient, scores the same r (0.984 / 0.999 / 0.999) at a bias of about −70 %.
+
+**The 2012 seam is removed.** Worldwide, the ratio of the 2012–2014 mean to the 2009–2011 mean is **3.80** with a naive
 splice (raw MODIS before, raw VIIRS after) and **0.97** in the harmonized record.
 
-Worldwide over 5° blocks the MODIS Terra + Aqua forecast reaches r = 0.99 with a weighted error of 13–15 %. Along the way
+Worldwide over 5° blocks the MODIS Terra + Aqua forecast reaches r = 0.99 with a weighted error of 12–13 %. Along the way
 we found that the Terra and Aqua orbit drift since about 2021 biases any MODIS-to-VIIRS fit that uses recent years, so the
-coefficients are fitted on nominal-orbit years only. Months when Suomi NPP had outages are filled from NOAA-20.
-Full method, all metrics and limitations: [docs/methodology.md](docs/methodology.md).
+coefficients are fitted on nominal-orbit years only. Days when a satellite did not report are found one by one and filled
+from another satellite where one exists (Suomi NPP from NOAA-20, Aqua from Terra); months that could not be filled
+completely are flagged. Full method, all metrics and limitations: [docs/methodology.md](docs/methodology.md).
 
 ## Architecture
 
@@ -37,10 +41,10 @@ Full method, all metrics and limitations: [docs/methodology.md](docs/methodology
 VIIRS 375 m Suomi NPP since 2012, NOAA-20 since 2018) and the 2026 data through the FIRMS Area API, converts them to one
 Parquet schema, drops low-confidence and non-vegetation detections, and builds a 0.1° × day grid. It then fits the
 harmonization coefficients per 1° cell with shrinkage to a 5° block and the world value, estimates `low`/`high`
-intervals, detects sensor outage months and writes the validation report.
+intervals, detects days when a satellite did not report and writes the validation report.
 
 **Data (`data/`, not in git).** The pipeline output: the daily and monthly grids, coefficients, uncertainty table,
-outage months, a world summary and the validation report, about 1 GB in total; plus a lightweight copy of all detections
+outage months and gap days, a world summary and the validation report, about 1 GB in total; plus a lightweight copy of all detections
 (about 5.7 GB) for the map points and CSV export. [data/README.md](data/README.md) explains how to get or rebuild it.
 
 **Backend (`backend/`, FastAPI + DuckDB).** A read-only API over the Parquet files: calendar for any GeoJSON area,
@@ -54,46 +58,56 @@ the two sides is [contract/openapi.yaml](contract/openapi.yaml), with examples i
 ## Quick start (local)
 
 You need Python 3.13 (3.11 or newer works; CI uses 3.12), Node 22 or newer (pinned in `frontend/.nvmrc`) and git.
-Commands run from the repository root; on Linux/macOS use `.venv/bin/` instead of `.venv/Scripts/`.
+Every command below runs from the repository root, one per line, in Windows PowerShell and in bash alike
+(on Linux/macOS use `python3` if `python` is not Python 3).
 
-**1. Python environment**
+**1. Python environment.** Create it once, then activate it in every new terminal:
 
 ```bash
 python -m venv .venv
 ```
 
+| Shell | Activate |
+| --- | --- |
+| Windows PowerShell | `.venv\Scripts\Activate.ps1` (if scripts are blocked: `Set-ExecutionPolicy -Scope Process RemoteSigned` first) |
+| Git Bash on Windows | `source .venv/Scripts/activate` |
+| Linux / macOS | `source .venv/bin/activate` |
+
 ```bash
-.venv/Scripts/pip install -e "pipeline[dev]" -e "backend[dev]"
+pip install -e "pipeline[dev]" -e "backend[dev]"
 ```
 
 **2. Data.** Follow [data/README.md](data/README.md): either unpack the team's ready-made archive (about 5 minutes) or
 rebuild everything from the FIRMS archives (about 1.5 hours, 20 GB of disk, 12 GB of RAM):
 
 ```bash
-.venv/Scripts/python pipeline/download_archives.py
+python pipeline/download_archives.py
 ```
 
 ```bash
-.venv/Scripts/python pipeline/to_parquet.py data/raw/*.zip
+python pipeline/to_parquet.py
 ```
 
 ```bash
-.venv/Scripts/python pipeline/grid.py
+python pipeline/grid.py
 ```
+
+`to_parquet.py` without arguments converts every archive in `data/raw/`; it also accepts files or patterns such as
+`data/raw/modis_*.zip` and expands them itself, so they work in PowerShell too.
 
 **3. Harmonization and the validation report** (seconds, run after the data is in place):
 
 ```bash
-.venv/Scripts/python pipeline/harmonize.py
+python pipeline/harmonize.py
 ```
 
 ```bash
-.venv/Scripts/python pipeline/validation.py
+python pipeline/validation.py
 ```
 
-Optional: `pipeline/points_serve.py` builds `data/points_serve/` for the map points and the points CSV export (about 11 minutes),
-and `pipeline/fetch_api.py` loads 2026 through the FIRMS Area API (needs a free key, see `.env.example`).
-The full step table is in [pipeline/README.md](pipeline/README.md).
+Optional: `python pipeline/points_serve.py` builds `data/points_serve/` for the map points and the points CSV export
+(about 11 minutes), and `python pipeline/fetch_api.py` loads 2026 through the FIRMS Area API (needs a free key, see
+`.env.example`). The full step table, including the 2026 refresh, is in [pipeline/README.md](pipeline/README.md).
 
 **4. Backend**
 
@@ -102,15 +116,23 @@ cp .env.example .env
 ```
 
 ```bash
-cd backend && ../.venv/Scripts/uvicorn app.main:app --port 8000 --env-file ../.env
+cd backend
+```
+
+```bash
+uvicorn app.main:app --port 8000 --env-file ../.env
 ```
 
 API docs: http://localhost:8000/api/v1/docs. Details: [backend/README.md](backend/README.md).
 
-**5. Frontend** (in a second terminal)
+**5. Frontend** (in a second terminal, from the repository root)
 
 ```bash
-cd frontend && npm ci
+cd frontend
+```
+
+```bash
+npm ci
 ```
 
 ```bash
@@ -120,8 +142,23 @@ npm run dev:api
 Open http://localhost:5173. `npm run dev` runs the frontend on the contract examples without the backend.
 Details: [frontend/README.md](frontend/README.md).
 
-**Checks (as in CI):** `ruff check . && ruff format --check . && pytest -q` in `pipeline/` and in `backend/`;
-`python contract/tools/validate.py` for the contract; `npm run lint && npm test && npm run build` in `frontend/`.
+**Checks (as in CI)**, with the environment active. In `pipeline/` and again in `backend/`:
+
+```bash
+ruff check .
+```
+
+```bash
+ruff format --check .
+```
+
+```bash
+pytest -q
+```
+
+The contract check needs its own tools once (`pip install -r contract/tools/requirements.txt`), then
+`python contract/tools/validate.py` from the repository root. Frontend: `npm run lint`, `npm test` and `npm run build`
+in `frontend/`.
 
 ## Repository layout
 

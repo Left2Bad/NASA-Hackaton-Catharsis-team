@@ -28,14 +28,14 @@ def query(
 
     `where` is an extra SQL condition on the joined rows (alias j), e.g. one calendar month of every year.
     """
-    table, time_col = ("grid_daily", "date") if daily else ("grid_monthly", "month")
+    table, time_col = ("grid_daily", "date") if daily else (data.monthly_table, "month")
     p = "n" if metric == "count" else "f"
-    source = lead.lead_sql(f"j.{time_col}", data.outages)
+    source = lead.lead_sql(f"j.{time_col}", data.outages, data.gap_days)  # day rule; see Data.monthly_table
     cur = data.cursor()
     cur.register("cells", data.cells_frame(area.iy, area.ix))
     df = cur.execute(f"""
       WITH j AS ({_joined(data, table, time_col, area, start, end)})
-      SELECT j.{time_col} AS t,
+      SELECT {"j.date" if daily else "date_trunc('month', j.month)::DATE"} AS t,
              sum({lead.value_sql(metric, "j", "j", source)})::DOUBLE AS value,
              sum(j.{p}_t + j.{p}_a)::DOUBLE AS modis,
              sum(j.{p}_snpp)::DOUBLE AS viirs_snpp,
@@ -54,10 +54,13 @@ def month_range(first: dt.date, last: dt.date) -> list[dt.date]:
     return out
 
 
-def raw_available(month: dt.date) -> dict[str, bool]:
-    """Which sensors were reporting in this month (otherwise the raw value is null)."""
+def raw_available(month: dt.date, snpp_last: dt.date = lead.SNPP_END) -> dict[str, bool]:
+    """Which sensors were reporting in this month (otherwise the raw value is null).
+
+    `snpp_last` is the last day with Suomi NPP data (Data.snpp_last_date): its month still has S-NPP values.
+    """
     return {
         "modis": month >= lead.FIRST_DATE,
-        "viirs_snpp": dt.date(2012, 1, 1) <= month <= lead.SNPP_END,
+        "viirs_snpp": dt.date(2012, 1, 1) <= month <= snpp_last,
         "viirs_n20": month >= lead.N20_FIRST,
     }

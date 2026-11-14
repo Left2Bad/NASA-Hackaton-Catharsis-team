@@ -69,6 +69,7 @@ def build(data: Data, q: AreaQuery) -> dict:
         partial = m == partial_month
         low, high = data.uncertainty.interval(source, q.metric, v)
         vr = stats.r1(v)
+        pct = None if partial else stats.percentile_of(samples[m.month], v)
         item = {
             "year": m.year,
             "month": m.month,
@@ -77,8 +78,8 @@ def build(data: Data, q: AreaQuery) -> dict:
             "high": max(stats.r1(high), vr),
             "median": b["median"] if b["n_years"] else None,
             "anomaly_pct": None if partial else stats.anomaly_pct(v, b["median"] if b["n_years"] else None),
-            "percentile": None if partial else stats.percentile_of(samples[m.month], v),
-            "category": None if partial else stats.category(v, b, base[0] <= m.year <= base[1]),
+            "percentile": pct,
+            "category": None if partial else stats.category(pct, v, b, base[0] <= m.year <= base[1]),
             "source": source,
             "preliminary": month_end(m) > data.last_standard_date,
             "partial": partial,

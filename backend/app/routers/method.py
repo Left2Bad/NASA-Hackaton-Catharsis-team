@@ -12,5 +12,5 @@ router = APIRouter(tags=["method"])
 def method_validation(request: Request) -> Response:
     report = request.app.state.data.validation_report()
     if report is None:
-        raise ApiError("NO_DATA", "Отчёт проверки ещё не построен: запустите pipeline/validation.py")
+        raise ApiError("NO_DATA", "The validation report has not been built yet: run pipeline/validation.py")
     return Response(report, media_type="application/json")

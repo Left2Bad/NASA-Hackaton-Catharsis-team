@@ -17,16 +17,14 @@ def _warnings(data: Data, area, preliminary: bool, gap_months: list[dt.date]) ->
         out.append(
             {
                 "code": "AREA_SMALL",
-                "message": f"В область попало ячеек сетки: {area.cells}. Для такой маленькой области ряд шумный.",
+                "message": f"The area contains {area.cells} grid cells. For such a small area the series is noisy.",
             }
         )
     if preliminary:
-        out.append({"code": "PRELIMINARY_DATA", "message": "Текущий месяц посчитан по оперативным данным."})
+        out.append({"code": "PRELIMINARY_DATA", "message": "The current month is computed from near-real-time data."})
     if gap_months:
         months = ", ".join(f"{m:%Y-%m}" for m in gap_months)
-        out.append(
-            {"code": "SENSOR_GAP", "message": f"Перерыв в работе Suomi NPP, значения взяты с NOAA-20: {months}."}
-        )
+        out.append({"code": "SENSOR_GAP", "message": f"Suomi NPP outage; values are taken from NOAA-20: {months}."})
     return out
 
 
@@ -38,7 +36,9 @@ def current(data: Data, q: AreaQuery) -> dict:
     if q.baseline is not None:
         base = (q.baseline.start_year, q.baseline.end_year)
         if base[0] > base[1] or base[0] < first_full or base[1] > last_full:
-            raise ApiError("INVALID_REQUEST", f"Базовый период должен лежать в полных годах {first_full}–{last_full}.")
+            raise ApiError(
+                "INVALID_REQUEST", f"The baseline period must lie within the full years {first_full}–{last_full}."
+            )
     else:
         base = (first_full, last_full)
     # only this calendar month, days 1..days, in the baseline years and the current year
@@ -98,7 +98,7 @@ def _valid(y: int, m: int, d: int) -> bool:
 def daily(data: Data, q: DailyQuery) -> dict:
     area = geometry.parse(q.geometry, data.settings.max_area_km2)
     if q.year > data.last_date.year or q.year < lead.FIRST_DATE.year:
-        raise ApiError("NO_DATA", f"Дневные данные есть за {lead.FIRST_DATE}–{data.last_date}.")
+        raise ApiError("NO_DATA", f"Daily data is available for {lead.FIRST_DATE}–{data.last_date}.")
     first = max(dt.date(q.year, 1, 1), lead.FIRST_DATE)
     last = min(dt.date(q.year, 12, 31), data.last_date)
     df = series.query(data, area, q.metric, first, last, daily=True)

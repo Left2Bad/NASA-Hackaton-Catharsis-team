@@ -34,13 +34,13 @@ def _files(data: Data, first: dt.date, last: dt.date) -> list[Path]:
     root = data.settings.points_path
     files = [f for y in range(first.year, last.year + 1) for f in sorted(root.glob(f"*_{y}.parquet"))]
     if not files:
-        raise ApiError("NO_DATA", "Точки за этот период не загружены на сервер.")
+        raise ApiError("NO_DATA", "Points for this period are not loaded on the server.")
     return files
 
 
 def _check_period(data: Data, first: dt.date, last: dt.date) -> tuple[dt.date, dt.date]:
     if last < lead.FIRST_DATE or first > data.last_date:
-        raise ApiError("NO_DATA", f"Точки есть за {lead.FIRST_DATE}–{data.last_date}.")
+        raise ApiError("NO_DATA", f"Points are available for {lead.FIRST_DATE}–{data.last_date}.")
     return max(first, lead.FIRST_DATE), min(last, data.last_date)
 
 
@@ -184,7 +184,7 @@ class Export:
 
     def __init__(self, data: Data, geojson: dict, start: dt.date, end: dt.date):
         if start > end:
-            raise ApiError("INVALID_REQUEST", "start_date позже end_date.")
+            raise ApiError("INVALID_REQUEST", "start_date is later than end_date.")
         self.data = data
         self.area = geometry.parse(geojson, data.settings.max_area_km2)
         self.first, self.last = _check_period(data, start, end)
@@ -198,9 +198,7 @@ class Export:
         if self.count > data.settings.max_export_rows:
             raise ApiError(
                 "EXPORT_TOO_LARGE",
-                f"В выгрузке больше {data.settings.max_export_rows:,} точек. Сократите период или область.".replace(
-                    ",", " "
-                ),
+                f"The export has more than {data.settings.max_export_rows:,} points. Shorten the period or reduce the area.",
             )
 
     def _count(self, cur) -> int:

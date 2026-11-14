@@ -1,6 +1,6 @@
 name: contract
 
-# Общая зона. Проверяет, что openapi.yaml корректен и примеры ему соответствуют.
+# Shared zone. Checks that openapi.yaml is valid and the examples match it.
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Установить зависимости проверки
+      - name: Install validation dependencies
         run: pip install -r contract/tools/requirements.txt
-      - name: Проверить контракт и примеры
+      - name: Validate the contract and examples
         run: python contract/tools/validate.py

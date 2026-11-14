@@ -46,20 +46,20 @@ class ExportPointsQuery(BaseModel):
 PRESETS = [
     {
         "id": "kz-steppe",
-        "name": "Северный Казахстан",
-        "description": "Степные и сельскохозяйственные палы весной и в конце лета",
+        "name": "Northern Kazakhstan",
+        "description": "Steppe and cropland burning in spring and late summer",
         "bbox": (61.0, 51.0, 71.0, 55.0),
     },
     {
         "id": "amazon-south",
-        "name": "Южная Амазония",
-        "description": "Сезон выжигания в августе–сентябре",
+        "name": "Southern Amazon",
+        "description": "Burning season in August and September",
         "bbox": (-62.0, -13.0, -52.0, -7.0),
     },
     {
         "id": "california-north",
-        "name": "Северная Калифорния",
-        "description": "Крупные лесные пожары летом и осенью",
+        "name": "Northern California",
+        "description": "Large wildfires in summer and autumn",
         "bbox": (-124.0, 38.5, -120.0, 42.0),
     },
 ]

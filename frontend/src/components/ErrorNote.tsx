@@ -5,7 +5,12 @@ import styles from './ErrorNote.module.css';
 /** The text to show for a failed request. Every code gets the app's own wording. */
 function messageFor(error: Error): { code: string; text: string } {
   if (!(error instanceof ApiError)) return { code: 'NETWORK', text: CLIENT_ERROR_LABELS.NETWORK };
-  if (error.code === 'NETWORK' || error.code === 'TIMEOUT' || error.code === 'UNKNOWN') {
+  if (
+    error.code === 'NETWORK' ||
+    error.code === 'TIMEOUT' ||
+    error.code === 'UNKNOWN' ||
+    error.code === 'OFFLINE'
+  ) {
     return { code: error.code, text: CLIENT_ERROR_LABELS[error.code] };
   }
   return { code: error.code, text: ERROR_LABELS[error.code] };

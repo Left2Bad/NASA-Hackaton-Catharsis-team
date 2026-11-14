@@ -41,3 +41,13 @@ The `screenshots/` folder. File names start with the task a screenshot belongs t
 | `b10-real-data-calendar.jpg` | Real FIRMS data, 2000 to 2025: the burn calendar of the Southern Amazon |
 | `b10-real-data-now.jpg` | Real FIRMS data: the summary and the "Now" panel of the Southern Amazon |
 | `b10-real-data-charts.jpg` | Real FIRMS data: the season profile and the yearly totals of the Southern Amazon |
+| `b11-export-calendar.png` | A file the app exports: the burn calendar of the Southern Amazon with its caption (real FIRMS data) |
+| `b11-export-season-profile.png` | Exported season profile: 2004 over the typical season |
+| `b11-export-yearly-totals.png` | Exported yearly totals with the trend line |
+| `b11-export-calendar-anomaly.png` | Exported calendar in the anomaly mode |
+| `b11-export-current-month.png` | Exported chart of the current month with its own caption |
+| `b12-method-top.jpg` | The "Method" page: what the sensors recorded and the harmonized record, Southern Amazon (real FIRMS data) |
+| `b12-method-checks.jpg` | The "Method" page: the forecast from MODIS against VIIRS on the test years, with the metrics |
+| `b12-method-details.jpg` | The "Method" page: limitations and the method text from `docs/methodology.md` |
+| `b13-fallback-banner.jpg` | The server is off: the app runs on the saved answers and says so under the header |
+| `b11-downloads-section.jpg` | The "Downloads" section of the panel, with the warning about the row limit |

@@ -68,7 +68,12 @@ export function SeasonProfile({ calendar }: { calendar: CalendarResponse }) {
   };
 
   return (
-    <figure className={styles.chart}>
+    <figure
+      className={styles.chart}
+      data-figure="season-profile"
+      data-figure-title={`Season profile: ${year} over the typical season`}
+      data-figure-year={year}
+    >
       <figcaption className={styles.caption}>
         <label htmlFor={selectId}>Year over the typical season</label>
         <select
@@ -144,6 +149,7 @@ export function SeasonProfile({ calendar }: { calendar: CalendarResponse }) {
           {cursor.isPicked && (
             <line
               className={styles.crosshair}
+              data-export-skip=""
               x1={x(cursor.active)}
               x2={x(cursor.active)}
               y1={MARGIN.top}
@@ -169,10 +175,17 @@ export function SeasonProfile({ calendar }: { calendar: CalendarResponse }) {
                 />
               ),
           )}
-          <circle className={styles.medianDot} cx={x(cursor.active)} cy={y(active.median)} r={4} />
+          <circle
+            className={styles.medianDot}
+            data-export-skip=""
+            cx={x(cursor.active)}
+            cy={y(active.median)}
+            r={4}
+          />
           {active.value && !active.value.partial && (
             <circle
               className={styles.seriesDot}
+              data-export-skip=""
               cx={x(cursor.active)}
               cy={y(active.value.value)}
               r={4.5}
@@ -181,6 +194,7 @@ export function SeasonProfile({ calendar }: { calendar: CalendarResponse }) {
 
           <rect
             className={styles.hitArea}
+            data-export-skip=""
             x={MARGIN.left}
             y={0}
             width={plotWidth}

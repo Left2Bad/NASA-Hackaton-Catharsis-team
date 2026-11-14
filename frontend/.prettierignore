@@ -6,3 +6,6 @@ src/api/schema.d.ts
 
 # Documents with wide tables are formatted by hand
 *.md
+
+# Saved API answers, written by scripts/snapshot.mjs
+public/snapshot

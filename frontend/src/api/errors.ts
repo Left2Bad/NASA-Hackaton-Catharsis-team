@@ -3,9 +3,10 @@ import type { ErrorCode, ErrorResponse } from './types';
 /**
  * Failures the contract does not describe, because they happen before or outside the API:
  * `NETWORK` (no connection, the server is down, CORS), `TIMEOUT` (no answer in time),
- * `UNKNOWN` (an answer that is not in the contract format, for example from a proxy).
+ * `UNKNOWN` (an answer that is not in the contract format, for example from a proxy),
+ * `OFFLINE` (the server cannot be reached and the saved answers do not cover the request).
  */
-export type ClientErrorCode = 'NETWORK' | 'TIMEOUT' | 'UNKNOWN';
+export type ClientErrorCode = 'NETWORK' | 'TIMEOUT' | 'UNKNOWN' | 'OFFLINE';
 
 /** A failed request in one shape: a code, a technical message and the HTTP status (0 without one). */
 export class ApiError extends Error {
@@ -48,6 +49,6 @@ export function toApiError(body: unknown, response: Response): ApiError {
  */
 export function isRetryable(error: Error): boolean {
   if (!(error instanceof ApiError)) return true;
-  if (error.code === 'NETWORK' || error.code === 'TIMEOUT') return true;
+  if (error.code === 'NETWORK' || error.code === 'TIMEOUT' || error.code === 'OFFLINE') return true;
   return error.status >= 500;
 }

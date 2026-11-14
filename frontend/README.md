@@ -175,6 +175,11 @@ How the app behaves while it talks to a server (`src/api/request.ts`, `src/api/q
   cancelled, so the server is not kept busy.
 - **From the dataset, not from the text:** the first month of the record and the list of covered
   regions on the start screen come from `GET /meta`.
+- **Tooltips do not outlive their numbers:** a calendar tooltip that is still open when another area
+  or period arrives is dropped, so it never describes cells it was not opened for.
+
+Checked against the backend running on the real FIRMS record (2000 to 2025, all countries): the three
+example areas, a change of period, a small area, an area without fires and an area above the limit.
 
 ## Environment variables
 

@@ -1,7 +1,14 @@
 import { useQuery, type Query } from '@tanstack/react-query';
 import { api } from './client';
 import { request } from './request';
-import type { AreaQuery, CalendarResponse, CurrentResponse, Geometry, Meta } from './types';
+import type {
+  AreaQuery,
+  CalendarResponse,
+  CurrentResponse,
+  ExportPointsQuery,
+  Geometry,
+  Meta,
+} from './types';
 
 // openapi-fetch returns coordinates as number[], while the contract defines a pair
 // [longitude, latitude]. The `as` cast gives the response its exact schema type back.
@@ -75,4 +82,28 @@ export function useCurrent(geometry: Geometry | null) {
     queryFn: ({ signal }) => fetchCurrent({ geometry: geometry as Geometry }, signal),
     enabled: geometry !== null,
   });
+}
+
+/** Exports may take long: a hot spot file streams up to half a million rows. */
+export const EXPORT_TIMEOUT_MS = 180_000;
+
+/** The monthly table of the calendar as a CSV file (requirement F23). */
+export async function fetchCalendarCsv(query: AreaQuery, signal?: AbortSignal): Promise<Blob> {
+  return request(
+    (s) => api.POST('/export/calendar.csv', { body: query, parseAs: 'blob', signal: s }),
+    signal,
+    EXPORT_TIMEOUT_MS,
+  );
+}
+
+/** The hot spots of an area and a date range as a CSV file (requirement F22). */
+export async function fetchPointsCsv(
+  query: ExportPointsQuery,
+  signal?: AbortSignal,
+): Promise<Blob> {
+  return request(
+    (s) => api.POST('/export/points.csv', { body: query, parseAs: 'blob', signal: s }),
+    signal,
+    EXPORT_TIMEOUT_MS,
+  );
 }

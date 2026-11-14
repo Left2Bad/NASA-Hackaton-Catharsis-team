@@ -1,6 +1,6 @@
 import type { PointerEvent } from 'react';
 import type { CurrentResponse } from '../api/types';
-import { linePath, niceScale } from '../charts/scale';
+import { linePath, niceScale, tickFormat } from '../charts/scale';
 import { useCursor } from '../charts/useCursor';
 import { useElementWidth } from '../hooks/useElementWidth';
 import { formatNumber, monthName, monthShortName } from '../labels';
@@ -16,7 +16,8 @@ interface CumulativeChartProps {
 }
 
 const HEIGHT = 168;
-const MARGIN = { top: 10, right: 14, bottom: 24, left: 36 };
+// The left margin holds a tick such as "1,000"; an exported image crops what sticks out.
+const MARGIN = { top: 10, right: 14, bottom: 24, left: 44 };
 /** Width used until the chart is measured, and in tests. */
 const FALLBACK_WIDTH = 480;
 
@@ -38,6 +39,7 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
 
   const monthLength = daysInMonth(year, month);
   const scale = niceScale(Math.max(...days.map((day) => Math.max(day.value, day.median))));
+  const formatTick = tickFormat(scale.max);
   const plotWidth = width - MARGIN.left - MARGIN.right;
   const plotHeight = HEIGHT - MARGIN.top - MARGIN.bottom;
   const x = (day: number) => MARGIN.left + ((day - 1) / (monthLength - 1)) * plotWidth;
@@ -59,7 +61,11 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
   };
 
   return (
-    <figure className={styles.chart}>
+    <figure
+      className={styles.chart}
+      data-figure="current-month"
+      data-figure-title={`Fire detections since ${monthName(month)} 1, ${year}`}
+    >
       <figcaption className={styles.caption}>
         Detections accumulated since the start of the month
       </figcaption>
@@ -103,7 +109,7 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
                 y2={y(tick)}
               />
               <text className={styles.tick} x={MARGIN.left - 8} y={y(tick)} dy="0.32em">
-                {formatNumber(tick)}
+                {formatTick(tick)}
               </text>
             </g>
           ))}
@@ -116,6 +122,7 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
           {cursor.isPicked && (
             <line
               className={styles.crosshair}
+              data-export-skip=""
               x1={x(active.day)}
               x2={x(active.day)}
               y1={MARGIN.top}
@@ -132,11 +139,24 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
             d={linePath(days.map((day) => [x(day.day), y(day.value)]))}
           />
           {/* The dots sit on the active day; the surface-colored ring keeps them legible on the lines. */}
-          <circle className={styles.medianDot} cx={x(active.day)} cy={y(active.median)} r={4} />
-          <circle className={styles.seriesDot} cx={x(active.day)} cy={y(active.value)} r={4.5} />
+          <circle
+            className={styles.medianDot}
+            data-export-skip=""
+            cx={x(active.day)}
+            cy={y(active.median)}
+            r={4}
+          />
+          <circle
+            className={styles.seriesDot}
+            data-export-skip=""
+            cx={x(active.day)}
+            cy={y(active.value)}
+            r={4.5}
+          />
 
           <rect
             className={styles.hitArea}
+            data-export-skip=""
             x={MARGIN.left}
             y={0}
             width={plotWidth}

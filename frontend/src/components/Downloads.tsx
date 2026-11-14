@@ -121,7 +121,7 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
               imageMode === 'count'
                 ? 'Burn calendar: fire detections by month'
                 : 'Burn calendar: difference from the median by month',
-            figure: calendarSvg(calendar, imageMode),
+            figure: calendarSvg(calendar, meta.sources, imageMode),
             caption,
           }),
       },

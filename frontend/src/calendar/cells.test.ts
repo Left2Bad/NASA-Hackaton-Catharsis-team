@@ -29,6 +29,13 @@ describe('yearsNewestFirst', () => {
   });
 });
 
+const sources: SourceInfo[] = [
+  { id: 'MODIS_T', label: '', start: '2000-11-01', end: '2002-07-31' },
+  { id: 'MODIS_TA', label: '', start: '2002-08-01', end: '2012-01-31' },
+  { id: 'VIIRS_SNPP', label: '', start: '2012-02-01', end: '2026-10-31' },
+  { id: 'VIIRS_N20', label: '', start: '2026-11-01', end: null },
+];
+
 describe('buildCells', () => {
   const months = [
     month(2011, 2, 'MODIS_TA'),
@@ -36,7 +43,7 @@ describe('buildCells', () => {
     month(2012, 2, 'VIIRS_SNPP'),
     month(2012, 3, 'VIIRS_SNPP'),
   ];
-  const cell = buildCells(months, () => '#000000');
+  const cell = buildCells(months, sources, () => '#000000');
 
   it('returns undefined for a month without data', () => {
     expect(cell(2011, 1)).toBeUndefined();
@@ -53,21 +60,42 @@ describe('buildCells', () => {
     expect(cell(2012, 3)?.seamBottom).toBe(false);
   });
 
+  it('draws no seam around a month taken from another satellite during an outage', () => {
+    // Suomi NPP is down in July 2022; NOAA-20 fills the month.
+    const outage = buildCells(
+      [
+        month(2021, 7, 'VIIRS_SNPP'),
+        month(2022, 6, 'VIIRS_SNPP'),
+        month(2022, 7, 'VIIRS_N20'),
+        month(2022, 8, 'VIIRS_SNPP'),
+        month(2023, 7, 'VIIRS_SNPP'),
+      ],
+      sources,
+      () => '#000000',
+    );
+    expect(outage(2022, 7)).toMatchObject({ seamLeft: false, seamBottom: false });
+    expect(outage(2022, 8)).toMatchObject({ seamLeft: false, seamBottom: false });
+    expect(outage(2023, 7)).toMatchObject({ seamLeft: false, seamBottom: false });
+  });
+
+  it('keeps the seam where NOAA-20 takes the lead for good', () => {
+    const handover = buildCells(
+      [month(2025, 11, 'VIIRS_SNPP'), month(2026, 10, 'VIIRS_SNPP'), month(2026, 11, 'VIIRS_N20')],
+      sources,
+      () => '#000000',
+    );
+    expect(handover(2026, 11)).toMatchObject({ seamLeft: true, seamBottom: true });
+  });
+
   it('passes on the color from the coloring function', () => {
     expect(
-      buildCells(months, (m) => (m.year === 2011 ? null : '#123456'))(2011, 2)?.color,
+      buildCells(months, sources, (m) => (m.year === 2011 ? null : '#123456'))(2011, 2)?.color,
     ).toBeNull();
     expect(cell(2012, 1)?.color).toBe('#000000');
   });
 });
 
 describe('sourceSideLabels', () => {
-  const sources: SourceInfo[] = [
-    { id: 'MODIS_T', label: '', start: '2000-11-01', end: '2002-07-31' },
-    { id: 'MODIS_TA', label: '', start: '2002-08-01', end: '2012-01-31' },
-    { id: 'VIIRS_SNPP', label: '', start: '2012-02-01', end: '2026-10-31' },
-    { id: 'VIIRS_N20', label: '', start: '2026-11-01', end: null },
-  ];
   const years = Array.from({ length: 27 }, (_, index) => 2026 - index);
 
   it('places each source label next to the middle of its period', () => {
@@ -77,6 +105,11 @@ describe('sourceSideLabels', () => {
       { year: 2007, text: 'MODIS Terra + Aqua' },
       { year: 2001, text: 'MODIS Terra' },
     ]);
+  });
+
+  it('labels only the sources that lead within the period', () => {
+    const years = Array.from({ length: 7 }, (_, index) => 2021 - index);
+    expect(sourceSideLabels(sources, years)).toEqual([{ year: 2018, text: 'VIIRS Suomi NPP' }]);
   });
 
   it('never puts two labels on one row', () => {

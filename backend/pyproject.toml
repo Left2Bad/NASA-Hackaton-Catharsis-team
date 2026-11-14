@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "burn-calendar-api"
 version = "0.1.0"
 description = "Burn Calendar API: harmonized MODIS + VIIRS hotspot calendar (contract/openapi.yaml)"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115",
   "uvicorn[standard]>=0.30",
@@ -16,6 +16,7 @@ dependencies = [
   "pyarrow>=16",
   "shapely>=2.0",
   "pyproj>=3.6",
+  "pyyaml>=6.0",  # serves contract/openapi.yaml at /api/v1/openapi.json
 ]
 
 [project.optional-dependencies]

@@ -2,6 +2,7 @@
 
 import datetime as dt
 import json
+import os
 from pathlib import Path
 
 import duckdb
@@ -10,8 +11,14 @@ import yaml
 from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator, FormatChecker
 
-from app.main import create_app
-from app.settings import Settings
+# The tests must not depend on the developer's shell: app.main builds Settings() at import time, so the
+# variables from .env are dropped before it is imported (and again around every test, see _clean_env).
+ENV_VARS = ("DATA_DIR", "POINTS_DIR", "CORS_ORIGINS", "DUCKDB_MEMORY_LIMIT", "DUCKDB_THREADS")
+for _name in ENV_VARS:
+    os.environ.pop(_name, None)
+
+from app.main import create_app  # noqa: E402
+from app.settings import Settings  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
 SPEC = yaml.safe_load((REPO / "contract" / "openapi.yaml").read_text(encoding="utf-8"))
@@ -44,7 +51,7 @@ def make_data(root: Path) -> Path:
         season = 3 if d.month in (7, 8) else 1
         for iy, ix, base in CELLS:
             n = base * season + (2 if d.year == 2010 else 0)
-            n_t = n_a = n if d >= dt.date(2002, 8, 1) or True else 0
+            n_t = n_a = n
             n_a = n_a if d >= dt.date(2002, 7, 4) else 0
             snpp = 4 * (n_t + n_a) if d >= dt.date(2012, 1, 20) else 0
             n20 = snpp if d >= dt.date(2018, 4, 1) else 0
@@ -88,10 +95,28 @@ def make_data(root: Path) -> Path:
     return data
 
 
+@pytest.fixture(autouse=True)
+def _clean_env(monkeypatch):
+    for name in ENV_VARS:
+        monkeypatch.delenv(name, raising=False)
+
+
+def settings_for(data: Path, **overrides) -> Settings:
+    """Settings with every environment-backed field given explicitly."""
+    fields = {
+        "data_dir": data,
+        "points_dir": data / "points_serve",
+        "cors_origins": (),
+        "duckdb_memory_limit": "1GB",
+        "duckdb_threads": 2,
+    }
+    return Settings(**{**fields, **overrides})
+
+
 @pytest.fixture(scope="session")
 def client(tmp_path_factory):
     data = make_data(tmp_path_factory.mktemp("api"))
-    with TestClient(create_app(Settings(data_dir=data))) as c:
+    with TestClient(create_app(settings_for(data))) as c:
         yield c
 
 

@@ -2,11 +2,10 @@
 
 import json
 
-from conftest import REPO, assert_schema, make_data
+from conftest import REPO, assert_schema, make_data, settings_for
 from fastapi.testclient import TestClient
 
 from app.main import create_app
-from app.settings import Settings
 
 API = "/api/v1"
 EXAMPLE = REPO / "contract" / "examples" / "method_validation.response.json"
@@ -25,7 +24,7 @@ def test_method_validation_missing_then_cached(tmp_path):
     report = data / "validation" / "report.json"
     body = report.read_bytes()
     report.unlink()
-    with TestClient(create_app(Settings(data_dir=data))) as c:
+    with TestClient(create_app(settings_for(data))) as c:
         r = c.get(f"{API}/method/validation")
         assert r.status_code == 404
         assert_schema(r.json(), "ErrorResponse")

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import errors
 from .data import Data
-from .routers import analytics, service
+from .routers import analytics, method, service
 from .settings import Settings, get_settings
 
 API_PREFIX = "/api/v1"
@@ -33,6 +33,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     errors.install(app)
     app.include_router(service.router, prefix=API_PREFIX)
     app.include_router(analytics.router, prefix=API_PREFIX)
+    app.include_router(method.router, prefix=API_PREFIX)
     return app
 
 

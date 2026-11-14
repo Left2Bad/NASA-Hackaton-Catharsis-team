@@ -82,6 +82,9 @@ def make_data(root: Path) -> Path:
         },  # fmt: skip
     }
     (data / "harmonized" / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+    (data / "validation").mkdir()
+    example = REPO / "contract" / "examples" / "method_validation.response.json"
+    (data / "validation" / "report.json").write_bytes(example.read_bytes())
     return data
 
 

@@ -1,15 +1,15 @@
-# backend/ — зона разработчика A
+# backend/ — developer A zone
 
-API на FastAPI. Читает готовые файлы из `data/` (DuckDB, только чтение) и отдаёт ответы
-строго по контракту `contract/openapi.yaml`.
+A FastAPI API. It reads the ready-made files from `data/` (DuckDB, read-only) and serves responses
+strictly following the contract `contract/openapi.yaml`.
 
-Задачи из ТЗ: A6 (каркас, `/health`, `/meta`, `/calendar`), A11 (остальные эндпоинты, лимиты, ошибки), A13 (деплой).
+Tasks from the spec: A6 (skeleton, `/health`, `/meta`, `/calendar`), A11 (the remaining endpoints, limits, errors), A13 (deployment).
 
-## Запуск
+## Running
 
-Нужны данные в `data/` (как их получить — `data/README.md`): `grid_daily.parquet`, `grid_monthly.parquet`,
+The data must be in `data/` (how to get it — `data/README.md`): `grid_daily.parquet`, `grid_monthly.parquet`,
 `coefficients.parquet`, `uncertainty.parquet`, `outage_months.csv`, `harmonized/summary.json`;
-для `/points` и `/export/points.csv` — `points_serve/` (`python pipeline/points_serve.py`).
+for `/points` and `/export/points.csv` — `points_serve/` (`python pipeline/points_serve.py`).
 
 ```bash
 python -m venv .venv
@@ -18,41 +18,41 @@ cd backend
 uvicorn app.main:app --port 8000
 ```
 
-Документация API: http://localhost:8000/api/v1/docs. Фронтенду: `VITE_API_URL=http://localhost:8000/api/v1`.
+API documentation: http://localhost:8000/api/v1/docs. For the frontend: `VITE_API_URL=http://localhost:8000/api/v1`.
 
-Переменные окружения (`.env.example`): `DATA_DIR` (по умолчанию `data/` в корне), `POINTS_DIR`
-(по умолчанию `DATA_DIR/points_serve`; годится и полная `data/points`), `CORS_ORIGINS`,
+Environment variables (`.env.example`): `DATA_DIR` (default: `data/` in the repository root), `POINTS_DIR`
+(default: `DATA_DIR/points_serve`; the full `data/points` also works), `CORS_ORIGINS`,
 `DUCKDB_MEMORY_LIMIT` (2GB), `DUCKDB_THREADS` (2).
 
-## Что готово
+## What is ready
 
-| Эндпоинт | Статус |
+| Endpoint | Status |
 | --- | --- |
-| `GET /health`, `GET /meta` | готово |
-| `POST /calendar`, `POST /export/calendar.csv` | готово |
-| `POST /current`, `POST /daily` | готово |
-| `POST /points`, `POST /export/points.csv` | готово |
-| `GET /method/validation` | готово |
+| `GET /health`, `GET /meta` | done |
+| `POST /calendar`, `POST /export/calendar.csv` | done |
+| `POST /current`, `POST /daily` | done |
+| `POST /points`, `POST /export/points.csv` | done |
+| `GET /method/validation` | done |
 
-## Как устроено
+## How it works
 
-- `app/geometry.py` — проверка GeoJSON, геодезическая площадь (WGS84), ячейки 0,1° с центром внутри области.
-- `app/series.py` — сумма по ячейкам области: сырой счёт ведущего источника × коэффициент ячейки 1°
-  (`data/coefficients.parquet`). Правило ведущего источника — общий модуль `pipeline/lead.py`.
-- `app/daily_service.py` — `/current`: накопление с 1-го числа против тех же дней базовых лет; `/daily`: значения по дням года.
-- `app/calendar_service.py` — медианы и перцентили по базовым годам, категории, интервалы `low`/`high`
-  (`data/uncertainty.parquet`), годовые суммы, тренд (МНК), предупреждения.
-- `app/points_service.py` — точки из `points_serve/`: отбор по дате и прямоугольнику в DuckDB (пропуск групп строк),
-  затем точная проверка полигона; `harmonized_weight` — коэффициент ячейки 1° ведущего источника (S-NPP — 1).
-  Больше `max_points` — 20 000 точек с наибольшим FRP и `truncated = true`; CSV отдаётся потоком.
-- Ответы `/calendar` кешируются в памяти (200 последних запросов).
-- Ошибки — всегда `{"error": {"code", "message"}}`; ошибки проверки тела запроса отдаются как 400 `INVALID_REQUEST`.
+- `app/geometry.py` — GeoJSON validation, geodesic area (WGS84), 0.1° cells whose center lies inside the area.
+- `app/series.py` — sum over the cells of the area: raw count of the lead source × the 1° cell coefficient
+  (`data/coefficients.parquet`). The lead-source rule is the shared module `pipeline/lead.py`.
+- `app/daily_service.py` — `/current`: accumulation since the 1st of the month against the same days of the baseline years; `/daily`: values by day of the year.
+- `app/calendar_service.py` — medians and percentiles over the baseline years, categories, `low`/`high` intervals
+  (`data/uncertainty.parquet`), yearly totals, trend (least squares), warnings.
+- `app/points_service.py` — points from `points_serve/`: selection by date and bounding box in DuckDB (row-group skipping),
+  then an exact polygon test; `harmonized_weight` is the 1° cell coefficient of the lead source (S-NPP — 1).
+  Above `max_points`, the 20,000 points with the highest FRP are returned with `truncated = true`; the CSV is streamed.
+- `/calendar` responses are cached in memory (the 200 most recent requests).
+- Errors are always `{"error": {"code", "message"}}`; request-body validation errors are returned as 400 `INVALID_REQUEST`.
 
-## Проверки (как в CI)
+## Checks (as in CI)
 
 ```bash
 cd backend
 ruff check . && ruff format --check . && pytest -q
 ```
 
-Тесты строят крошечный синтетический `DATA_DIR` и проверяют каждый ответ схемой из `contract/openapi.yaml`.
+The tests build a tiny synthetic `DATA_DIR` and check every response against the schema from `contract/openapi.yaml`.

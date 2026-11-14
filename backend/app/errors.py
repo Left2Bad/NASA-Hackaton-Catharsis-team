@@ -35,9 +35,7 @@ def install(app: FastAPI) -> None:
     async def _validation(_: Request, exc: RequestValidationError):
         first = exc.errors()[0] if exc.errors() else {}
         where = ".".join(str(p) for p in first.get("loc", []) if p != "body")
-        message = (
-            f"Некорректный запрос: {where} — {first.get('msg', 'ошибка проверки')}" if where else "Некорректный запрос"
-        )
+        message = f"Invalid request: {where} — {first.get('msg', 'validation error')}" if where else "Invalid request"
         return JSONResponse(error_body("INVALID_REQUEST", message), status_code=400)
 
     @app.exception_handler(StarletteHTTPException)
@@ -47,4 +45,4 @@ def install(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def _internal(_: Request, exc: Exception):
-        return JSONResponse(error_body("INTERNAL", "Внутренняя ошибка сервера"), status_code=500)
+        return JSONResponse(error_body("INTERNAL", "Internal server error"), status_code=500)

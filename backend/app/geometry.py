@@ -54,25 +54,38 @@ class Area:
             out.append((iy0, iy1, ix0, ix1))
         return _merge(out)  # every selected cell (centre or outline) lies in its part's box
 
-    def cell_filter_sql(self, iy: str = "iy", ix: str = "ix") -> str:
-        """SQL condition on grid columns that keeps only the parts' bounding boxes (lets DuckDB skip row groups)."""
-        return (
-            "("
-            + " OR ".join(
-                f"({iy} BETWEEN {a} AND {b} AND {ix} BETWEEN {c} AND {d})" for a, b, c, d in self.cell_ranges()
-            )
-            + ")"
-        )
+    def cell_scan_sql(self, source: str, where: str, iy: str = "iy", ix: str = "ix") -> str:
+        """Rows of `source` inside the parts' cell ranges, as a UNION ALL of one range scan per part.
 
-    def bbox_filter_sql(self, lat: str = "lat", lon: str = "lon") -> str:
-        """SQL condition on point coordinates: inside any part's bounding box."""
-        return (
-            "("
-            + " OR ".join(
-                f"({lat} BETWEEN {s} AND {n} AND {lon} BETWEEN {w} AND {e})" for w, s, e, n in self.part_bounds
-            )
-            + ")"
-        )
+        A single OR of ranges is not pushed down to the Parquet reader, so far-apart parts scanned every row
+        group between them; one scan per range lets DuckDB skip row groups for each. Later ranges exclude the
+        earlier ones, so no row is returned twice.
+        """
+        ranges = [f"({iy} BETWEEN {a} AND {b} AND {ix} BETWEEN {c} AND {d})" for a, b, c, d in self.cell_ranges()]
+        return _union(source, where, ranges)
+
+    def point_scan_sql(self, source: str, where: str, lat: str = "lat", lon: str = "lon") -> str:
+        """Points of `source` inside the parts' bounding boxes (UNION ALL of one scan per part, as above).
+
+        A rectangle uses half-open bounds (west <= lon < east, south <= lat < north, closed at 180 and 90) like the
+        grid's floor() rule, so a point on a shared edge belongs to one area only and matches /calendar.
+        """
+        if self.is_box:
+            w, s, e, n = self.bounds
+            hi_lat = "<=" if n >= 90 else "<"
+            hi_lon = "<=" if e >= 180 else "<"
+            ranges = [f"({lat} >= {s} AND {lat} {hi_lat} {n} AND {lon} >= {w} AND {lon} {hi_lon} {e})"]
+        else:
+            ranges = [f"({lat} BETWEEN {s} AND {n} AND {lon} BETWEEN {w} AND {e})" for w, s, e, n in self.part_bounds]
+        return _union(source, where, ranges)
+
+
+def _union(source: str, where: str, ranges: list[str]) -> str:
+    scans = []
+    for i, r in enumerate(ranges):
+        exclude = "".join(f" AND NOT {q}" for q in ranges[:i])
+        scans.append(f"SELECT * FROM {source} WHERE {r}{exclude} AND {where}")
+    return "(" + " UNION ALL ".join(scans) + ")"
 
 
 def _index(offset: float, n: int) -> int:

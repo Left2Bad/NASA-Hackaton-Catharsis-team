@@ -8,6 +8,7 @@ antimeridian or the long way round the globe) and is rejected: such areas must b
 
 import math
 from dataclasses import dataclass
+from functools import cached_property
 
 import numpy as np
 import shapely
@@ -40,10 +41,25 @@ class Area:
         """Area of the selected whole cells: the territory the values are actually summed over."""
         return cells_area_km2(self.iy)
 
-    @property
+    @cached_property
     def is_box(self) -> bool:
         """A single lon/lat rectangle: the bounding-box filter alone is the exact test."""
-        return self.geom.equals(shapely.box(*self.bounds))
+        return bool(self.geom.equals(shapely.box(*self.bounds)))
+
+    def cover_keys(self) -> np.ndarray:
+        """Keys iy * NX + ix of every cell that may hold a point of the area (a superset, for SQL pre-filters).
+
+        Cells whose centre is inside, plus the cells the outline passes through and their 8 neighbours, so a
+        boundary that clips a cell corner between two sampled outline points is still covered.
+        """
+        xy = shapely.get_coordinates(shapely.segmentize(self.geom.boundary, STEP / 4))
+        by = np.floor((xy[:, 1] + 90) / STEP).astype(np.int64)
+        bx = np.floor((xy[:, 0] + 180) / STEP).astype(np.int64)
+        ring_y = np.concatenate([by + dy for dy in (-1, 0, 1) for _ in (-1, 0, 1)])
+        ring_x = np.concatenate([bx + dx for _ in (-1, 0, 1) for dx in (-1, 0, 1)])
+        iy = np.clip(np.concatenate([self.iy.astype(np.int64), ring_y]), 0, NY - 1)
+        ix = np.clip(np.concatenate([self.ix.astype(np.int64), ring_x]), 0, NX - 1)
+        return np.unique(iy * NX + ix)
 
     def cell_ranges(self) -> list[tuple[int, int, int, int]]:
         """Per polygon part: iy0, iy1, ix0, ix1 of the selected cells (for SQL range filters)."""

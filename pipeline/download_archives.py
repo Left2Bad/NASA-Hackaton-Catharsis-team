@@ -3,7 +3,7 @@
 48 files, ~9.3 GB: MODIS 2000-2025, VIIRS S-NPP 2012-2025, VIIRS NOAA-20 2018-2025. No login needed.
 Resumable and safe to re-run: complete files are skipped by size, partial ones are resumed.
 One writer per file (never run two copies of this script at the same time).
-Usage: python pipeline/00_download_archives.py [--workers 4]
+Usage: python pipeline/download_archives.py [--workers 4]
 """
 
 import argparse

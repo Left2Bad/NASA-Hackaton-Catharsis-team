@@ -1,22 +1,31 @@
-"""Harmonization coefficients, uncertainty intervals and validation, built on data/grid_monthly.parquet.
+"""Step 3: harmonization coefficients, sensor gap days, uncertainty intervals and validation metrics.
 
-Method (docs/methodology.md):
- * Input: 0.1-degree monthly grid with raw counts / FRP per satellite (pipeline/grid.py), already filtered.
+Built on data/grid_daily.parquet and data/grid_monthly.parquet (step 2). Method (docs/methodology.md):
+ * Sensor gap days: days when one satellite delivered (almost) nothing while the others reported normally, found per
+   sensor from global daily ratios (find_gap_days). They are left out of every fit and check (both sides of each
+   ratio), and the lead source replaces the missing sensor on those days (pipeline/lead.py).
  * Coefficient = ratio of S-NPP to the other source over the overlap, per 1-degree cell, with
    empirical-Bayes shrinkage: cell -> 5-degree block -> global.
       r_block = (Y_b + A * r_global) / (X_b + A),   r_cell = (Y_c + A * r_block) / (X_c + A)
    A = 50 detections of the source sensor (for FRP: 50 x mean FRP per detection).
    Six coefficient sets: {count, frp} x {MODIS Terra+Aqua, MODIS Terra only, NOAA-20} -> S-NPP.
- * S-NPP outage months: global S-NPP / NOAA-20 ratio < 85 % of its median; NOAA-20 leads there (pipeline/lead.py).
+   Guard (COEF_BAND): MODIS outlier cells (gas flares, lava) take their block's value and stay out of the block.
+ * S-NPP outage months: global S-NPP / NOAA-20 ratio < 85 % of its median; NOAA-20 leads the whole month.
  * Validation: fit on CALIB years, predict S-NPP from the other source on TEST years, compare per 5-degree block x month.
  * Uncertainty: on the same test pairs, quantiles q10/q90 of actual/predicted, binned by the predicted magnitude.
 
 Outputs:
   data/coefficients.parquet   cy, cx (1-degree cell: floor(lat+90), floor(lon+180)), w_count_ta, w_count_t, w_count_n20,
-                              w_frp_ta, w_frp_t, w_frp_n20 — production fit on the whole overlap
+                              w_frp_ta, w_frp_t, w_frp_n20 — production fit (MODIS 2012-2020, NOAA-20 2018-2025)
   data/uncertainty.parquet    basis, metric, bin, q10, q90, n   (bin = floor(log10(value + 1) * 2))
   data/outage_months.csv      month (YYYY-MM), snpp_per_n20
-  data/harmonized/summary.json, data/harmonized/global_monthly.csv
+  data/gap_days.csv           date (YYYY-MM-DD), sensor (terra|aqua|snpp|n20), ratio (relative to normal, 0 = none)
+  data/grid_daily_gap_months.parquet  rows of the months with substituted gap days, one per cell and source group
+  data/harmonized/summary.json        coefficients, validation, last_date / last_complete_date / last_standard_date,
+                                      gap days and sensor_gap months
+  data/harmonized/global_monthly.csv  the harmonized world series
+
+Usage: python pipeline/harmonize.py
 """
 
 import argparse

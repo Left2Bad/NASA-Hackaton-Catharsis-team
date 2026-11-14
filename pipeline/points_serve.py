@@ -1,4 +1,4 @@
-"""Lightweight copy of data/points for the server: only the columns /points and /export/points.csv need.
+"""Step 7: lightweight copy of data/points for the server: only the columns /points and /export/points.csv need.
 
 The full points (data/points, ~7.5 GB) stay on the workstation, the grids are built from them. The server gets
 data/points_serve/<src>_<year>.parquet with the same rows and these columns:

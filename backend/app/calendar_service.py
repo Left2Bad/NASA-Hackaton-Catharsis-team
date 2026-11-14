@@ -45,7 +45,7 @@ def resolve_period(data: Data, q: AreaQuery) -> tuple[dt.date, dt.date, tuple[in
 
 
 def build(data: Data, q: AreaQuery) -> dict:
-    area = geometry.parse(q.geometry, data.settings.max_area_km2)
+    area = data.parse_area(q.geometry)
     first, last, base = resolve_period(data, q)
     query_first = min(first, dt.date(base[0], 1, 1))
     query_last = max(last, dt.date(base[1], 12, 31))

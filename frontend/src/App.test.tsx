@@ -10,6 +10,7 @@ import metaExample from '../../contract/examples/meta.json';
 import validationExample from '../../contract/examples/method_validation.response.json';
 import App from './App';
 import { server } from './mocks/server';
+import { writeSearch } from './state/link';
 import { VISIONS } from './theme/cvd';
 
 // The real map needs WebGL. This stand-in exposes what the screen relies on:
@@ -78,6 +79,8 @@ function recordCalendarRequests(): Record<string, unknown>[] {
 
 afterEach(() => {
   window.location.hash = '';
+  // The calendar remembers its state for the link back; each test starts without one.
+  writeSearch('');
 });
 
 describe('main screen on mocks', () => {
@@ -563,6 +566,112 @@ describe('states of a real API (B10)', () => {
     expect(
       screen.getByText('Data is loaded for these regions only: Kazakhstan, Brazil.'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('link with the state (F26)', () => {
+  it('opens the area, the period and the mode an address asks for', async () => {
+    window.location.hash = '#/?area=amazon-south&from=2010&to=2012&mode=anomaly';
+    const bodies = recordCalendarRequests();
+    renderApp();
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Southern Amazon' }),
+    ).toBeInTheDocument();
+    await screen.findByRole('grid', { name: /^Fire anomalies by month/ });
+    expect(bodies[0]).toMatchObject({ start_year: 2010, end_year: 2012 });
+    expect(screen.getByRole('button', { name: 'Southern Amazon' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    const period = screen.getByRole('group', { name: 'Period' });
+    expect(within(period).getByLabelText('From')).toHaveValue('2010');
+    expect(within(period).getByLabelText('to')).toHaveValue('2012');
+  });
+
+  it('opens a drawn area from its outline', async () => {
+    window.location.hash = '#/?poly=10,20;12,20;12,22';
+    const bodies = recordCalendarRequests();
+    renderApp();
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Custom area' }),
+    ).toBeInTheDocument();
+    await screen.findByRole('grid', { name: /^Fire detections by month/ });
+    expect(bodies[0].geometry).toEqual({
+      type: 'Polygon',
+      coordinates: [
+        [
+          [10, 20],
+          [12, 20],
+          [12, 22],
+          [10, 20],
+        ],
+      ],
+    });
+  });
+
+  it('keeps the address in step with the screen', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+    await screen.findByRole('grid', { name: /^Fire detections by month/ });
+    expect(window.location.hash).toBe('#/?area=kz-steppe');
+
+    const period = screen.getByRole('group', { name: 'Period' });
+    await user.selectOptions(within(period).getByLabelText('From'), '2010');
+    await user.click(screen.getByRole('button', { name: 'Anomaly' }));
+    expect(window.location.hash).toBe('#/?area=kz-steppe&from=2010&mode=anomaly');
+
+    await user.click(screen.getByRole('button', { name: 'Clear test area' }));
+    expect(window.location.hash).toBe('#/?from=2010&mode=anomaly');
+  });
+
+  it('opens the starting screen for a broken link', async () => {
+    window.location.hash = '#/?area=atlantis&poly=oops&from=never';
+    renderApp();
+
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'Choose an area to see its fire calendar',
+      }),
+    ).toBeInTheDocument();
+    const period = screen.getByRole('group', { name: 'Period' });
+    expect(within(period).getByLabelText('From')).toHaveValue(String(FIRST_YEAR));
+  });
+
+  it('leads back to the same view from another section', async () => {
+    const user = userEvent.setup();
+    window.location.hash = '#/?area=amazon-south&from=2015';
+    renderApp();
+    await screen.findByRole('heading', { level: 1, name: 'Southern Amazon' });
+
+    await user.click(screen.getByRole('link', { name: 'Method' }));
+    await screen.findByRole('heading', { level: 1, name: 'How the record is made' });
+    expect(screen.getByRole('link', { name: 'Calendar' })).toHaveAttribute(
+      'href',
+      '#/?area=amazon-south&from=2015',
+    );
+
+    await user.click(screen.getByRole('link', { name: 'Calendar' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Southern Amazon' }),
+    ).toBeInTheDocument();
+  });
+
+  it('copies the address of the view', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+    await screen.findByRole('grid', { name: /^Fire detections by month/ });
+
+    await user.click(screen.getByRole('button', { name: 'Copy link to this view' }));
+
+    expect(await screen.findByText('Link copied.')).toBeInTheDocument();
+    expect(await navigator.clipboard.readText()).toBe(window.location.href);
+    expect(window.location.href).toContain('#/?area=kz-steppe');
   });
 });
 

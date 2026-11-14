@@ -61,6 +61,9 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` 
   in order and can be told apart. The page `/#/scales` shows the same thing to the eye.
 - **Layout:** on a laptop the map is on the left and the panel on the right, and only the panel scrolls.
   Up to 960 px wide, the map and the panel stack.
+- **Phone from 360 px:** the header wraps its sections under the name, charts are measured before the
+  first paint and can never be wider than their box, and long addresses on the "Method" page break
+  inside words. Nothing makes the page scroll sideways.
 
 ## Map
 
@@ -134,6 +137,23 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` 
 - **Shared parts:** `src/charts/scale.ts` (round value axis, tick format, line path),
   `src/charts/useCursor.ts` (pointer and keyboard position) and `src/components/Chart.module.css`
   are used by all three charts, including the one in the "Now" panel.
+
+## Link with the state
+
+The address of the page describes what is on the calendar screen (requirement F26,
+`src/state/link.ts`), so a copied link reopens the same view:
+
+```text
+/#/?area=kz-steppe&from=2010&to=2020&mode=anomaly     an example area by its id
+/#/?poly=61,51;71,51;71,55;61,55                      any other area by its outline
+```
+
+- Values equal to the defaults (the whole record, the detections mode) are left out.
+- The address is rewritten in place on every change: "Back" does not walk through each period.
+- The "Calendar" link in the header keeps the state, so a visit to "Method" does not lose it.
+- A broken link opens the starting screen: every part of the address is checked, years are kept
+  inside the record, and an example area takes its geometry from the dataset, not from the link.
+- "Copy link to this view" under the name of the area copies the address.
 
 ## Area and period controls
 

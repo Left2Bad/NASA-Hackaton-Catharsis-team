@@ -73,3 +73,16 @@
     display: none;
   }
 }
+
+/* A narrow phone (360 px): the name and the sections do not fit on one line, so they wrap. */
+@media (max-width: 420px) {
+  .header {
+    flex-wrap: wrap;
+    row-gap: var(--space-1);
+  }
+
+  .nav {
+    gap: var(--space-3);
+    margin-left: 0;
+  }
+}

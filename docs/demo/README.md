@@ -49,5 +49,6 @@ The `screenshots/` folder. File names start with the task a screenshot belongs t
 | `b12-method-top.jpg` | The "Method" page: what the sensors recorded and the harmonized record, Southern Amazon (real FIRMS data) |
 | `b12-method-checks.jpg` | The "Method" page: the forecast from MODIS against VIIRS on the test years, with the metrics |
 | `b12-method-details.jpg` | The "Method" page: limitations and the method text from `docs/methodology.md` |
+| `b14-link-phone.jpg` | A phone 360 px wide, the view opened from a link: area, period and mode come from the address |
 | `b13-fallback-banner.jpg` | The server is off: the app runs on the saved answers and says so under the header |
 | `b11-downloads-section.jpg` | The "Downloads" section of the panel, with the warning about the row limit |

@@ -3,7 +3,7 @@ import type { components } from './api/schema';
 
 // Interface labels for identifiers from the contract. Server texts come in one language,
 // so the frontend keeps its own names for sources and units (see contract/README.md).
-// The second language will be added here in task B14.
+// The interface is in English only (a team decision): the rules of the hackathon ask for English.
 
 type SourceId = components['schemas']['Source'];
 

@@ -1,0 +1,48 @@
+# Burn Calendar: production stack for Coolify (docs/deploy.md). Also runs with plain `docker compose up -d --build`.
+# Only `web` gets a domain; it serves the frontend and proxies /api/v1/* to `api` on the internal network.
+# Host folders (create them before the first deploy, docs/deploy.md):
+#   BURN_DATA_DIR   the data folder (data/README.md), mounted read-only
+#   BURN_SPILL_DIR  empty writable folder owned by uid 10001, DuckDB temp files of large exports
+services:
+  api:
+    build:
+      context: .
+      dockerfile: deploy/api.Dockerfile
+    restart: unless-stopped
+    environment:
+      DATA_DIR: /data
+      DUCKDB_MEMORY_LIMIT: ${DUCKDB_MEMORY_LIMIT:-1536MB}
+      DUCKDB_THREADS: ${DUCKDB_THREADS:-2}
+    volumes:
+      - ${BURN_DATA_DIR:-/srv/burn-calendar/data}:/data:ro
+      - ${BURN_SPILL_DIR:-/srv/burn-calendar/spill}:/data/_tmp
+    expose:
+      - "8000"
+    # a hard cap: on a runaway query only this container is killed, not its neighbours; no swap
+    mem_limit: ${API_MEM_LIMIT:-2560m}
+    memswap_limit: ${API_MEM_LIMIT:-2560m}
+    cpus: 1.5
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=4).status != 200)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/web.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    expose:
+      - "80"
+    mem_limit: 128m
+    memswap_limit: 128m
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

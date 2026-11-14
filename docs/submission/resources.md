@@ -83,8 +83,15 @@ with Claude Code (Claude Opus 5.5 and Claude Fable 5.2); the Russian original of
 The pitch deck (`docs/demo/slides/`) and the storyboard of the video (`docs/demo/README.md`) were drafted with
 Claude Code (Claude Fable 5.2; slides 6 and 7 were finished with Claude Opus 5.5). The pictures in the deck are real
 screenshots of the running application on real FIRMS data, taken by a script (`frontend/scripts/demo-shots.mjs`). None
-of the screenshots or numbers is AI-generated, and the deck has no generated illustrations, music or voice-over. The
-pitch is submitted as this 7-slide deck; no video was recorded.
+of the screenshots or numbers is AI-generated, and the deck has no generated illustrations, music or voice-over.
+
+The 30-second pitch video is built from real screenshots of the live site (https://nasa.pin-planet.org), taken by a
+script; nothing in it is generated except what is drawn on top: the zoom, the highlight rings, the pointer, the
+captions and the end card were made in code with Remotion (https://www.remotion.dev/), written with Claude Code
+(Claude Opus 5.5). Its voice-over is generated with **ElevenLabs** (https://elevenlabs.io, model eleven_v3) from a
+script drafted with Claude Code. The background music is not generated: "Music by Dmitrii Spis from Pixabay"
+(https://pixabay.com/users/nastelbom-48128234/, track 617068, Pixabay Content License); the click sounds are
+synthesized in code. Sources: `docs/demo/video/`.
 
 Synthetic numbers exist only in `contract/examples/` (made by `contract/tools/generate_examples.py`), in the
 development mocks of the frontend and in the backend test fixtures, and they are marked as synthetic. The live site,

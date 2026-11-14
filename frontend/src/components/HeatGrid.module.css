@@ -1,0 +1,86 @@
+/* Сетка: столбец года, 12 месяцев, справа — необязательные подписи. */
+.grid {
+  --cell-height: 18px;
+  --gap: 2px;
+
+  display: grid;
+  grid-template-columns: 2.75rem repeat(12, minmax(0, 1fr)) auto;
+  grid-auto-rows: var(--cell-height);
+  gap: var(--gap);
+  align-items: stretch;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.compact {
+  --cell-height: 12px;
+}
+
+.month {
+  align-self: end;
+  color: var(--muted);
+  text-align: center;
+}
+
+.year {
+  align-self: center;
+  color: var(--ink-2);
+  line-height: 1;
+}
+
+.cell,
+.empty {
+  border-radius: 1px;
+}
+
+/* Месяц без данных: клетки нет, остаётся только пунктирный контур. */
+.empty {
+  border: 1px dashed var(--line-strong);
+  opacity: 0.6;
+}
+
+/* Тонкий контур держит самые светлые клетки видимыми на любом фоне. */
+.cell {
+  --outline: inset 0 0 0 1px rgb(22 33 43 / 0.1);
+
+  box-shadow: var(--outline);
+}
+
+/* Швы между сенсорами: тёмная линия точно в зазоре между клетками. */
+.cell[data-seam~='left'] {
+  box-shadow:
+    var(--outline),
+    calc(-1 * var(--gap)) 0 0 0 var(--ink);
+}
+
+.cell[data-seam~='bottom'] {
+  box-shadow:
+    var(--outline),
+    0 var(--gap) 0 0 var(--ink);
+}
+
+.cell[data-seam~='left'][data-seam~='bottom'] {
+  box-shadow:
+    var(--outline),
+    calc(-1 * var(--gap)) 0 0 0 var(--ink),
+    0 var(--gap) 0 0 var(--ink),
+    calc(-1 * var(--gap)) var(--gap) 0 0 var(--ink);
+}
+
+.side {
+  align-self: center;
+  padding-left: var(--space-3);
+  color: var(--ink-2);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 2.5rem repeat(12, minmax(0, 1fr));
+  }
+
+  .side {
+    display: none;
+  }
+}

@@ -1,0 +1,13 @@
+.error {
+  padding: var(--space-2) var(--space-3);
+  color: var(--error);
+  font-size: var(--text-sm);
+  background: var(--error-surface);
+  border: 1px solid var(--error);
+  border-radius: var(--radius);
+}
+
+.error strong {
+  margin-right: var(--space-2);
+  font-weight: 600;
+}

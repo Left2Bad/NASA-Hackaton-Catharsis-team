@@ -14,6 +14,17 @@ export const SOURCE_LABELS: Record<SourceId, string> = {
   VIIRS_N20: 'VIIRS NOAA-20',
 };
 
+type CategoryId = components['schemas']['Category'];
+
+/** How a month compares with the same month of the baseline years. */
+export const CATEGORY_LABELS: Record<CategoryId, string> = {
+  below_normal: 'Below normal',
+  normal: 'Normal',
+  above_normal: 'Above normal',
+  high: 'High',
+  record: 'Record',
+};
+
 type WarningCode = components['schemas']['Warning']['code'];
 
 /** Warning text by its code. */
@@ -77,3 +88,12 @@ export function formatSignedPercent(value: number): string {
   const sign = value > 0 ? '+' : value < 0 ? '−' : '';
   return `${sign}${formatNumber(Math.abs(value))} %`;
 }
+
+const compactFormat = new Intl.NumberFormat('en-US', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+/** A short number for tight places: 674, 1.1K, 12K. */
+export const formatCompact = (value: number) =>
+  compactFormat.format(value >= 100 ? Math.round(value) : value);

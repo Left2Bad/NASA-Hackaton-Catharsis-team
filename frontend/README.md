@@ -76,6 +76,20 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` 
   takes its place, and the example areas keep working.
 - **Limitation:** an area that crosses the 180th meridian is not supported yet.
 
+## Burn calendar
+
+- **Grid (F7):** a row per year, newest first, and a column per month (`src/components/BurnCalendar.tsx`).
+  Color is the detections scale with classes at quantiles (F11, F12).
+- **Totals and medians (F8):** the yearly total is on the right, gray for incomplete years.
+  The bottom row shows the long-term median of each calendar month.
+- **Tooltip (F9):** hovering or focusing a cell shows the exact value, the likely range, the median,
+  the difference, the level, the lead sensor, and notes for preliminary data, a partial month
+  or a sensor outage. The wording lives in `src/calendar/describe.ts`.
+- **Keyboard:** Tab reaches one cell, arrow keys move between cells, Home and End jump to the ends
+  of a row, Escape closes the tooltip.
+- **Not color alone:** every cell has a spoken description with its numbers, preliminary months
+  carry a corner mark, and seams between sensors are drawn as lines.
+
 ## Area and period controls
 
 - **Coordinates (F2):** the "Enter coordinates" button opens a form with two ways to set the area:

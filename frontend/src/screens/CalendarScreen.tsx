@@ -3,7 +3,7 @@ import { USE_MOCKS } from '../api/config';
 import { useCalendar, useMeta } from '../api/queries';
 import type { CalendarResponse, Geometry, Meta } from '../api/types';
 import { AreaMap } from '../components/AreaMap';
-import { CalendarPreview } from '../components/CalendarPreview';
+import { BurnCalendar } from '../components/BurnCalendar';
 import { CoordinateForm } from '../components/CoordinateForm';
 import { ErrorNote } from '../components/ErrorNote';
 import { PeriodSelect, type Period } from '../components/PeriodSelect';
@@ -118,7 +118,7 @@ function AreaPanel({ area, meta, period }: { area: Area; meta: Meta; period: Per
         <>
           <section className={styles.section} aria-labelledby="calendar-heading">
             <h2 id="calendar-heading">Burn calendar</h2>
-            <CalendarPreview calendar={calendar.data} sources={meta.sources} />
+            <BurnCalendar calendar={calendar.data} sources={meta.sources} />
             {calendar.data.warnings.length > 0 && (
               <ul className={styles.warnings}>
                 {calendar.data.warnings.map((warning) => (

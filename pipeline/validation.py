@@ -31,22 +31,22 @@ TEST = (2021, 2025)
 
 # (id, name, (west, south, east, north)) — the presets served by /meta
 REGIONS = [
-    ("kz-steppe", "Северный Казахстан", (61.0, 51.0, 71.0, 55.0)),
-    ("amazon-south", "Южная Амазония", (-62.0, -13.0, -52.0, -7.0)),
-    ("california-north", "Северная Калифорния", (-124.0, 38.5, -120.0, 42.0)),
+    ("kz-steppe", "Northern Kazakhstan", (61.0, 51.0, 71.0, 55.0)),
+    ("amazon-south", "Southern Amazon", (-62.0, -13.0, -52.0, -7.0)),
+    ("california-north", "Northern California", (-124.0, 38.5, -120.0, 42.0)),
 ]
 
-SEAM_2012 = {"id": "modis_to_snpp_2012", "label": "Переход MODIS → Suomi NPP, 2009–2011 против 2012–2014",
+SEAM_2012 = {"id": "modis_to_snpp_2012", "label": "MODIS → Suomi NPP transition, 2009–2011 vs 2012–2014",
              "before": (2009, 2011), "after": (2012, 2014)}  # fmt: skip
-SEAM_2026 = {"id": "snpp_to_n20_2026", "label": "Переход Suomi NPP → NOAA-20, проверка на 2024–2025",
+SEAM_2026 = {"id": "snpp_to_n20_2026", "label": "Suomi NPP → NOAA-20 transition, checked on 2024–2025",
              "years": (2024, 2025)}  # fmt: skip
 
 LIMITATIONS = [  # docs/methodology.md, section 7
-    "Мелкие пожары, которые видит VIIRS (375 м) и не видит MODIS (1 км), до 2012 года восстанавливаются только "
-    "статистически: коэффициент переносит среднее соотношение, но не отдельные события.",
-    "В малых областях (меньше ячейки 1°) коэффициент берётся от ячейки или блока 5° — оценка грубее, интервал шире.",
-    "2000–2002: только Terra, один утренний пролёт — ошибка примерно в полтора раза выше, чем у Terra + Aqua.",
-    "Перерывы в работе спутников вне найденных месяцев сбоев выглядят как периоды низкой активности.",
+    "Small fires that VIIRS (375 m) sees and MODIS (1 km) does not are recovered before 2012 only "
+    "statistically: the coefficient carries over the average ratio, not individual events.",
+    "In small areas (smaller than a 1° cell) the coefficient is taken from the cell or the 5° block — the estimate is coarser and the interval wider.",
+    "2000–2002: Terra only, one morning overpass — the error is roughly one and a half times higher than for Terra + Aqua.",
+    "Satellite outages outside the detected outage months look like periods of low activity.",
 ]
 
 # a coefficients row of ones: lead.value_sql over it gives the raw count of the same source

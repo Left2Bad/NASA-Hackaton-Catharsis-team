@@ -8,8 +8,13 @@ Unified columns:
 MODIS numeric confidence -> class: <30 l, 30..79 n, >=80 h (FIRMS convention).
 Usage: python 01_to_parquet.py <zip> [<zip>...]
 """
-import shutil, sys, tempfile, zipfile
+
+import shutil
+import sys
+import tempfile
+import zipfile
 from pathlib import Path
+
 import duckdb
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,7 +26,8 @@ def convert(zp: Path):
     src, year = zp.name.split("_")[0], zp.name.split("_")[1]
     out = OUT / f"{src}_{year}.parquet"
     if out.exists():
-        print("skip", out.name, flush=True); return
+        print("skip", out.name, flush=True)
+        return
     TMP.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(dir=TMP))
     try:
@@ -29,18 +35,23 @@ def convert(zp: Path):
         csvs = str(tmp / "**" / "*.csv").replace("\\", "/")
         is_modis = src == "modis"
         b1, b2 = ("brightness", "bright_t31") if is_modis else ("bright_ti4", "bright_ti5")
-        conf_cls = ("CASE WHEN TRY_CAST(confidence AS INT) < 30 THEN 'l' "
-                    "WHEN TRY_CAST(confidence AS INT) < 80 THEN 'n' ELSE 'h' END"
-                    if is_modis else "lower(substr(CAST(confidence AS VARCHAR),1,1))")
+        conf_cls = (
+            "CASE WHEN TRY_CAST(confidence AS INT) < 30 THEN 'l' "
+            "WHEN TRY_CAST(confidence AS INT) < 80 THEN 'n' ELSE 'h' END"
+            if is_modis
+            else "lower(substr(CAST(confidence AS VARCHAR),1,1))"
+        )
         con = duckdb.connect()
-        con.execute(f"SET threads=8; SET memory_limit='9GB'; SET preserve_insertion_order=false; SET temp_directory='{(TMP / 'spill').as_posix()}'")
+        con.execute(
+            f"SET threads=8; SET memory_limit='9GB'; SET preserve_insertion_order=false; SET temp_directory='{(TMP / 'spill').as_posix()}'"
+        )
         part = out.with_suffix(".part")
         con.execute(f"""
         COPY (
           SELECT CAST(latitude AS FLOAT) lat, CAST(longitude AS FLOAT) lon,
                  CAST(acq_date AS DATE) acq_date, CAST(acq_time AS SMALLINT) acq_time,
                  CAST(satellite AS VARCHAR) satellite,
-                 '{'MODIS' if is_modis else 'VIIRS'}' sensor, '{src}' source,
+                 '{"MODIS" if is_modis else "VIIRS"}' sensor, '{src}' source,
                  {conf_cls} conf_class, CAST(confidence AS VARCHAR) conf_raw,
                  CAST({b1} AS FLOAT) bright, CAST({b2} AS FLOAT) bright2,
                  CAST(frp AS FLOAT) frp, CAST(scan AS FLOAT) scan, CAST(track AS FLOAT) track,

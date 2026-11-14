@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import calendarExample from '../../contract/examples/calendar.response.json';
 import currentExample from '../../contract/examples/current.response.json';
 import metaExample from '../../contract/examples/meta.json';
+import validationExample from '../../contract/examples/method_validation.response.json';
 import App from './App';
 import { server } from './mocks/server';
 import { VISIONS } from './theme/cvd';
@@ -637,6 +638,115 @@ describe('coordinates (F2)', () => {
         ],
       ],
     });
+  });
+});
+
+describe('method page (F25)', () => {
+  it('is reachable from the header', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(screen.getByRole('link', { name: 'Method' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'How the record is made' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Method' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('shows the checks, the limitations, the method text and the acknowledgment', async () => {
+    window.location.hash = '#/method';
+    renderApp();
+
+    // The checks come from /method/validation: one block per region with its metrics.
+    const checks = await screen.findByRole('region', { name: 'How it was checked' });
+    const first = validationExample.regions[0];
+    // Regions may share a value, so the number is looked for anywhere among the metrics.
+    expect(
+      (await within(checks).findAllByText(first.metrics.pearson_r.toFixed(3))).length,
+    ).toBeGreaterThan(0);
+    expect(
+      within(checks)
+        .getAllByRole('heading', { level: 3 })
+        .map((heading) => heading.textContent),
+    ).toEqual([
+      'Northern Kazakhstan',
+      'Southern Amazon',
+      'Northern California',
+      'The seams of the record',
+    ]);
+    expect(
+      within(checks).getByText(
+        new RegExp(
+          `fitted on ${validationExample.calibration_period.start_year} to ${validationExample.calibration_period.end_year}`,
+        ),
+      ),
+    ).toBeInTheDocument();
+    const seams = within(checks).getByRole('table', { name: '' });
+    expect(within(seams).getAllByRole('row')).toHaveLength(1 + validationExample.seams.length);
+
+    // "Before and after" needs the raw series of an example area, and one chart per region.
+    const effect = screen.getByRole('region', { name: 'What harmonization changes' });
+    expect(
+      await within(effect).findByRole('slider', { name: 'Year on the chart' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('slider', { name: 'Month on the chart' })).toHaveLength(3);
+
+    const limits = screen.getByRole('region', { name: 'What the record cannot do' });
+    expect(within(limits).getAllByRole('listitem')).toHaveLength(
+      validationExample.limitations.length,
+    );
+
+    // The detailed text is docs/methodology.md itself.
+    const details = screen.getByRole('region', { name: 'The method in detail' });
+    expect(
+      within(details).getByRole('heading', { level: 3, name: '4. Calibration' }),
+    ).toBeInTheDocument();
+    expect(within(details).queryByText(/Owner: developer A/)).toBeNull();
+
+    const thanks = screen.getByRole('region', { name: 'Data and acknowledgment' });
+    expect(thanks).toHaveTextContent(
+      "We acknowledge the use of data from NASA's Fire Information for Resource Management System (FIRMS)",
+    );
+  });
+
+  it('asks for the raw series of the chosen example area', async () => {
+    const user = userEvent.setup();
+    const bodies: Record<string, unknown>[] = [];
+    server.use(
+      http.post('*/api/v1/calendar', async ({ request }) => {
+        bodies.push((await request.json()) as Record<string, unknown>);
+        return HttpResponse.json(calendarExample);
+      }),
+    );
+    window.location.hash = '#/method';
+    renderApp();
+
+    const area = await screen.findByLabelText('Area');
+    await screen.findByRole('slider', { name: 'Year on the chart' });
+    await user.selectOptions(area, 'Southern Amazon');
+    await waitFor(() => expect(bodies).toHaveLength(2));
+
+    expect(bodies[0]).toEqual({ geometry: metaExample.presets[0].geometry, series: 'raw' });
+    expect(bodies[1]).toEqual({ geometry: metaExample.presets[1].geometry, series: 'raw' });
+  });
+
+  it('keeps the method text readable when the checks cannot be loaded', async () => {
+    server.use(
+      http.get('*/api/v1/method/validation', () =>
+        HttpResponse.json(
+          { error: { code: 'NO_DATA', message: 'The report has not been built yet.' } },
+          { status: 404 },
+        ),
+      ),
+    );
+    window.location.hash = '#/method';
+    renderApp();
+
+    const checks = await screen.findByRole('region', { name: 'How it was checked' });
+    expect(await within(checks).findByRole('alert')).toHaveAttribute('data-code', 'NO_DATA');
+    expect(screen.getByRole('heading', { level: 3, name: '4. Calibration' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'What the record cannot do' })).toBeNull();
   });
 });
 

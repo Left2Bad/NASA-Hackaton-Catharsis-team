@@ -13,5 +13,6 @@ export type CalendarResponse = Schemas['CalendarResponse'];
 export type MonthValue = Schemas['MonthValue'];
 export type CurrentResponse = Schemas['CurrentResponse'];
 export type Warning = Schemas['Warning'];
+export type ValidationResponse = Schemas['ValidationResponse'];
 export type ErrorResponse = Schemas['ErrorResponse'];
 export type ErrorCode = ErrorResponse['error']['code'];

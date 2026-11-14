@@ -56,7 +56,7 @@ How to read the tables: `meta`, `calendar`, `current`, `points`, `daily`, `valid
 | F24 | PNG with a caption | Client. Caption: the example name or the bounds of the area, `calendar.area_km2`, the years of the period, `calendar.data_through`, `meta.data_version` | The text about the data source (NASA FIRMS) is static |
 | F25 | "Method" page | `validation`: `calibration_period`, `test_period`, `regions[]` (`name`, `metrics.pearson_r`, `metrics.bias_pct`, `metrics.mape_pct`, `metrics.n_months`, `series[]`), `seams[]` (`label`, `ratio_harmonized`, `ratio_naive`), `limitations[]`. Makeup of the record: `meta.sources[]` | The validation series cover only 2021 to 2025. The "before and after" chart for the whole period comes from a `/calendar` request with `series` = `raw` for an example area. Region and seam names are the client's own, by `id`; `limitations[]` is shown as the server sends it. The detailed text is `docs/methodology.md` |
 | F26 | State in the page address | Client | The address holds the example `id` or coordinates, the years and the mode |
-| F27 | Two languages | Client: labels by `id` and `code`, with the server text as a fallback | See question 3 |
+| F27 | Two languages | Not done by decision of the team: the interface stays in English only, as the rules of the hackathon ask. Labels by `id` and `code` are already the client's own | See question 3 |
 
 ## Screen elements outside the F list
 
@@ -78,7 +78,7 @@ How to read the tables: `meta`, `calendar`, `current`, `points`, `daily`, `valid
 | --- | --- | --- | --- |
 | 1 | The specification asks to mark months with satellite outages, but a month had no such flag | F9 | Settled in 0.2.0: the optional field `sensor_gap` in `MonthValue` |
 | 2 | `trend_pct_per_decade` gave a slope in percent without saying of what and by which method, so a trend line could not be drawn from it | F16, F18 | Settled in 0.2.0: the method is described, and the optional `trend_line` gives the line as two points |
-| 3 | Server texts come in one language: `presets[].name`, `sources[].label`, `warnings[].message`, `error.message`, `seams[].label`, `regions[].name`, `limitations[]` | F27 | Partly settled in 0.2.0: identifiers are stable and the client translates by `id` and `code`. `limitations[]` has no codes, so the second language takes that text from `docs/methodology.md` |
+| 3 | Server texts come in one language: `presets[].name`, `sources[].label`, `warnings[].message`, `error.message`, `seams[].label`, `regions[].name`, `limitations[]` | F27 | Settled in 0.2.0: identifiers are stable and the client keeps its own labels by `id` and `code`. With an English-only interface the remaining server texts need no translation |
 | 4 | The CSV must name the data source, but the examples have only a header row | F22, F23 | Settled on the client in B11: NASA FIRMS is named in the file name (`firms-…`) and in the text next to the buttons; the file itself stays a plain table |
 | 5 | `unit` is a free string. For `metric` = `count` the examples use `viirs_snpp_equivalent_detections`; the value for `frp` is not named anywhere | F21 | Open. List the allowed values of `unit` in the schema description |
 | 6 | The `Content-Disposition` header is described only for `points.csv`, and without `Access-Control-Expose-Headers` the client cannot read it anyway | F22, F23 | No change needed: the client sets the file name itself |

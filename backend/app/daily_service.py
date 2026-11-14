@@ -64,6 +64,7 @@ def current(data: Data, q: AreaQuery) -> dict:
     totals = [float(c[-1]) for c in past.values()]
     base_stats = stats.baseline_stats(totals)
     value = float(now[-1])
+    pct = stats.percentile_of(totals, value)
     median_by_day = np.median(np.vstack(list(past.values())), axis=0) if past else np.zeros(days)
     month_start = as_of.replace(day=1)
     return {
@@ -74,8 +75,8 @@ def current(data: Data, q: AreaQuery) -> dict:
         "value": stats.r1(value),
         "baseline_same_days": {k: base_stats[k] for k in ("median", "p25", "p75", "p90", "max", "n_years")},
         "anomaly_pct": stats.anomaly_pct(value, base_stats["median"] if base_stats["n_years"] else None),
-        "percentile": stats.percentile_of(totals, value),
-        "category": stats.category(value, base_stats, in_baseline=False),
+        "percentile": pct,
+        "category": stats.category(pct, value, base_stats, in_baseline=False),
         "source": lead.lead_source(as_of, data.outages),
         "preliminary": as_of > data.last_standard_date,
         "cumulative": [

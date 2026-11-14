@@ -24,7 +24,7 @@ class Settings:
     cors_origins: tuple[str, ...] = field(
         default_factory=lambda: tuple(o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip())
     )
-    # DuckDB: the server has ~4 GB free, the service is capped at 3 GB (docs: PLAN, step B8)
+    # DuckDB: 2GB is the local default; production sets 1536MB under the 2.5 GB container cap (docs/deploy.md)
     duckdb_memory_limit: str = field(default_factory=lambda: os.environ.get("DUCKDB_MEMORY_LIMIT", "2GB"))
     duckdb_threads: int = field(default_factory=lambda: int(os.environ.get("DUCKDB_THREADS", "2")))
     # limits published in /meta

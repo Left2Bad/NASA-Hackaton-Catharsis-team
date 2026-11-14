@@ -79,7 +79,7 @@ def build(data: Data, q: AreaQuery) -> dict:
             "median": b["median"] if b["n_years"] else None,
             "anomaly_pct": None if partial else stats.anomaly_pct(v, b["median"] if b["n_years"] else None),
             "percentile": pct,
-            "category": None if partial else stats.category(pct, v, b, base[0] <= m.year <= base[1]),
+            "category": None if partial else stats.category(v, b, base[0] <= m.year <= base[1]),
             "source": source,
             "preliminary": month_end(m) > data.last_standard_date,
             "partial": partial,

@@ -240,6 +240,7 @@ export function BurnCalendar({
             { color: null, hatched: true, label: 'Not compared' },
             { color: null, label: 'No data' },
           ]}
+          note="Color is the difference from the median in percent. The level in Now is a percentile, so the two can differ."
         />
       )}
 

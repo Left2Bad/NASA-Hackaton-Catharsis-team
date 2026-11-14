@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import styles from './ScaleLegend.module.css';
 
 interface ScaleLegendProps {
@@ -11,20 +12,31 @@ interface ScaleLegendProps {
   ends?: readonly [string, string];
   /** Separate keys outside the scale, for example "No fires". */
   extras?: readonly { color: string | null; label: string; hatched?: boolean }[];
+  /** One short line under the scale on how to read it. */
+  note?: string;
 }
 
 /**
  * Scale legend with numbers on the class boundaries (requirement F11).
  * The numbers are written as text, so color is never the only carrier of a value.
  */
-export function ScaleLegend({ title, colors, boundaries, ends, extras = [] }: ScaleLegendProps) {
+export function ScaleLegend({
+  title,
+  colors,
+  boundaries,
+  ends,
+  extras = [],
+  note,
+}: ScaleLegendProps) {
   const columns = { gridTemplateColumns: `repeat(${colors.length}, minmax(0, 1fr))` };
+  // The scale needs room for one boundary label per class, so its width grows with the classes.
+  const scaleWidth = { '--classes': colors.length } as CSSProperties;
 
   return (
     <figure className={styles.legend}>
       <figcaption className={styles.title}>{title}</figcaption>
       <div className={styles.body}>
-        <div className={styles.scale}>
+        <div className={styles.scale} style={scaleWidth}>
           <div className={styles.swatches} style={columns} aria-hidden="true">
             {colors.map((color) => (
               <span key={color} style={{ background: color }} />
@@ -65,6 +77,7 @@ export function ScaleLegend({ title, colors, boundaries, ends, extras = [] }: Sc
           </ul>
         )}
       </div>
+      {note && <p className={styles.note}>{note}</p>}
     </figure>
   );
 }

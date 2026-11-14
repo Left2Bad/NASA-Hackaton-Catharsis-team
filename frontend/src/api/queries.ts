@@ -7,9 +7,13 @@ import type {
   AreaQuery,
   CalendarResponse,
   CurrentResponse,
+  DailyQuery,
+  DailyResponse,
   ExportPointsQuery,
   Geometry,
   Meta,
+  PointsQuery,
+  PointsResponse,
   ValidationResponse,
 } from './types';
 
@@ -130,6 +134,57 @@ export function useRawCalendar(geometry: Geometry | null) {
   });
 }
 
+/** Single detections do not fit into the saved answers: they need the server. */
+const serverOnly = (what: string) => () =>
+  Promise.reject(new ApiError('OFFLINE', `${what} are not in the saved answers`, 0));
+
+/** The hot spots of one month inside an area, for the map (requirement F13). */
+export async function fetchPoints(
+  query: PointsQuery,
+  signal?: AbortSignal,
+): Promise<PointsResponse> {
+  return withFallback(
+    async () =>
+      (await request(
+        (s) => api.POST('/points', { body: query, signal: s }),
+        signal,
+      )) as PointsResponse,
+    serverOnly('Hot spots'),
+  );
+}
+
+/** Hot spots of a month. Nothing loads while no month is chosen (`null`). */
+export function usePoints(query: PointsQuery | null) {
+  return useQuery({
+    queryKey: ['points', query],
+    queryFn: ({ signal }) => fetchPoints(query as PointsQuery, signal),
+    enabled: query !== null,
+    // A month that is over does not change; the answer is large, so it is not asked twice.
+    staleTime: Infinity,
+  });
+}
+
+/** The harmonized record of an area for every day of one year (requirement F14). */
+export async function fetchDaily(query: DailyQuery, signal?: AbortSignal): Promise<DailyResponse> {
+  return withFallback(
+    async () =>
+      (await request(
+        (s) => api.POST('/daily', { body: query, signal: s }),
+        signal,
+      )) as DailyResponse,
+    () => snapshot.daily(query, signal),
+  );
+}
+
+/** Daily values of a year. Nothing loads while there is no query (`null`). */
+export function useDaily(query: DailyQuery | null) {
+  return useQuery({
+    queryKey: ['daily', query],
+    queryFn: ({ signal }) => fetchDaily(query as DailyQuery, signal),
+    enabled: query !== null,
+  });
+}
+
 /** Exports may take long: a hot spot file streams up to half a million rows. */
 export const EXPORT_TIMEOUT_MS = 180_000;
 
@@ -160,6 +215,6 @@ export async function fetchPointsCsv(
         EXPORT_TIMEOUT_MS,
       ),
     // Millions of points do not fit into a snapshot: this file needs the server.
-    () => Promise.reject(new ApiError('OFFLINE', 'Hot spot files are not in the saved answers', 0)),
+    serverOnly('Hot spot files'),
   );
 }

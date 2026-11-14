@@ -1,4 +1,5 @@
-import type { Geometry } from '../api/types';
+import type { GeoJSONSource } from 'maplibre-gl';
+import type { Geometry, PointsResponse } from '../api/types';
 import { boundsOf, geometryFromRings, outerRings } from '../geo/geometry';
 
 // The map engine: MapLibre GL JS for the map itself and Terra Draw for drawing.
@@ -12,6 +13,11 @@ const BASEMAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 const SATELLITE_TILES =
   'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg';
 const SATELLITE_LAYER = 'nasa-blue-marble';
+
+/** The hot spots of the month chosen on the calendar (requirement F13). */
+const HOTSPOT_LAYER = 'hot-spots';
+const HOTSPOT_COLOR = '#c85d02';
+const NO_POINTS = { type: 'FeatureCollection' as const, features: [] };
 
 /** Used when the basemap style cannot be fetched: a plain surface the user can still draw on. */
 const PLAIN_STYLE = {
@@ -42,6 +48,8 @@ export interface AreaMapEngine {
   showArea: (geometry: Geometry | null, options: { fit: boolean }) => void;
   /** Shows or hides the satellite imagery under the labels. */
   setSatellite: (visible: boolean) => void;
+  /** Draws hot spots as dots under the outline of the area; `null` removes them. */
+  showPoints: (points: PointsResponse | null) => void;
   destroy: () => void;
 }
 
@@ -124,6 +132,27 @@ export async function createAreaMapEngine(
       type: 'raster',
       source: SATELLITE_LAYER,
       layout: { visibility: 'none' },
+    },
+    firstLabelLayer,
+  );
+
+  // Hot spots lie above the imagery and under the labels, so place names stay readable.
+  // The layers of the drawing tool are added later and stay on top of the dots.
+  map.addSource(HOTSPOT_LAYER, { type: 'geojson', data: NO_POINTS });
+  map.addLayer(
+    {
+      id: HOTSPOT_LAYER,
+      type: 'circle',
+      source: HOTSPOT_LAYER,
+      paint: {
+        // A dot stands for one detection, not for its footprint: it only grows enough to stay visible.
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 1.5, 7, 2.5, 11, 4.5],
+        'circle-color': HOTSPOT_COLOR,
+        'circle-opacity': 0.7,
+        'circle-stroke-color': WHITE,
+        'circle-stroke-width': 0.5,
+        'circle-stroke-opacity': 0.6,
+      },
     },
     firstLabelLayer,
   );
@@ -262,6 +291,10 @@ export async function createAreaMapEngine(
 
     setSatellite(visible) {
       map.setLayoutProperty(SATELLITE_LAYER, 'visibility', visible ? 'visible' : 'none');
+    },
+
+    showPoints(points) {
+      map.getSource<GeoJSONSource>(HOTSPOT_LAYER)?.setData(points ?? NO_POINTS);
     },
 
     destroy() {

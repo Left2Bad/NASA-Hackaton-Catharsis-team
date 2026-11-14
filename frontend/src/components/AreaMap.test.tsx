@@ -33,6 +33,7 @@ function fakeEngine() {
     setTool: vi.fn(),
     showArea: vi.fn(),
     setSatellite: vi.fn(),
+    showPoints: vi.fn(),
     destroy: vi.fn(),
   };
   let handlers: AreaMapHandlers | undefined;

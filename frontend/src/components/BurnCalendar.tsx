@@ -7,6 +7,7 @@ import {
   monthSentence,
   type CellDescription,
 } from '../calendar/describe';
+import { describeRawMonth, rawLead, rawMonthSentence, rawYearTotals } from '../calendar/raw';
 import {
   formatCompact,
   formatNumber,
@@ -28,12 +29,16 @@ import {
 import styles from './BurnCalendar.module.css';
 import { ScaleLegend } from './ScaleLegend';
 
-/** What the cell color shows: how many detections, or how far the month is from its median. */
-export type CalendarMode = 'count' | 'anomaly';
+/**
+ * What the cell color shows: how many detections, how far the month is from its median,
+ * or what the lead sensor recorded before harmonization (F19).
+ */
+export type CalendarMode = 'count' | 'anomaly' | 'raw';
 
 const MODES: readonly { mode: CalendarMode; label: string }[] = [
   { mode: 'count', label: 'Detections' },
   { mode: 'anomaly', label: 'Anomaly' },
+  { mode: 'raw', label: 'Original sensors' },
 ];
 
 interface BurnCalendarProps {
@@ -41,6 +46,10 @@ interface BurnCalendarProps {
   sources: readonly SourceInfo[];
   mode: CalendarMode;
   onModeChange: (mode: CalendarMode) => void;
+  /** The month whose hot spots are on the map, as "2020-09" (F13). */
+  selectedMonth?: string | null;
+  /** Called when the user picks a month by a click or with Enter. */
+  onSelectMonth?: (month: MonthValue) => void;
 }
 
 /** What the tooltip shows and where it sits, in pixels inside the calendar. */
@@ -67,7 +76,14 @@ const cellId = (year: number, month: number) => `${year}-${String(month).padStar
  * cell opens a tooltip with the exact numbers (F9). Arrow keys move between cells.
  * The mode switch recolors the same data by its difference from the median (F10).
  */
-export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCalendarProps) {
+export function BurnCalendar({
+  calendar,
+  sources,
+  mode,
+  onModeChange,
+  selectedMonth = null,
+  onSelectMonth,
+}: BurnCalendarProps) {
   const { months, yearly, monthly_baseline: baselines } = calendar;
   const wrapRef = useRef<HTMLDivElement>(null);
   const [openTip, setTip] = useState<Tip | null>(null);
@@ -84,14 +100,24 @@ export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCale
     () => quantileBreaks(months.filter((m) => !m.partial).map((m) => m.value)),
     [months],
   );
-  // Switching the mode only changes colors: both modes are drawn from the same response.
+  // The raw counts come with their own request. Until they arrive, the calendar that is
+  // already on screen stays as the detections view.
+  const hasRaw = useMemo(() => months.some((m) => m.raw !== undefined), [months]);
+  const view: CalendarMode = mode === 'raw' && !hasRaw ? 'count' : mode;
+  // Switching the mode only changes colors. The raw view keeps the classes of the
+  // harmonized record, so a paler cell there means fewer detections were recorded.
   const cellOf = useMemo(
     () =>
-      buildCells(months, (month) =>
-        mode === 'count' ? countColor(month.value, breaks) : anomalyColor(month.anomaly_pct),
-      ),
-    [months, breaks, mode],
+      buildCells(months, (month) => {
+        if (view === 'anomaly') return anomalyColor(month.anomaly_pct);
+        if (view === 'count') return countColor(month.value, breaks);
+        const lead = rawLead(month);
+        return lead === null ? null : countColor(lead, breaks);
+      }),
+    [months, breaks, view],
   );
+  const rawTotals = useMemo(() => rawYearTotals(months), [months]);
+  const describe = view === 'raw' ? describeRawMonth : describeMonth;
   const sideLabels = useMemo(() => sourceSideLabels(sources, years), [sources, years]);
   const totals = useMemo(() => new Map(yearly.map((year) => [year.year, year])), [yearly]);
 
@@ -102,6 +128,9 @@ export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCale
   const firstYearRow = 2;
   const medianRow = firstYearRow + years.length;
   const rowOf = (year: number) => firstYearRow + years.indexOf(year);
+  /** The total of a year in the view on screen: harmonized, or as the sensors recorded. */
+  const yearTotal = (year: number, harmonized: number) =>
+    view === 'raw' ? (rawTotals.get(year) ?? 0) : harmonized;
 
   const showTip = (target: HTMLElement, description: CellDescription) => {
     const wrap = wrapRef.current;
@@ -161,6 +190,9 @@ export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCale
     } else if (event.key === 'End') {
       event.preventDefault();
       moveFocus(month.year, 13, 0, -1);
+    } else if ((event.key === 'Enter' || event.key === ' ') && onSelectMonth) {
+      event.preventDefault();
+      onSelectMonth(month);
     } else if (event.key === 'Escape') {
       setTip(null);
     }
@@ -181,9 +213,13 @@ export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCale
         ))}
       </div>
 
-      {mode === 'count' ? (
+      {view !== 'anomaly' ? (
         <ScaleLegend
-          title="Fire detections per month, VIIRS-equivalent"
+          title={
+            view === 'raw'
+              ? 'Fire detections per month, as each sensor recorded them'
+              : 'Fire detections per month, VIIRS-equivalent'
+          }
           colors={COUNT_RAMP}
           boundaries={breaks.map(formatNumber)}
           ends={['fewer', 'more']}
@@ -210,9 +246,11 @@ export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCale
           className={styles.grid}
           role="grid"
           aria-label={
-            mode === 'count'
+            view === 'count'
               ? `Fire detections by month, ${years[years.length - 1]} to ${years[0]}. Darker cells mean more detections.`
-              : `Fire anomalies by month, ${years[years.length - 1]} to ${years[0]}. Blue is below the median, orange is above.`
+              : view === 'anomaly'
+                ? `Fire anomalies by month, ${years[years.length - 1]} to ${years[0]}. Blue is below the median, orange is above.`
+                : `Fire detections by month as the sensors recorded them, ${years[years.length - 1]} to ${years[0]}. Darker cells mean more detections.`
           }
           style={{ gridTemplateRows: `auto repeat(${years.length}, var(--cell-height)) auto` }}
         >
@@ -280,25 +318,28 @@ export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCale
                       key={month}
                       role="gridcell"
                       tabIndex={id === tabbable ? 0 : -1}
-                      aria-label={monthSentence(data)}
+                      aria-label={view === 'raw' ? rawMonthSentence(data) : monthSentence(data)}
+                      aria-selected={onSelectMonth ? id === selectedMonth : undefined}
+                      data-selected={id === selectedMonth || undefined}
                       className={styles.cell}
                       style={{ ...position, background: cell.color ?? undefined }}
                       data-month={id}
                       data-seam={seam || undefined}
                       data-preliminary={data.preliminary || undefined}
                       data-level={
-                        mode === 'anomaly' && data.anomaly_pct !== null
+                        view === 'anomaly' && data.anomaly_pct !== null
                           ? classOf(data.anomaly_pct, ANOMALY_BREAKS)
                           : undefined
                       }
                       data-uncompared={
-                        (mode === 'anomaly' && data.anomaly_pct === null) || undefined
+                        (view === 'anomaly' && data.anomaly_pct === null) || undefined
                       }
-                      onMouseEnter={(event) => showTip(event.currentTarget, describeMonth(data))}
+                      onMouseEnter={(event) => showTip(event.currentTarget, describe(data))}
                       onFocus={(event) => {
                         setCursor(id);
-                        showTip(event.currentTarget, describeMonth(data));
+                        showTip(event.currentTarget, describe(data));
                       }}
+                      onClick={onSelectMonth ? () => onSelectMonth(data) : undefined}
                       onBlur={() => setTip(null)}
                       onKeyDown={(event) => handleKey(event, data)}
                     />
@@ -312,12 +353,12 @@ export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCale
                   style={{ gridColumn: 14, gridRow: rowOf(year) }}
                   aria-label={
                     total
-                      ? `${year} total: ${formatNumber(Math.round(total.total))}${total.complete ? '' : ', incomplete year'}`
+                      ? `${year} total: ${formatNumber(Math.round(yearTotal(year, total.total)))}${total.complete ? '' : ', incomplete year'}`
                       : `${year} total: no data`
                   }
                   title={total && !total.complete ? 'Incomplete year' : undefined}
                 >
-                  {total ? formatNumber(Math.round(total.total)) : ''}
+                  {total ? formatNumber(Math.round(yearTotal(year, total.total))) : ''}
                 </span>
               </div>
             );
@@ -343,9 +384,9 @@ export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCale
                   gridRow: medianRow,
                   // The median is the zero of the anomaly scale, so it takes the neutral color there.
                   borderTopColor:
-                    mode === 'count'
-                      ? countColor(baseline.median, breaks)
-                      : ANOMALY_RAMP[ANOMALY_MIDPOINT],
+                    view === 'anomaly'
+                      ? ANOMALY_RAMP[ANOMALY_MIDPOINT]
+                      : countColor(baseline.median, breaks),
                 }}
                 data-median={baseline.month}
                 onMouseEnter={(event) => showTip(event.currentTarget, describeBaseline(baseline))}
@@ -398,11 +439,23 @@ export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCale
         )}
       </div>
 
-      <p className={styles.caption}>
-        Dark lines are the seams of the record: the lead sensor changes there. Colors run across
-        them without a jump because every sensor is converted to the same VIIRS scale. Totals in
-        gray are for incomplete years.
-      </p>
+      {view === 'raw' ? (
+        <p className={styles.caption}>
+          Every month shows what its lead sensor recorded, without conversion. The colors keep the
+          scale of the harmonized record, so the step at the dark lines is the difference between
+          the sensors, not a change in fire activity. The medians at the bottom are those of the
+          harmonized record.
+        </p>
+      ) : (
+        <p className={styles.caption}>
+          Dark lines are the seams of the record: the lead sensor changes there. Colors run across
+          them without a jump because every sensor is converted to the same VIIRS scale. Totals in
+          gray are for incomplete years.
+        </p>
+      )}
+      {onSelectMonth && (
+        <p className={styles.caption}>Click a month to see its hot spots on the map.</p>
+      )}
     </div>
   );
 }

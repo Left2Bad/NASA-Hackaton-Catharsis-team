@@ -5,6 +5,8 @@ import type {
   AreaQuery,
   CalendarResponse,
   CurrentResponse,
+  DailyQuery,
+  DailyResponse,
   Geometry,
   Meta,
   ValidationResponse,
@@ -229,6 +231,56 @@ export function calendarCsv(calendar: CalendarResponse): string {
   return `${[CSV_COLUMNS.join(','), ...rows].join('\n')}\n`;
 }
 
+/**
+ * Daily values of one area as the snapshot keeps them: every year as a run of consecutive
+ * days from `start`, which takes a tenth of the space of the API answers.
+ */
+export interface SavedDaily {
+  unit: string;
+  years: Record<
+    string,
+    {
+      /** The first day of the run: January 1, or the first day of the record. */
+      start: string;
+      values: number[];
+      /** Index of the first near-real-time day; later days are preliminary as well. */
+      preliminary_from: number | null;
+    }
+  >;
+}
+
+/** Packs the answers of `POST /daily` for the snapshot. The script that saves it does the same. */
+export function packDaily(answers: readonly DailyResponse[]): SavedDaily {
+  const years: SavedDaily['years'] = {};
+  for (const answer of answers) {
+    if (answer.days.length === 0) continue;
+    const first = answer.days.findIndex((day) => day.preliminary);
+    years[String(answer.year)] = {
+      start: answer.days[0].date,
+      values: answer.days.map((day) => day.value),
+      preliminary_from: first === -1 ? null : first,
+    };
+  }
+  return { unit: answers[0]?.unit ?? '', years };
+}
+
+/** The answer of `POST /daily` for one year, rebuilt from the saved run of days. */
+export function unpackDaily(saved: SavedDaily, year: number): DailyResponse | null {
+  const run = saved.years[String(year)];
+  if (!run) return null;
+  const start = Date.parse(`${run.start}T00:00:00Z`);
+  return {
+    year,
+    unit: saved.unit,
+    metric: 'count',
+    days: run.values.map((value, index) => ({
+      date: new Date(start + index * 86_400_000).toISOString().slice(0, 10),
+      value,
+      preliminary: run.preliminary_from !== null && index >= run.preliminary_from,
+    })),
+  };
+}
+
 /** The saved answers, each in the shape of the API response it stands in for. */
 export const snapshot = {
   index: (signal?: AbortSignal) => load<SnapshotIndex>('index', signal),
@@ -245,6 +297,17 @@ export const snapshot = {
     const id = presetIdOf(query.geometry, await load<Meta>('meta', signal));
     if (id === null) throw offlineArea();
     return load<CurrentResponse>(`current_${id}`, signal);
+  },
+
+  async daily(query: DailyQuery, signal?: AbortSignal): Promise<DailyResponse> {
+    const id = presetIdOf(query.geometry, await load<Meta>('meta', signal));
+    if (id === null) throw offlineArea();
+    const answer =
+      (query.metric ?? 'count') === 'count'
+        ? unpackDaily(await load<SavedDaily>(`daily_${id}`, signal), query.year)
+        : null;
+    if (!answer) throw new ApiError('OFFLINE', 'This year is not in the saved answers', 0);
+    return answer;
   },
 
   async calendarCsv(query: AreaQuery, signal?: AbortSignal): Promise<Blob> {

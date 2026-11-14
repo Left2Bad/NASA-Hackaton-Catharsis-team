@@ -141,13 +141,35 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test`,
   `src/charts/useCursor.ts` (pointer and keyboard position) and `src/components/Chart.module.css`
   are used by all three charts, including the one in the "Now" panel.
 
+## Original sensors, hot spots and the daily calendar
+
+Three views that go deeper than the monthly calendar (requirements F19, F13 and F14).
+
+- **Original sensors (F19):** the third button of the calendar mode switch. Every month shows what its
+  lead sensor recorded, without conversion: MODIS before February 2012, VIIRS after. The colors keep
+  the classes of the harmonized record, so the step at the seam is the difference between the sensors
+  and not a change in fire activity. The tooltip puts the recorded count next to the harmonized one
+  and names the factor between them; the yearly totals are sums of the recorded counts
+  (`src/calendar/raw.ts`). The raw counts are asked only for this view: the request gets `series=raw`.
+- **Hot spots of a month (F13):** a click on a month (or Enter on a focused cell) asks `POST /points`
+  for that month and draws the detections as dots on the map, under the outline of the area. A strip
+  above the map says how many are drawn; above `limits.max_points` the API returns the strongest
+  fires by radiative power and the strip says so. A second click, the "Hide hot spots" button or a
+  change of area removes the dots. The dots are a MapLibre circle layer below the place names
+  (`showPoints` in `src/map/engine.ts`).
+- **Daily calendar (F14):** the section under the yearly totals. A row per month and a column per day
+  of the chosen year, from `POST /daily`. The classes are quantiles of that year alone. The readout
+  above the grid names the busiest day, the day under the pointer, or the day reached with the arrow
+  keys (left and right step through the year, up and down go to the same day of the neighboring
+  month, Home and End to the ends of the month). Helpers are in `src/calendar/daily.ts`.
+
 ## Link with the state
 
 The address of the page describes what is on the calendar screen (requirement F26,
 `src/state/link.ts`), so a copied link reopens the same view:
 
 ```text
-/#/?area=kz-steppe&from=2010&to=2020&mode=anomaly     an example area by its id
+/#/?area=kz-steppe&from=2010&to=2020&mode=anomaly     an example area by its id (mode: anomaly or raw)
 /#/?poly=61,51;71,51;71,55;61,55                      any other area by its outline
 ```
 
@@ -262,18 +284,20 @@ A demo must survive a server that is down. Answers of the real API are saved as 
 `public/snapshot/` and shipped with the app (`src/api/snapshot.ts`).
 
 - **What is saved:** `/meta`, `/method/validation`, and for every example area `/calendar` (the whole
-  record, with `series=raw`) and `/current`. About 290 KB in nine files. The numbers are real: the
+  record, with `series=raw`), `/current` and the daily values of every year (packed as runs of
+  consecutive days, a tenth of the size of the `/daily` answers). About 390 KB in twelve files. The numbers are real: the
   snapshot script refuses an API whose data version looks synthetic.
 - **When it is used:** every request asks the server first. If the server cannot be reached (no
   connection, timeout, a gateway error), the saved answer is shown instead and a strip under the
   header says so, with the date of the snapshot and a "Try the server again" button. An error the
   server returned on purpose (area too large, no data) is never replaced. After a failure the server
   is not asked again for a minute, so a hanging server does not slow every click.
-- **What works without the server:** the three example areas with any period, the "Now" panel, both
-  charts, the "Method" page, all PNG downloads and the monthly table as CSV. A change of period is
+- **What works without the server:** the three example areas with any period, the "original sensors"
+  view, the "Now" panel, both charts, the daily calendar, the "Method" page, all PNG downloads and the monthly table as CSV. A change of period is
   computed on the client exactly as the API does it (months, yearly totals, the most active year, the
   total, the trend); this was compared with the live API for three areas and three periods.
-- **What does not:** a drawn or typed area, and the hot spot CSV. They get a message that the saved
+- **What does not:** a drawn or typed area, the hot spots of a month on the map, and the hot spot
+  CSV. A copy built with `VITE_API_FALLBACK=only` does not offer the hot spots at all. They get a message that the saved
   data covers the example areas only.
 - **Refreshing the snapshot:** start the backend on the real record and run `npm run snapshot`
   (or `npm run snapshot -- https://host/api/v1`). Commit the changed files.

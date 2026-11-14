@@ -17,7 +17,8 @@ python -m venv .venv
 | 2. Сетки | `python pipeline/grid.py` | `data/grid_daily.parquet`, `data/grid_monthly.parquet` (ячейка 0,1°) | ~5 мин |
 | 3. Гармонизация | `python pipeline/harmonize.py` | `data/coefficients.parquet`, `data/uncertainty.parquet`, `data/outage_months.csv`, `data/harmonized/` | ~10 с |
 | 4. 2026 год через API | `python pipeline/fetch_api.py` (нужен `FIRMS_MAP_KEY` в `.env`) | `data/raw/api_2026/` | 1,5–2,5 ч, упирается в лимит ключа |
-| 5. 2026 → Parquet | `python pipeline/api_to_parquet.py`, затем `grid.py --years 2026` и снова шаг 3 | `data/points/*_2026.parquet` | ~2 мин |
+| 5. 2026 → Parquet | `python pipeline/api_to_parquet.py`, затем `grid.py --years 2026` и снова шаги 3 и 6 | `data/points/*_2026.parquet` | ~2 мин |
+| 6. Отчёт проверки | `python pipeline/validation.py` (после шага 3) | `data/validation/report.json` (схема `ValidationResponse`) | ~1 с |
 
 - Шаг 1 запускать **одним процессом**: большие годы VIIRS (≈20 млн точек) требуют ~9 ГБ RAM.
 - Шаги 0 и 4 можно перезапускать: готовые файлы пропускаются, недокачанные докачиваются.

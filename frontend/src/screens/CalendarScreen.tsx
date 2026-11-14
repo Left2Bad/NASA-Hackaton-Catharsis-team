@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { USE_MOCKS } from '../api/config';
-import { useCalendar, useCurrent, useMeta } from '../api/queries';
-import type { Geometry, Meta } from '../api/types';
+import { FALLBACK_MODE } from '../api/snapshot';
+import { useCalendar, useCurrent, useMeta, usePoints } from '../api/queries';
+import type { Geometry, Meta, MonthValue, PointsResponse } from '../api/types';
 import { AreaMap } from '../components/AreaMap';
 import { BurnCalendar, type CalendarMode } from '../components/BurnCalendar';
 import { CoordinateForm } from '../components/CoordinateForm';
+import { DailyCalendar } from '../components/DailyCalendar';
 import { Downloads } from '../components/Downloads';
 import { ErrorNote } from '../components/ErrorNote';
 import { LoadingNote } from '../components/LoadingNote';
@@ -95,15 +97,38 @@ function CopyLink() {
   );
 }
 
+/** What the strip above the map says about the hot spots that are drawn. */
+function spotsSummary(points: PointsResponse, year: number, month: number): string {
+  const when = `${monthName(month)} ${year}`;
+  if (points.total === 0) return `No hot spots in ${when}.`;
+  // Above the limit the API returns the strongest fires, so the map still covers the whole month.
+  const shown = points.truncated
+    ? `the ${formatNumber(points.features.length)} strongest of ${formatNumber(points.total)} hot spots`
+    : `${formatNumber(points.total)} hot ${points.total === 1 ? 'spot' : 'spots'}`;
+  return `${when}: ${shown} on the map, all sensors.`;
+}
+
 interface AreaPanelProps {
   area: Area;
   meta: Meta;
   period: Period;
   mode: CalendarMode;
   onModeChange: (mode: CalendarMode) => void;
+  /** The month whose hot spots are on the map, as "2020-09", or `null`. */
+  selectedMonth: string | null;
+  /** Absent where single detections are not available: a copy of the app without a server. */
+  onSelectMonth?: (month: MonthValue) => void;
 }
 
-function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
+function AreaPanel({
+  area,
+  meta,
+  period,
+  mode,
+  onModeChange,
+  selectedMonth,
+  onSelectMonth,
+}: AreaPanelProps) {
   const sizeKm2 = areaKm2(area.geometry);
   const limitKm2 = meta.limits.max_area_km2;
   const tooLarge = sizeKm2 > limitKm2;
@@ -112,7 +137,13 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
   const calendar = useCalendar(
     tooLarge
       ? null
-      : { geometry: area.geometry, start_year: period.startYear, end_year: period.endYear },
+      : {
+          geometry: area.geometry,
+          start_year: period.startYear,
+          end_year: period.endYear,
+          // The counts of the sensors as they recorded are asked only for the view that shows them.
+          ...(mode === 'raw' ? { series: 'raw' as const } : {}),
+        },
   );
 
   // "Now" does not depend on the chosen period, so it is asked for the geometry alone
@@ -120,7 +151,8 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
   const current = useCurrent(tooLarge ? null : area.geometry);
 
   const data = calendar.data;
-  // Only the period changed: the previous calendar stays on screen, dimmed, until the new one arrives.
+  // Only the period or the series changed: the previous calendar stays on screen, dimmed,
+  // until the new one arrives.
   const updating = calendar.isPlaceholderData;
   // An area without fires is a valid answer (200 with zeros), not an error.
   const empty = data !== undefined && data.summary.total === 0;
@@ -138,7 +170,7 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
         {data && (
           <p className={styles.meta}>
             {formatNumber(data.area_km2)} km², data through {data.data_through}
-            {updating && <span role="status"> · updating for the new period…</span>}
+            {updating && <span role="status"> · updating…</span>}
           </p>
         )}
         <CopyLink />
@@ -176,6 +208,8 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
               sources={meta.sources}
               mode={mode}
               onModeChange={onModeChange}
+              selectedMonth={selectedMonth}
+              onSelectMonth={onSelectMonth}
             />
             {data.warnings.length > 0 && (
               <ul className={styles.warnings}>
@@ -219,6 +253,14 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
             <h2 id="yearly-heading">Yearly totals</h2>
             <YearlyTotals calendar={data} />
           </section>
+
+          <section className={styles.section} aria-labelledby="daily-heading">
+            <h2 id="daily-heading">Daily calendar</h2>
+            <DailyCalendar
+              geometry={area.geometry}
+              years={data.yearly.map((year) => year.year).reverse()}
+            />
+          </section>
         </div>
       )}
 
@@ -261,6 +303,27 @@ function Workspace({ meta }: { meta: Meta }) {
   });
   // The calendar mode is kept here, so it survives a change of area or period.
   const [mode, setMode] = useState<CalendarMode>(linked.mode);
+  // The month whose hot spots are on the map (F13). It is kept with its area, so the dots
+  // of one area are never drawn over another.
+  const [spots, setSpots] = useState<{ geometry: Geometry; year: number; month: number } | null>(
+    null,
+  );
+  const shownSpots = spots !== null && spots.geometry === area?.geometry ? spots : null;
+  const tooLarge = area !== null && areaKm2(area.geometry) > meta.limits.max_area_km2;
+  const points = usePoints(
+    shownSpots && !tooLarge
+      ? { geometry: shownSpots.geometry, year: shownSpots.year, month: shownSpots.month }
+      : null,
+  );
+  const spotsId = shownSpots
+    ? `${shownSpots.year}-${String(shownSpots.month).padStart(2, '0')}`
+    : null;
+  /** A click on the chosen month hides its hot spots again. */
+  const toggleSpots = (month: MonthValue) => {
+    if (!area) return;
+    const same = shownSpots?.year === month.year && shownSpots.month === month.month;
+    setSpots(same ? null : { geometry: area.geometry, year: month.year, month: month.month });
+  };
 
   // Every change goes back into the address, so the address always describes the screen.
   const search = buildSearch(
@@ -310,9 +373,30 @@ function Workspace({ meta }: { meta: Meta }) {
             />
           </div>
         )}
+        {shownSpots && (
+          <div className={styles.spotsBar}>
+            {points.isError ? (
+              <ErrorNote
+                error={points.error}
+                onRetry={() => void points.refetch()}
+                retrying={points.isFetching}
+              />
+            ) : (
+              <p role="status">
+                {points.data
+                  ? spotsSummary(points.data, shownSpots.year, shownSpots.month)
+                  : `Loading the hot spots of ${monthName(shownSpots.month)} ${shownSpots.year}…`}
+              </p>
+            )}
+            <button type="button" onClick={() => setSpots(null)}>
+              Hide hot spots
+            </button>
+          </div>
+        )}
         <div className={styles.mapSlot}>
           <AreaMap
             geometry={area?.geometry ?? null}
+            points={shownSpots ? (points.data ?? null) : null}
             // A shape drawn or edited on the map is no longer an example area.
             onChange={(geometry) => setArea(geometry ? { geometry, presetId: null } : null)}
           />
@@ -321,7 +405,17 @@ function Workspace({ meta }: { meta: Meta }) {
 
       <section className={styles.panel} aria-label="Fire activity">
         {area ? (
-          <AreaPanel area={area} meta={meta} period={period} mode={mode} onModeChange={setMode} />
+          <AreaPanel
+            area={area}
+            meta={meta}
+            period={period}
+            mode={mode}
+            onModeChange={setMode}
+            selectedMonth={spotsId}
+            // Single detections do not fit into the saved answers, so a copy of the app
+            // that never asks a server does not offer them.
+            onSelectMonth={FALLBACK_MODE === 'only' ? undefined : toggleSpots}
+          />
         ) : (
           <StartPrompt meta={meta} />
         )}

@@ -1,18 +1,23 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import dailyExampleJson from '../../../contract/examples/daily.response.json';
 import savedCalendarJson from '../../public/snapshot/calendar_kz-steppe.json';
+import savedDailyJson from '../../public/snapshot/daily_kz-steppe.json';
 import savedIndexJson from '../../public/snapshot/index.json';
 import savedMetaJson from '../../public/snapshot/meta.json';
 import { ApiError } from './errors';
 import {
   calendarCsv,
   isUnreachable,
+  packDaily,
   presetIdOf,
   retryServer,
   tailorPeriod,
   trendOf,
+  unpackDaily,
   withFallback,
+  type SavedDaily,
 } from './snapshot';
-import type { CalendarResponse, Meta } from './types';
+import type { CalendarResponse, DailyResponse, Meta } from './types';
 
 const saved = savedCalendarJson as unknown as CalendarResponse;
 const meta = savedMetaJson as unknown as Meta;
@@ -29,6 +34,54 @@ describe('the snapshot in the repository', () => {
     expect(saved.series).toBe('raw');
     expect(saved.months[0]).toMatchObject({ year: 2000, month: 11 });
     expect(saved.months.every((month) => month.raw !== undefined)).toBe(true);
+  });
+});
+
+describe('daily values in the snapshot', () => {
+  const example = dailyExampleJson as unknown as DailyResponse;
+  const savedDaily = savedDailyJson as unknown as SavedDaily;
+
+  it('gives back the answer of the API it was packed from', () => {
+    expect(unpackDaily(packDaily([example]), example.year)).toEqual(example);
+  });
+
+  it('keeps where the preliminary days begin', () => {
+    const answer: DailyResponse = {
+      year: 2026,
+      unit: example.unit,
+      metric: 'count',
+      days: [
+        { date: '2026-07-30', value: 4, preliminary: false },
+        { date: '2026-07-31', value: 6, preliminary: false },
+        { date: '2026-08-01', value: 2.5, preliminary: true },
+        { date: '2026-08-02', value: 0, preliminary: true },
+      ],
+    };
+    expect(unpackDaily(packDaily([answer]), 2026)).toEqual(answer);
+  });
+
+  it('has no answer for a year that was not saved', () => {
+    expect(unpackDaily(packDaily([example]), example.year + 1)).toBeNull();
+  });
+
+  it('holds every year of the record for an example area', () => {
+    const first = Number(meta.first_date.slice(0, 4));
+    const last = Number(meta.last_date.slice(0, 4));
+    expect(Object.keys(savedDaily.years)).toHaveLength(last - first + 1);
+
+    // The record starts in the middle of its first year and ends in the middle of the last one.
+    expect(unpackDaily(savedDaily, first)?.days[0].date).toBe(meta.first_date);
+    expect(unpackDaily(savedDaily, last)?.days.at(-1)?.date).toBe(meta.last_date);
+    expect(unpackDaily(savedDaily, 2020)?.days).toHaveLength(366);
+  });
+
+  it('adds up to the months of the saved calendar', () => {
+    // The same harmonized record, by day and by month: the yearly sums must agree.
+    const days = unpackDaily(savedDaily, 2020)?.days ?? [];
+    const byDay = days.reduce((sum, day) => sum + day.value, 0);
+    const byMonth = saved.yearly.find((year) => year.year === 2020)?.total ?? 0;
+    expect(byMonth).toBeGreaterThan(0);
+    expect(Math.abs(byDay - byMonth) / byMonth).toBeLessThan(0.01);
   });
 });
 

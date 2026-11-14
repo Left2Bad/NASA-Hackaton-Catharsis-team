@@ -56,7 +56,7 @@ export const CLIENT_ERROR_LABELS: Record<ClientErrorCode, string> = {
     'The server is taking too long to answer. Try again, or choose a smaller area or a shorter period.',
   UNKNOWN: 'The server answered in an unexpected way. Try again in a moment.',
   OFFLINE:
-    'The server cannot be reached. The saved demo data covers the example areas only and has no hot spot files.',
+    'The server cannot be reached. The saved demo data covers the example areas only, without single hot spots.',
 };
 
 /** English names of example areas by `id`; an unknown `id` falls back to the server text. */

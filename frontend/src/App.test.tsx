@@ -521,11 +521,11 @@ describe('states of a real API (B10)', () => {
     // The old calendar is still there, marked as busy, with a note next to the area size.
     expect(screen.getByRole('grid', { name: /^Fire detections by month, 2000 to/ })).toBe(grid);
     expect(results).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByText(/updating for the new period/)).toBeInTheDocument();
+    expect(screen.getByText(/updating…/)).toBeInTheDocument();
     expect(screen.queryByText('Loading the calendar…')).toBeNull();
 
     await screen.findByRole('grid', { name: /^Fire detections by month, 2010 to/ });
-    await waitFor(() => expect(screen.queryByText(/updating for the new period/)).toBeNull());
+    await waitFor(() => expect(screen.queryByText(/updating…/)).toBeNull());
   });
 
   it('does not show the numbers of one area under the name of another', async () => {

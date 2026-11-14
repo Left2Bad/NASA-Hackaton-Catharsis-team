@@ -46,6 +46,8 @@ await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });
 
 await save('meta', meta);
+const firstYear = Number(meta.first_date.slice(0, 4));
+const lastYear = Number(meta.last_date.slice(0, 4));
 await save('validation', await call('/method/validation'));
 for (const preset of meta.presets) {
   // `series=raw` adds the raw sensor counts to every month, so one file serves both
@@ -55,6 +57,32 @@ for (const preset of meta.presets) {
     await call('/calendar', { geometry: preset.geometry, series: 'raw' }),
   );
   await save(`current_${preset.id}`, await call('/current', { geometry: preset.geometry }));
+
+  // Daily values of every year, for the daily calendar. Kept as runs of consecutive days
+  // (see `SavedDaily` in src/api/snapshot.ts): a tenth of the size of the API answers.
+  const years = {};
+  let unit = '';
+  for (let year = firstYear; year <= lastYear; year += 1) {
+    const answer = await call('/daily', { geometry: preset.geometry, year });
+    if (answer.days.length === 0) continue;
+    unit = answer.unit;
+    const start = Date.parse(`${answer.days[0].date}T00:00:00Z`);
+    const first = answer.days.findIndex((day) => day.preliminary);
+    answer.days.forEach((day, index) => {
+      const expected = new Date(start + index * 86_400_000).toISOString().slice(0, 10);
+      if (day.date !== expected)
+        throw new Error(`/daily ${year}: ${day.date} breaks the run of days`);
+      if (first !== -1 && index >= first && !day.preliminary) {
+        throw new Error(`/daily ${year}: ${day.date} is final after a preliminary day`);
+      }
+    });
+    years[year] = {
+      start: answer.days[0].date,
+      values: answer.days.map((day) => day.value),
+      preliminary_from: first === -1 ? null : first,
+    };
+  }
+  await save(`daily_${preset.id}`, { unit, years });
 }
 await save('index', {
   created_at: new Date().toISOString(),

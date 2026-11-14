@@ -51,6 +51,8 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<{ id: string; error: Error } | null>(null);
 
+  // The image shows the harmonized record: the "original sensors" view is saved as detections.
+  const imageMode = mode === 'anomaly' ? 'anomaly' : 'count';
   const caption = captionLines(scope, areaName, calendar, meta);
   const dates = exportDates(scope, meta);
   // The calendar counts VIIRS-equivalent detections, close to the number of rows in the
@@ -102,12 +104,12 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
         id: 'calendar-png',
         label: 'Calendar (PNG)',
         run: () =>
-          png(mode === 'count' ? 'calendar' : 'calendar-anomaly', {
+          png(imageMode === 'count' ? 'calendar' : 'calendar-anomaly', {
             title:
-              mode === 'count'
+              imageMode === 'count'
                 ? 'Burn calendar: fire detections by month'
                 : 'Burn calendar: difference from the median by month',
-            figure: calendarSvg(calendar, mode),
+            figure: calendarSvg(calendar, imageMode),
             caption,
           }),
       },

@@ -144,6 +144,20 @@
   border-left: 7px solid transparent;
 }
 
+/* The month whose hot spots are on the map. */
+.cell[data-selected] {
+  z-index: 1;
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+  box-shadow:
+    var(--outline),
+    inset 0 0 0 2px #fff;
+}
+
+.cell[aria-selected] {
+  cursor: pointer;
+}
+
 .cell:hover,
 .cell:focus-visible {
   z-index: 1;

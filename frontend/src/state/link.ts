@@ -11,6 +11,9 @@ import { normalizeRing, outerRings } from '../geo/geometry';
 // Values equal to the defaults (the whole record, the detections mode) are left out,
 // so the address stays short. The address is input from outside: everything is checked.
 
+/** The modes a link may ask for; anything else opens the detections mode. */
+const MODES: readonly CalendarMode[] = ['count', 'anomaly', 'raw'];
+
 export interface LinkArea {
   geometry: Geometry;
   presetId: string | null;
@@ -111,7 +114,7 @@ export function parseSearch(
     area,
     startYear: Math.min(startYear, endYear),
     endYear: Math.max(startYear, endYear),
-    mode: params.get('mode') === 'anomaly' ? 'anomaly' : 'count',
+    mode: MODES.find((mode) => mode === params.get('mode')) ?? 'count',
   };
 }
 

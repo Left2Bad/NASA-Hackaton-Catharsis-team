@@ -1,12 +1,12 @@
-# frontend/ — зона разработчика B
+# frontend/ — zone of developer B
 
-Веб-приложение: React, TypeScript, Vite, карта на MapLibre GL JS. Графики появятся в задачах B6–B9.
+The web app: React, TypeScript, Vite, and a map on MapLibre GL JS. Charts arrive with tasks B6 to B9.
 
-Задачи из ТЗ: B2–B16. Из каких полей контракта рисуется экран: [docs/contract-coverage.md](docs/contract-coverage.md).
+Which contract fields each part of the screen is drawn from: [docs/contract-coverage.md](docs/contract-coverage.md).
 
-## Быстрый старт
+## Quick start
 
-Нужен Node 22 или новее. Версия закреплена в `.nvmrc`, CI берёт её из этого же файла. С nvm: `nvm use`.
+You need Node 22 or newer. The version is pinned in `.nvmrc`, and CI reads it from the same file. With nvm: `nvm use`.
 
 ```bash
 cd frontend
@@ -20,74 +20,74 @@ npm install
 npm run dev
 ```
 
-Страница откроется на http://localhost:5173 и работает на моках: бэкенд запускать не нужно.
+The page opens at http://localhost:5173 and runs on mocks, so the backend does not have to be running.
 
-## Команды
+## Commands
 
-| Команда | Что делает |
+| Command | What it does |
 | --- | --- |
-| `npm run dev` | Dev-сервер на моках из `contract/examples/` |
-| `npm run dev:api` | Dev-сервер с настоящим API по адресу из `VITE_API_URL` |
-| `npm run build` | Проверка типов и сборка в `dist/` |
-| `npm run lint` | ESLint и проверка форматирования Prettier |
-| `npm run format` | Форматирование Prettier |
-| `npm test` | Тесты Vitest (страница рендерится на тех же моках) |
-| `npm run gen:api` | Типы TypeScript из `contract/openapi.yaml` |
+| `npm run dev` | Dev server on mocks from `contract/examples/` |
+| `npm run dev:api` | Dev server against the real API at `VITE_API_URL` |
+| `npm run build` | Type check and build into `dist/` |
+| `npm run lint` | ESLint and the Prettier formatting check |
+| `npm run format` | Format with Prettier |
+| `npm test` | Vitest tests (the page renders on the same mocks) |
+| `npm run gen:api` | TypeScript types from `contract/openapi.yaml` |
 
-CI (`.github/workflows/frontend.yml`) выполняет `npm ci`, `npm run lint`, `npm test` и `npm run build`.
+CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` and `npm run build`.
 
-## Как связаны контракт, типы и моки
+## How the contract, the types and the mocks fit together
 
-- **Типы.** `src/api/schema.d.ts` генерируется из `contract/openapi.yaml` пакетом `openapi-typescript`.
-  Файл в git не хранится: он создаётся при `npm install`, `npm run dev` и `npm run build`.
-  Поменялся контракт — достаточно перезапустить dev-сервер или выполнить `npm run gen:api`.
-- **Клиент.** `src/api/client.ts` — `openapi-fetch`: пути, тела запросов и ответы проверяются по этим типам.
-- **Моки.** `src/mocks/handlers.ts` — Mock Service Worker отвечает файлами из `contract/examples/`.
-  Обработчик обязателен для каждого пути контракта: без него не пройдёт проверка типов.
-  Числа в примерах синтетические и одинаковы для любой области.
-- **Тесты** используют те же обработчики, что и браузер.
+- **Types.** `src/api/schema.d.ts` is generated from `contract/openapi.yaml` by `openapi-typescript`.
+  The file is not kept in git: it is created on `npm install`, `npm run dev` and `npm run build`.
+  When the contract changes, restart the dev server or run `npm run gen:api`.
+- **Client.** `src/api/client.ts` uses `openapi-fetch`: paths, request bodies and responses are checked against those types.
+- **Mocks.** `src/mocks/handlers.ts`: Mock Service Worker answers with the files from `contract/examples/`.
+  Every path of the contract must have a handler, otherwise the type check fails.
+  The numbers in the examples are synthetic and the same for every area.
+- **Tests** use the same handlers as the browser.
 
-## Оформление
+## Design
 
-- **Токены:** `src/theme/tokens.css` — цвета интерфейса, шрифт, размеры. Интерфейс холодный и спокойный,
-  самым ярким на экране остаётся календарь. Контраст текста по WCAG AA проверяет `tokens.test.ts`.
-- **Шрифт:** Geologica (латиница и кириллица), подключён пакетом `@fontsource-variable/geologica`
-  и раздаётся вместе с приложением, без обращения к внешним серверам.
-- **Шкалы календаря:** `src/theme/scales.ts`. Количество — один тёплый оттенок от светлого к тёмному,
-  классы по квантилям. Аномалии — синий и оранжевый с нейтральным серым в середине.
-- **Проверка на дальтонизм:** `src/theme/cvd.ts` симулирует протанопию, дейтеранопию и тританопию
-  (модель Machado и др., 2009). `scales.test.ts` проверяет, что при каждом типе зрения ступени идут
-  по порядку и различимы. Глазами то же самое видно на странице `/#/scales`.
-- **Раскладка:** на ноутбуке карта слева и панель справа, прокручивается только панель.
-  На ширине до 960 px карта и панель идут друг под другом.
+- **Tokens:** `src/theme/tokens.css` holds the interface colors, the typeface and sizes. The interface is cool and quiet,
+  so the calendar stays the brightest thing on screen. `tokens.test.ts` checks text contrast against WCAG AA.
+- **Typeface:** Geologica (Latin and Cyrillic), installed as `@fontsource-variable/geologica`
+  and served with the app, without requests to external servers.
+- **Calendar scales:** `src/theme/scales.ts`. Detections use one warm hue from light to dark,
+  with classes at quantiles. Anomalies use blue and orange with a neutral gray in the middle.
+- **Color-vision check:** `src/theme/cvd.ts` simulates protanopia, deuteranopia and tritanopia
+  (the model of Machado et al., 2009). `scales.test.ts` checks that for every kind of vision the steps stay
+  in order and can be told apart. The page `/#/scales` shows the same thing to the eye.
+- **Layout:** on a laptop the map is on the left and the panel on the right, and only the panel scrolls.
+  Up to 960 px wide, the map and the panel stack.
 
-## Карта
+## Map
 
-- **Движок:** MapLibre GL JS, рисование — Terra Draw. Обе библиотеки загружаются отдельным файлом
-  только когда нужна карта (`src/map/engine.ts`), поэтому панель открывается быстро.
-- **Подложки:** светлая векторная OpenFreeMap и снимки NASA GIBS Blue Marble (кнопка «Satellite»).
-  Обе работают без ключей и оплаты.
-- **Область:** прямоугольник или полигон. Нарисованную фигуру можно двигать, тянуть за углы,
-  добавлять точки на серединах сторон и удалять клавишей Delete. Область всегда одна:
-  новая фигура заменяет прежнюю.
-- **Запрос:** фигура уходит в API как GeoJSON `Polygon`. Координаты округляются до 4 знаков
-  (около 11 м), кольцо замыкается, долгота остаётся в пределах −180…180 (`src/geo/geometry.ts`).
-- **Если карта не запустилась** (нет WebGL или сети), вместо неё показывается градусная сетка
-  с контуром области, а области-примеры продолжают работать.
-- **Ограничение:** область, пересекающая 180-й меридиан, пока не поддерживается.
+- **Engine:** MapLibre GL JS, with Terra Draw for drawing. Both libraries load as separate files
+  only when the map is needed (`src/map/engine.ts`), so the panel opens quickly.
+- **Basemaps:** the light vector basemap from OpenFreeMap and NASA GIBS Blue Marble imagery (the "Satellite" button).
+  Both work without API keys or fees.
+- **Area:** a rectangle or a polygon. A drawn shape can be moved, reshaped by its corners,
+  given new points at the middle of its sides, and removed with the Delete key. There is always one area:
+  a new shape replaces the previous one.
+- **Request:** the shape goes to the API as a GeoJSON `Polygon`. Coordinates are rounded to 4 decimals
+  (about 11 m), the ring is closed, and longitude stays within −180 to 180 (`src/geo/geometry.ts`).
+- **If the map cannot start** (no WebGL or no network), a plain degree grid with the outline of the area
+  takes its place, and the example areas keep working.
+- **Limitation:** an area that crosses the 180th meridian is not supported yet.
 
-## Переменные окружения
+## Environment variables
 
-Vite читает файл `.env` из корня репозитория (см. `.env.example`).
+Vite reads the `.env` file from the repository root (see `.env.example`).
 
-| Переменная | Назначение |
+| Variable | Purpose |
 | --- | --- |
-| `VITE_API_URL` | Адрес настоящего API. По умолчанию `http://localhost:8000/api/v1` |
-| `VITE_API_MOCKS` | `true` или `false` — принудительно включить или выключить моки |
+| `VITE_API_URL` | Address of the real API. Defaults to `http://localhost:8000/api/v1` |
+| `VITE_API_MOCKS` | `true` or `false`: force the mocks on or off |
 
-Без `VITE_API_MOCKS` моки включены в `npm run dev` и в тестах, выключены в `npm run dev:api` и в сборке.
+Without `VITE_API_MOCKS`, the mocks are on in `npm run dev` and in tests, and off in `npm run dev:api` and in the build.
 
-## Границы зоны
+## Zone boundaries
 
-Здесь свой `package.json`. Файлы в `pipeline/`, `backend/` и `contract/` из этой зоны не правятся
-(контракт меняется отдельным PR, см. `contract/README.md`).
+This folder has its own `package.json`. Files in `pipeline/`, `backend/` and `contract/` are not edited from this zone
+(the contract changes through a separate pull request, see `contract/README.md`).

@@ -1,27 +1,27 @@
-# docs/demo/ — зона разработчика B
+# docs/demo/ — zone of developer B
 
-Материалы для показа: сценарий демо, скриншоты, слайды, ссылка на видео (задача B15 из ТЗ).
+Materials for the presentation: the demo script, screenshots, slides and the link to the video.
 
-Сценарий демо повторяет основной сценарий из ТЗ:
+The demo script follows the main user scenario:
 
-1. Открыть сайт, выбрать область-пример.
-2. Показать календарь «год × месяц» и переключить режим аномалий.
-3. Показать панель «Сейчас»: текущий месяц против многолетней медианы.
-4. Переключить «единый ряд / исходные сенсоры» — что дала гармонизация.
-5. Скачать CSV и PNG.
-6. Открыть страницу «Метод»: график проверки на отложенных годах.
+1. Open the site and choose an example area.
+2. Show the year-by-month calendar and switch to the anomaly mode.
+3. Show the "Now" panel: the current month against the long-term median.
+4. Switch between the harmonized record and the original sensors to show what harmonization changed.
+5. Download the CSV and the PNG.
+6. Open the "Method" page: the validation chart on held-out years.
 
-## Скриншоты
+## Screenshots
 
-Папка `screenshots/`. Имена начинаются с номера задачи, к которой относится снимок.
+The `screenshots/` folder. File names start with the task a screenshot belongs to.
 
-| Файл | Что на снимке |
+| File | What it shows |
 | --- | --- |
-| `b3-layout-laptop.jpg` | Макет экрана на ноутбуке: карта слева, панель с календарём справа |
-| `b3-layout-phone-top.jpg`, `b3-layout-phone-calendar.jpg` | Тот же экран на телефоне |
-| `b3-scale-detections.jpg` | Шкала количества при трёх типах дальтонизма |
-| `b3-scale-anomaly.jpg` | Шкала аномалий при трёх типах дальтонизма |
-| `b4-map-example-area.jpg` | Карта с областью-примером и календарём |
-| `b4-map-editing.jpg` | Область выделена: ручки на углах и серединах сторон для правки |
-| `b4-map-satellite.jpg` | Спутниковая подложка NASA Blue Marble |
-| `b4-map-phone.jpg` | Карта на телефоне |
+| `b3-layout-laptop.jpg` | Screen layout on a laptop: the map on the left, the panel with the calendar on the right |
+| `b3-layout-phone-top.jpg`, `b3-layout-phone-calendar.jpg` | The same screen on a phone |
+| `b3-scale-detections.jpg` | The detections scale under three kinds of color-vision deficiency |
+| `b3-scale-anomaly.jpg` | The anomaly scale under three kinds of color-vision deficiency |
+| `b4-map-example-area.jpg` | The map with an example area and its calendar |
+| `b4-map-editing.jpg` | A selected area: handles on the corners and on the middle of each side |
+| `b4-map-satellite.jpg` | NASA Blue Marble satellite imagery as the basemap |
+| `b4-map-phone.jpg` | The map on a phone |

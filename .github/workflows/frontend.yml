@@ -1,8 +1,8 @@
 name: frontend
 
-# Зона разработчика B. Запускается только при изменениях в frontend/ или contract/,
-# поэтому поломка здесь не блокирует PR бэкенда.
-# Шаги пропускаются, пока в папке нет package.json, — разработчик B настроит их под себя.
+# Zone of developer B. Runs only when frontend/ or contract/ change,
+# so a failure here does not block backend pull requests.
+# The steps are skipped while the folder has no package.json.
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
         with:
           node-version-file: frontend/.nvmrc
 
-      - name: Установка, линтер, тесты, сборка
+      - name: Install, lint, test, build
         if: hashFiles('frontend/package.json') != ''
         working-directory: frontend
         run: |

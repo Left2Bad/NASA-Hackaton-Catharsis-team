@@ -3,14 +3,14 @@ import react from '@vitejs/plugin-react';
 import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
 
-// Корень репозитория: там лежат общий .env и папка contract/ с примерами для моков.
+// Repository root: it holds the shared .env and the contract/ folder with examples for the mocks.
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, repoRoot, 'VITE_');
 
-  // Моки включены в `npm run dev` и в тестах, выключены в `npm run dev:api` и в сборке.
-  // Переменная VITE_API_MOCKS=true|false переопределяет это правило.
+  // Mocks are on in `npm run dev` and in tests, off in `npm run dev:api` and in the build.
+  // The VITE_API_MOCKS=true|false variable overrides this rule.
   const useMocks = env.VITE_API_MOCKS
     ? env.VITE_API_MOCKS === 'true'
     : command === 'serve' && mode !== 'api';

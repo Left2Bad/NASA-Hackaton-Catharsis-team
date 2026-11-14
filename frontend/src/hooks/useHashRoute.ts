@@ -8,8 +8,8 @@ function subscribe(onChange: () => void) {
 const currentRoute = () => window.location.hash.replace(/^#/, '') || '/';
 
 /**
- * Текущий раздел приложения из адреса: `#/scales` → '/scales', без решётки → '/'.
- * Разделов мало, поэтому отдельная библиотека маршрутизации пока не нужна.
+ * The current section from the address: `#/scales` gives '/scales', no hash gives '/'.
+ * There are few sections, so a routing library is not needed yet.
  */
 export function useHashRoute(): string {
   return useSyncExternalStore(subscribe, currentRoute);

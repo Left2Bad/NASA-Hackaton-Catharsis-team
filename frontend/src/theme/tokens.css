@@ -1,29 +1,29 @@
 /*
- * Токены оформления: цвета интерфейса, шрифт, размеры.
- * Интерфейс намеренно холодный и спокойный — самым ярким на экране остаётся календарь.
- * Контраст текстовых цветов проверяется тестом tokens.test.ts.
+ * Design tokens: interface colors, the typeface, sizes.
+ * The interface is deliberately cool and quiet, so the calendar stays the brightest thing on screen.
+ * The contrast of the text colors is checked by tokens.test.ts.
  */
 
 :root {
-  /* Шрифт: Geologica — латиница и кириллица, вариативная насыщенность. */
+  /* Typeface: Geologica, Latin and Cyrillic, variable weight. */
   --font-sans: 'Geologica Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  /* Текст */
+  /* Text */
   --ink: #16212b;
   --ink-2: #44505c;
   --muted: #5d6975;
 
-  /* Поверхности и линии */
+  /* Surfaces and lines */
   --surface: #ffffff;
   --plane: #eef1f4;
   --line: #d3d9df;
   --line-strong: #aab4be;
 
-  /* Ошибки */
+  /* Errors */
   --error: #a3211f;
   --error-surface: #fdf0ef;
 
-  /* Размеры текста: 12, 13, 15, 17, 22, 28 px при базовом размере 16 px */
+  /* Text sizes: 12, 13, 15, 17, 22, 28 px at a 16 px base */
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
   --text-base: 0.9375rem;
@@ -31,7 +31,7 @@
   --text-lg: 1.375rem;
   --text-xl: 1.75rem;
 
-  /* Отступы */
+  /* Spacing */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

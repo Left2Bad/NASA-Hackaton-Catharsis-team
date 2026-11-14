@@ -6,7 +6,7 @@ const SECTIONS = [
   { route: '/scales', label: 'Color scales' },
 ] as const;
 
-/** Каркас страницы: шапка с названием и разделами, под ней содержимое раздела. */
+/** Page shell: a header with the name and sections, and the section content below it. */
 export function AppShell({ route, children }: { route: string; children: ReactNode }) {
   return (
     <div className={styles.shell}>

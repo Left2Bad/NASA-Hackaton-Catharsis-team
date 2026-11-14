@@ -1,12 +1,12 @@
 /// <reference types="vite/client" />
 
-/** Подставляется в vite.config.ts: true — запросы к API перехватывают моки. */
+/** Set in vite.config.ts: true means the mocks intercept API requests. */
 declare const __API_MOCKS__: boolean;
 
 interface ImportMetaEnv {
-  /** Адрес настоящего API, например http://localhost:8000/api/v1 */
+  /** Address of the real API, for example http://localhost:8000/api/v1 */
   readonly VITE_API_URL?: string;
-  /** true | false — принудительно включить или выключить моки */
+  /** true | false: force the mocks on or off */
   readonly VITE_API_MOCKS?: string;
 }
 

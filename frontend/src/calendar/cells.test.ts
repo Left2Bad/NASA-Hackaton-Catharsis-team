@@ -18,13 +18,13 @@ const month = (year: number, m: number, source: MonthValue['source']): MonthValu
 });
 
 describe('yearsNewestFirst', () => {
-  it('перечисляет годы от свежего к старому без пропусков', () => {
+  it('lists years from newest to oldest without gaps', () => {
     expect(yearsNewestFirst([month(2010, 5, 'MODIS_TA'), month(2013, 1, 'VIIRS_SNPP')])).toEqual([
       2013, 2012, 2011, 2010,
     ]);
   });
 
-  it('для пустого ряда возвращает пустой список', () => {
+  it('returns an empty list for an empty series', () => {
     expect(yearsNewestFirst([])).toEqual([]);
   });
 });
@@ -38,22 +38,22 @@ describe('buildCells', () => {
   ];
   const cell = buildCells(months, () => '#000000');
 
-  it('возвращает undefined для месяца без данных', () => {
+  it('returns undefined for a month without data', () => {
     expect(cell(2011, 1)).toBeUndefined();
   });
 
-  it('ставит шов слева, когда источник сменился с прошлого месяца', () => {
+  it('puts a seam on the left when the source changed since the previous month', () => {
     expect(cell(2012, 1)?.seamLeft).toBe(false);
     expect(cell(2012, 2)?.seamLeft).toBe(true);
     expect(cell(2012, 3)?.seamLeft).toBe(false);
   });
 
-  it('ставит шов снизу, когда год назад этот месяц вёл другой источник', () => {
+  it('puts a seam below when another source led the same month a year earlier', () => {
     expect(cell(2012, 2)?.seamBottom).toBe(true);
     expect(cell(2012, 3)?.seamBottom).toBe(false);
   });
 
-  it('передаёт цвет из функции раскраски', () => {
+  it('passes on the color from the coloring function', () => {
     expect(
       buildCells(months, (m) => (m.year === 2011 ? null : '#123456'))(2011, 2)?.color,
     ).toBeNull();
@@ -70,7 +70,7 @@ describe('sourceSideLabels', () => {
   ];
   const years = Array.from({ length: 27 }, (_, index) => 2026 - index);
 
-  it('ставит подпись каждого источника напротив середины его периода', () => {
+  it('places each source label next to the middle of its period', () => {
     expect(sourceSideLabels(sources, years)).toEqual([
       { year: 2026, text: 'VIIRS NOAA-20' },
       { year: 2019, text: 'VIIRS Suomi NPP' },
@@ -79,7 +79,7 @@ describe('sourceSideLabels', () => {
     ]);
   });
 
-  it('не ставит две подписи на одну строку', () => {
+  it('never puts two labels on one row', () => {
     const labels = sourceSideLabels(sources, [2026, 2025]);
     expect(new Set(labels.map((label) => label.year)).size).toBe(labels.length);
   });

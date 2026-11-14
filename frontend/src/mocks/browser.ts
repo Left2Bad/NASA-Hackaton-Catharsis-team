@@ -1,5 +1,5 @@
 import { setupWorker } from 'msw/browser';
 import { handlers } from './handlers';
 
-/** Моки для браузера: сервис-воркер из public/mockServiceWorker.js. */
+/** Mocks for the browser: the service worker from public/mockServiceWorker.js. */
 export const worker = setupWorker(...handlers);

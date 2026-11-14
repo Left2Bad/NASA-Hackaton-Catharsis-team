@@ -74,7 +74,7 @@ def load_grid(con, grid_path):
     con.execute("CREATE OR REPLACE TABLE cells AS SELECT DISTINCT cy, cx FROM m1")
 
 
-def find_outages(con, until=OVERLAP_END):
+def find_outages(con, until=lead.SNPP_END):
     """Months where S-NPP under-reports against NOAA-20 (satellite safe mode etc.)."""
     rows = con.execute(f"""
     WITH g AS (SELECT month, sum(n_snpp) / nullif(sum(n_n20), 0) q FROM m1

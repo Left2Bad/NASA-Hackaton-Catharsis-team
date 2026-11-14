@@ -8,6 +8,7 @@ from threading import Lock
 from fastapi import APIRouter, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import Response, StreamingResponse
+from pydantic_core import to_json
 
 from .. import calendar_service, daily_service, points_service
 from ..schemas import AreaQuery, DailyQuery, ExportPointsQuery, PointsQuery
@@ -65,13 +66,21 @@ def _points_slots(request: Request) -> asyncio.Semaphore:
     return slots
 
 
+def _points_json(data, q: PointsQuery) -> bytes:
+    # pydantic-core's encoder, as FastAPI's own fast path; on the event loop jsonable_encoder took ~0.8 s per full month
+    return to_json(points_service.points(data, q.geometry, q.year, q.month))
+
+
 @router.post("/points", tags=["analytics"])
-async def post_points(q: PointsQuery, request: Request):
+async def post_points(q: PointsQuery, request: Request) -> Response:
     async with _points_slots(request):
         # A request that waited may have been dropped by the browser meanwhile (the user moved on): skip its query.
         if await request.is_disconnected():
             return Response(status_code=CLIENT_GONE)
-        return await run_in_threadpool(points_service.points, request.app.state.data, q.geometry, q.year, q.month)
+        # the query and the encoding both run in a worker thread, inside the slot: at most POINTS_SLOTS answers
+        # are being built at once, and the event loop stays free for the other endpoints
+        body = await run_in_threadpool(_points_json, request.app.state.data, q)
+    return Response(content=body, media_type="application/json")
 
 
 @router.post("/export/points.csv", tags=["export"])

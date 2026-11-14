@@ -129,7 +129,7 @@ def seam_2012(con, outages):
 
 def seam_2026(con, outages):
     y0, y1 = SEAM_2026["years"]
-    out = ", ".join(f"DATE '{m}'" for m in sorted(outages)) or "NULL"
+    out = ", ".join(f"DATE '{m}'" for m in sorted(outages)) or "DATE '1900-01-01'"  # NOT IN (NULL) matches nothing
     h, n, s = con.execute(f"""
     SELECT sum({lead.value_sql("count", "g", "w", "'VIIRS_N20'")}),
            sum({lead.value_sql("count", "g", "one", "'VIIRS_N20'")}),

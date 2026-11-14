@@ -1,39 +1,30 @@
 import type { Geometry } from '../api/types';
+import { boundsOf, formatBounds, outerRings } from '../geo/geometry';
 import styles from './MapPlaceholder.module.css';
-
-type Ring = readonly (readonly [number, number])[];
-
-/** Все внешние кольца геометрии: у полигона одно, у мультиполигона — по одному на часть. */
-function outerRings(geometry: Geometry): Ring[] {
-  return geometry.type === 'Polygon'
-    ? [geometry.coordinates[0]]
-    : geometry.coordinates.map((polygon) => polygon[0]);
-}
-
-const formatLon = (lon: number) => `${Math.abs(lon)}°${lon < 0 ? 'W' : 'E'}`;
-const formatLat = (lat: number) => `${Math.abs(lat)}°${lat < 0 ? 'S' : 'N'}`;
 
 const MERIDIANS = Array.from({ length: 37 }, (_, index) => -180 + index * 10);
 const PARALLELS = Array.from({ length: 19 }, (_, index) => -90 + index * 10);
 
-/**
- * Заглушка карты для макета: градусная сетка и контур выбранной области.
- * Настоящую карту MapLibre с рисованием области добавит задача B4.
- */
-export function MapPlaceholder({ geometry }: { geometry: Geometry }) {
-  const rings = outerRings(geometry);
-  const lons = rings.flatMap((ring) => ring.map(([lon]) => lon));
-  const lats = rings.flatMap((ring) => ring.map(([, lat]) => lat));
-  const west = Math.min(...lons);
-  const east = Math.max(...lons);
-  const south = Math.min(...lats);
-  const north = Math.max(...lats);
+/** The whole world, used when no area is chosen. */
+const WORLD = { west: -180, south: -90, east: 180, north: 90 };
 
-  // Область занимает около трети кадра; на карте север вверху, поэтому широта со знаком минус.
-  const size = Math.max(east - west, north - south, 8) * 3;
+/**
+ * Stand-in for the map when it cannot start, for example without WebGL or offline.
+ * Draws a 10° grid and the outline of the chosen area, so the rest of the app stays usable:
+ * example areas still work without the interactive map.
+ */
+export function MapPlaceholder({ geometry }: { geometry: Geometry | null }) {
+  const rings = geometry ? outerRings(geometry) : [];
+  const { west, south, east, north } = geometry ? boundsOf(geometry) : WORLD;
+
+  // The area takes about a third of the frame. North is up, so latitude is negated.
+  const size = geometry ? Math.max(east - west, north - south, 8) * 3 : 360;
   const viewBox = [(west + east) / 2 - size / 2, -(south + north) / 2 - size / 2, size, size].join(
     ' ',
   );
+  const label = geometry
+    ? `Selected area: ${formatBounds({ west, south, east, north })}`
+    : 'No area selected';
 
   return (
     <div className={styles.map}>
@@ -42,7 +33,7 @@ export function MapPlaceholder({ geometry }: { geometry: Geometry }) {
         viewBox={viewBox}
         preserveAspectRatio="xMidYMid slice"
         role="img"
-        aria-label={`Selected area: ${formatLon(west)} to ${formatLon(east)}, ${formatLat(south)} to ${formatLat(north)}`}
+        aria-label={label}
       >
         {MERIDIANS.map((lon) => (
           <line key={`m${lon}`} className={styles.graticule} x1={lon} x2={lon} y1={-90} y2={90} />
@@ -66,10 +57,10 @@ export function MapPlaceholder({ geometry }: { geometry: Geometry }) {
         ))}
       </svg>
       <p className={styles.caption}>
-        <span className={styles.bounds}>
-          {formatLon(west)} to {formatLon(east)}, {formatLat(south)} to {formatLat(north)}
-        </span>
-        Placeholder: the interactive map with drawing tools arrives with task B4.
+        {geometry && (
+          <span className={styles.bounds}>{formatBounds({ west, south, east, north })}</span>
+        )}
+        The interactive map could not load. Example areas still work.
       </p>
     </div>
   );

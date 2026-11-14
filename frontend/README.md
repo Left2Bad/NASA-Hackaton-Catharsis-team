@@ -32,10 +32,13 @@ The page opens at http://localhost:5173 and runs on mocks, so the backend does n
 | `npm run lint` | ESLint and the Prettier formatting check |
 | `npm run format` | Format with Prettier |
 | `npm test` | Vitest tests (the page renders on the same mocks) |
+| `npm run e2e` | End-to-end tests in a real browser (Playwright), see below |
 | `npm run gen:api` | TypeScript types from `contract/openapi.yaml` |
 | `npm run snapshot` | Save answers of the running API into `public/snapshot/` for the fallback mode |
+| `npm run demo:shots` | Take the frames of the demo from the running app into `docs/demo/screenshots/` |
+| `npm run demo:slides` | Print the pitch deck `docs/demo/slides/slides.html` into a PDF |
 
-CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` and `npm run build`.
+CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test`, `npm run build` and `npm run e2e`.
 
 ## How the contract, the types and the mocks fit together
 
@@ -293,6 +296,24 @@ so it works from the root of a domain or from any folder. Routing uses the part 
   variables `NODE_VERSION=22` and `VITE_API_FALLBACK=only`.
 - **Without connecting the repository:** build locally and upload the `dist` folder (Netlify Drop,
   Cloudflare Pages direct upload, `vercel deploy`).
+
+## End-to-end tests
+
+`npm run e2e` walks the main user scenario in a real browser (`e2e/main-scenario.spec.ts`, Playwright).
+Before the first run: `npx playwright install chromium`.
+
+- **What runs:** the app is built as the public demo is (`VITE_API_FALLBACK=only`) into `dist-e2e/`
+  and served by `vite preview`. It needs neither a backend nor data files.
+- **The scenario** is the one of the demo: open the site, choose an example area, read the calendar,
+  switch to anomalies, look at "Now", shorten the period, download the monthly table and the calendar
+  image, open "Method", come back, and reopen the same view from its link in a new tab.
+- **Real numbers, no fixed values:** what is on screen is compared with the files of
+  `public/snapshot/`, so the test stays valid after `npm run snapshot`.
+- **Downloads are opened:** the CSV must have a row per month of the period, and the PNG must be a
+  real image and not an empty canvas.
+- **No other hosts:** requests that leave the app (map tiles, imagery) are cut, so the test does not
+  depend on the network. The map itself is covered by its own unit tests.
+- **Phone:** the same view at 360 px must not scroll sideways.
 
 ## Environment variables
 

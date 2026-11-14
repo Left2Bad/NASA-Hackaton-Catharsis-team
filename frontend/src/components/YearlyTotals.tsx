@@ -210,30 +210,32 @@ export function YearlyTotals({ calendar }: { calendar: CalendarResponse }) {
         </svg>
       </div>
 
-      <table className={styles.srOnly}>
-        <caption>Detections per year{trend ? ' and the trend line' : ''}</caption>
-        <thead>
-          <tr>
-            <th scope="col">Year</th>
-            <th scope="col">Total</th>
-            <th scope="col">Whole year</th>
-            {trend && <th scope="col">Trend</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {yearly.map((year) => {
-            const value = trend ? trendAt(trend, year.year) : null;
-            return (
-              <tr key={year.year}>
-                <th scope="row">{year.year}</th>
-                <td>{formatNumber(year.total)}</td>
-                <td>{year.complete ? 'yes' : 'no'}</td>
-                {trend && <td>{value === null ? '—' : formatNumber(Math.round(value))}</td>}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className={styles.srOnly}>
+        <table>
+          <caption>Detections per year{trend ? ' and the trend line' : ''}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Year</th>
+              <th scope="col">Total</th>
+              <th scope="col">Whole year</th>
+              {trend && <th scope="col">Trend</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {yearly.map((year) => {
+              const value = trend ? trendAt(trend, year.year) : null;
+              return (
+                <tr key={year.year}>
+                  <th scope="row">{year.year}</th>
+                  <td>{formatNumber(year.total)}</td>
+                  <td>{year.complete ? 'yes' : 'no'}</td>
+                  {trend && <td>{value === null ? '—' : formatNumber(Math.round(value))}</td>}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       <p className={styles.note}>
         {trend

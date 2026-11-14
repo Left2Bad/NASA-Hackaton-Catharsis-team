@@ -196,29 +196,31 @@ export function LineChart({
         </svg>
       </div>
 
-      <table className={styles.srOnly}>
-        <caption>{caption}</caption>
-        <thead>
-          <tr>
-            <th scope="col">{positionName}</th>
-            {series.map((line) => (
-              <th key={line.id} scope="col">
-                {line.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {positions.map((position, index) => (
-            <tr key={position}>
-              <th scope="row">{position}</th>
+      <div className={styles.srOnly}>
+        <table>
+          <caption>{caption}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{positionName}</th>
               {series.map((line) => (
-                <td key={line.id}>{show(line.values[index])}</td>
+                <th key={line.id} scope="col">
+                  {line.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {positions.map((position, index) => (
+              <tr key={position}>
+                <th scope="row">{position}</th>
+                {series.map((line) => (
+                  <td key={line.id}>{show(line.values[index])}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {note && <p className={styles.note}>{note}</p>}
     </figure>

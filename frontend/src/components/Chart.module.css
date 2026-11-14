@@ -244,6 +244,8 @@
   cursor: crosshair;
 }
 
+/* Hidden from the eye, read by screen readers. A table ignores `width: 1px` and would
+   widen the page on a phone, so a table is wrapped in an element with this class. */
 .srOnly {
   position: absolute;
   width: 1px;

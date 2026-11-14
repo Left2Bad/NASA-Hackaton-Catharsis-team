@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Burn Calendar: pitch slides</title>
+    <!--
+      The pitch deck: seven slides, 1920 x 1080 each. Edit the text here and print the deck
+      again with `npm run demo:slides` (from frontend/), which writes burn-calendar-pitch.pdf.
+      The pictures are the frames of ../screenshots/, taken by `npm run demo:shots`.
+      Every number on the slides comes from the app on real FIRMS data: check them against
+      the app after the data is refreshed.
+    -->
+    <style>
+      :root {
+        --ink: #16212b;
+        --ink-2: #44505c;
+        --muted: #5d6975;
+        --plane: #eef1f4;
+        --line: #d3d9df;
+        --accent: #c85d02;
+        --cool: #1d6fb8;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--plane);
+        color: var(--ink);
+        font-family: 'Geologica Variable', 'Segoe UI', system-ui, sans-serif;
+      }
+      @page {
+        size: 1920px 1080px;
+        margin: 0;
+      }
+      .slide {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        padding: 88px 104px 80px;
+        background: #fff;
+        overflow: hidden;
+        page-break-after: always;
+        break-after: page;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 72px;
+        align-content: start;
+      }
+      .slide + .slide {
+        margin-top: 24px;
+      }
+      @media print {
+        .slide + .slide {
+          margin-top: 0;
+        }
+      }
+      .kicker {
+        grid-column: 1 / -1;
+        margin: 0 0 20px;
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      h1,
+      h2 {
+        grid-column: 1 / -1;
+        margin: 0 0 48px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        line-height: 1.08;
+      }
+      h1 {
+        font-size: 120px;
+      }
+      h2 {
+        font-size: 68px;
+        max-width: 1500px;
+      }
+      p,
+      li {
+        font-size: 34px;
+        line-height: 1.38;
+        color: var(--ink-2);
+      }
+      p {
+        margin: 0 0 28px;
+      }
+      ul {
+        margin: 0;
+        padding-left: 36px;
+      }
+      li {
+        margin-bottom: 18px;
+      }
+      strong {
+        color: var(--ink);
+        font-weight: 650;
+      }
+      .foot {
+        position: absolute;
+        left: 104px;
+        right: 104px;
+        bottom: 36px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 20px;
+        color: var(--muted);
+      }
+
+      /* A piece of a 1920 x 1200 frame: the picture is placed behind a window. */
+      .crop {
+        position: relative;
+        overflow: hidden;
+        border: 2px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+      }
+      .crop img {
+        position: absolute;
+        display: block;
+      }
+
+      /* Two numbers side by side. */
+      .figures {
+        display: flex;
+        gap: 56px;
+        margin: 8px 0 36px;
+      }
+      .figure b {
+        display: block;
+        font-size: 124px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: -0.02em;
+      }
+      .figure span {
+        display: block;
+        margin-top: 12px;
+        font-size: 26px;
+        color: var(--muted);
+        max-width: 330px;
+        line-height: 1.3;
+      }
+      .figure.bad b {
+        color: var(--accent);
+      }
+      .figure.good b {
+        color: var(--cool);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 28px;
+        margin-bottom: 28px;
+      }
+      th,
+      td {
+        text-align: right;
+        padding: 14px 10px;
+        border-bottom: 2px solid var(--line);
+      }
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+      th {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      td {
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      th {
+        white-space: nowrap;
+      }
+      .small {
+        font-size: 26px;
+        color: var(--muted);
+      }
+
+      /* Slide 1 */
+      .title {
+        grid-template-columns: 820px 1fr;
+        padding-top: 150px;
+      }
+      .title .kicker {
+        grid-column: 1;
+        grid-row: 1;
+      }
+      .title h1 {
+        font-size: 104px;
+        margin-bottom: 36px;
+      }
+      .title .lead {
+        font-size: 44px;
+        line-height: 1.25;
+        color: var(--ink);
+        margin-bottom: 64px;
+      }
+      .title .text {
+        grid-column: 1;
+        grid-row: 2;
+        margin-top: 40px;
+      }
+      .title .crop {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        height: 800px;
+        margin-top: -50px;
+      }
+
+      .steps {
+        list-style: none;
+        padding: 0;
+        counter-reset: step;
+      }
+      .steps li {
+        position: relative;
+        padding-left: 76px;
+        margin-bottom: 30px;
+      }
+      .steps li::before {
+        counter-increment: step;
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 2px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--ink);
+        color: #fff;
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 50px;
+        text-align: center;
+      }
+      .pair {
+        display: flex;
+        gap: 32px;
+        align-items: flex-start;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 1. Title -->
+    <section class="slide title">
+      <p class="kicker">NASA Space Apps Challenge 2026 · Team Catharsis</p>
+      <div class="text">
+        <h1>Burn Calendar</h1>
+        <p class="lead">One fire record from MODIS and VIIRS, from 2000 to today.</p>
+        <p>Challenge: Harmonization of MODIS and VIIRS Hot Spots</p>
+      </div>
+      <div class="crop">
+        <img src="../screenshots/demo-02-calendar.jpg" alt="" style="width: 1820px; left: -1000px; top: -320px" />
+      </div>
+      <div class="foot"><span>Data: NASA FIRMS</span><span>1 / 7</span></div>
+    </section>
+
+    <!-- 2. The problem -->
+    <section class="slide">
+      <p class="kicker">The problem</p>
+      <h2>Two sensors count the same fires on two different scales</h2>
+      <div>
+        <p>
+          <strong>MODIS</strong> has watched fires since 2000, <strong>VIIRS</strong> since 2012.
+          VIIRS has finer pixels and sees about <strong>four times more</strong> hot spots.
+        </p>
+        <p>
+          Join the two records as they are, and fire activity seems to jump in 2012. No trend
+          that crosses that year can be trusted.
+        </p>
+        <div class="figures">
+          <div class="figure bad">
+            <b>×3.80</b>
+            <span>jump at 2012 in a naive splice, worldwide</span>
+          </div>
+          <div class="figure good">
+            <b>×0.97</b>
+            <span>the same ratio in the harmonized record</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="crop" style="height: 400px">
+          <img src="../screenshots/demo-08-method-harmonization.jpg" alt="" style="width: 1440px; left: -318px; top: -500px" />
+        </div>
+        <p class="small" style="margin-top: 20px">
+          Northern California. Dashed blue: MODIS as recorded. Solid orange: the harmonized record.
+        </p>
+      </div>
+      <div class="foot"><span>Burn Calendar</span><span>2 / 7</span></div>
+    </section>
+
+    <!-- 3. The solution -->
+    <section class="slide">
+      <p class="kicker">The solution</p>
+      <h2>One unit for 26 years, shown as a calendar for any area</h2>
+      <div>
+        <ol class="steps">
+          <li>
+            <strong>All FIRMS detections</strong> of MODIS and VIIRS since November 2000 go onto
+            one 0.1° grid.
+          </li>
+          <li>
+            <strong>Coefficients for every 1° cell</strong> convert MODIS to the scale of VIIRS
+            Suomi NPP. They are fitted on 2012 to 2020, when both sensors flew.
+          </li>
+          <li>
+            <strong>Draw an area</strong> and read its record: a row per year, a column per
+            month, with the likely range of every value.
+          </li>
+        </ol>
+      </div>
+      <div>
+        <div class="crop" style="height: 640px">
+          <img src="../screenshots/demo-03-tooltip.jpg" alt="" style="width: 1770px; left: -960px; top: -330px" />
+        </div>
+      </div>
+      <div class="foot"><span>Burn Calendar</span><span>3 / 7</span></div>
+    </section>
+
+    <!-- 4. Now -->
+    <section class="slide">
+      <p class="kicker">What it answers</p>
+      <h2>Is this month unusual for this place?</h2>
+      <div>
+        <p>
+          The current month is compared with the <strong>same days</strong> of every earlier
+          year, on one scale.
+        </p>
+        <p>
+          Northern California, November 1 to 13, 2026:
+          <strong>59 % above the median</strong>, higher than in 84 % of the earlier years.
+        </p>
+        <p>
+          The anomaly mode recolors the whole calendar: blue is quieter than usual, orange is
+          worse.
+        </p>
+        <div class="crop" style="height: 250px; margin-top: 12px">
+          <img src="../screenshots/demo-04-anomaly.jpg" alt="" style="width: 1500px; left: -830px; top: -468px" />
+        </div>
+      </div>
+      <div>
+        <div class="crop" style="height: 690px">
+          <img src="../screenshots/demo-05-summary-now.jpg" alt="" style="width: 1700px; left: -935px; top: -270px" />
+        </div>
+      </div>
+      <div class="foot"><span>Burn Calendar</span><span>4 / 7</span></div>
+    </section>
+
+    <!-- 5. Validation -->
+    <section class="slide">
+      <p class="kicker">Does it hold?</p>
+      <h2>Checked on five years the method has never seen</h2>
+      <div>
+        <p>
+          Fitted on 2012 to 2020. For <strong>2021 to 2025</strong> VIIRS is predicted from
+          MODIS alone and compared with what VIIRS really recorded.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>Correlation</th>
+              <th>Bias</th>
+              <th>Median error</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Northern Kazakhstan</td>
+              <td>0.990</td>
+              <td>−8.8 %</td>
+              <td>19.9 %</td>
+            </tr>
+            <tr>
+              <td>Southern Amazon</td>
+              <td>0.999</td>
+              <td>−0.3 %</td>
+              <td>16.3 %</td>
+            </tr>
+            <tr>
+              <td>Northern California</td>
+              <td>0.999</td>
+              <td>+4.2 %</td>
+              <td>21.4 %</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="small">
+          Raw MODIS, without coefficients, runs about 70 % below VIIRS. The limits of the method
+          are listed in the app, next to the results.
+        </p>
+      </div>
+      <div>
+        <div class="crop" style="height: 440px">
+          <img src="../screenshots/demo-09-method-validation.jpg" alt="" style="width: 1500px; left: -332px; top: -200px" />
+        </div>
+        <p class="small" style="margin-top: 20px">
+          Dashed purple: what VIIRS recorded. Solid orange: the forecast from MODIS. Dashed blue:
+          MODIS as recorded.
+        </p>
+      </div>
+      <div class="foot"><span>Burn Calendar</span><span>5 / 7</span></div>
+    </section>
+
+    <!-- 6. Built to be used -->
+    <section class="slide">
+      <p class="kicker">The product</p>
+      <h2>Built to be used, not only shown</h2>
+      <div>
+        <ul>
+          <li><strong>Any area:</strong> draw it on the map or type its coordinates.</li>
+          <li>
+            <strong>Take it with you:</strong> tables as CSV, charts as PNG with the area, the
+            period and the data source in the caption.
+          </li>
+          <li><strong>Share a view:</strong> the link reopens the same area, period and mode.</li>
+          <li>
+            <strong>For everyone:</strong> works on a phone and from the keyboard; the color
+            scales are checked for color-vision deficiency.
+          </li>
+          <li>
+            <strong>Open source</strong>, Apache 2.0: a Python and DuckDB pipeline, a FastAPI
+            service, a React app.
+          </li>
+        </ul>
+      </div>
+      <div class="pair">
+        <div class="crop" style="width: 330px; height: 678px; flex: none">
+          <img src="../screenshots/demo-11-phone.jpg" alt="" style="width: 330px; left: 0; top: 0" />
+        </div>
+        <div class="crop" style="flex: 1; height: 678px">
+          <img src="../screenshots/demo-06-season-yearly.jpg" alt="" style="width: 1010px; left: -550px; top: -40px" />
+        </div>
+      </div>
+      <div class="foot"><span>Burn Calendar</span><span>6 / 7</span></div>
+    </section>
+
+    <!-- 7. Impact -->
+    <section class="slide">
+      <p class="kicker">Why it matters</p>
+      <h2>A fire history people can compare across a quarter of a century</h2>
+      <div>
+        <ul>
+          <li>
+            <strong>Fire services</strong> see at once whether this month is ordinary for their
+            region.
+          </li>
+          <li>
+            <strong>Researchers</strong> get a trend that does not break in 2012, with its
+            uncertainty.
+          </li>
+          <li>
+            <strong>Journalists</strong> get a chart with its source, ready to publish.
+          </li>
+        </ul>
+      </div>
+      <div style="grid-row: span 2">
+        <div class="crop" style="height: 560px">
+          <img src="../screenshots/demo-04-anomaly.jpg" alt="" style="width: 1740px; left: -950px; top: -410px" />
+        </div>
+      </div>
+      <div style="margin-top: 20px">
+        <!-- TODO(team): put the address of the deployed site here once it exists. -->
+        <p><strong>Try it:</strong> the address of the live demo</p>
+        <p><strong>Code:</strong> github.com/Left2Bad/NASA-Hackaton-Catharsis-team</p>
+        <p class="small">
+          We acknowledge the use of data from NASA's Fire Information for Resource Management
+          System (FIRMS), part of NASA's Earth Science Data and Information System (ESDIS).
+        </p>
+      </div>
+      <div class="foot"><span>Burn Calendar · Team Catharsis</span><span>7 / 7</span></div>
+    </section>
+  </body>
+</html>

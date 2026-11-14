@@ -168,27 +168,29 @@ export function CumulativeChart({ days, year, month }: CumulativeChartProps) {
         </svg>
       </div>
 
-      <table className={styles.srOnly}>
-        <caption>Detections accumulated since the start of the month, by day</caption>
-        <thead>
-          <tr>
-            <th scope="col">Day</th>
-            <th scope="col">This month</th>
-            <th scope="col">Median of the same days</th>
-          </tr>
-        </thead>
-        <tbody>
-          {days.map((day) => (
-            <tr key={day.day}>
-              <th scope="row">
-                {monthName(month)} {day.day}
-              </th>
-              <td>{formatNumber(day.value)}</td>
-              <td>{formatNumber(day.median)}</td>
+      <div className={styles.srOnly}>
+        <table>
+          <caption>Detections accumulated since the start of the month, by day</caption>
+          <thead>
+            <tr>
+              <th scope="col">Day</th>
+              <th scope="col">This month</th>
+              <th scope="col">Median of the same days</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {days.map((day) => (
+              <tr key={day.day}>
+                <th scope="row">
+                  {monthName(month)} {day.day}
+                </th>
+                <td>{formatNumber(day.value)}</td>
+                <td>{formatNumber(day.median)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }

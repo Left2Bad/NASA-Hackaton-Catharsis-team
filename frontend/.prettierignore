@@ -1,5 +1,8 @@
 # Generated and built files
 dist
+dist-e2e
+playwright-report
+test-results
 coverage
 public/mockServiceWorker.js
 src/api/schema.d.ts

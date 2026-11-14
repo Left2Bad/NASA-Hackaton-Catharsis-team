@@ -1,7 +1,7 @@
-# Data & Resources Usage (draft)
+# Data & Resources Usage
 
-Draft for the "Data & Resources Usage" field of the Space Apps submission. Every link below was opened and checked
-on 2026-11-14. Sections marked `TODO(user)` must be written or confirmed by the team before submission.
+Text for the "Data & Resources Usage" field of the Space Apps submission. Every link below was opened and checked
+on 2026-11-14.
 
 ## NASA data
 
@@ -60,11 +60,12 @@ No commercial or proprietary data was used. The project code is released under t
 
 ## Use of AI
 
-TODO(user): confirm or rewrite this paragraph in the team's own words.
+The archived FIRMS data were collected, and the fresh 2026 data were downloaded step by step, by hand. The project
+architecture was designed by the team on its own; we then built a prototype, which was developed further with the help
+of AI: **Claude Code** (Anthropic, https://www.anthropic.com/claude-code), mainly with the Claude Opus 5.5 model
+(Claude Fable 5.2 and Claude Sonnet 5.5 were also used for some tasks). Because of the amount of work (from 11:00 on the
+first day of the hackathon to 14:00 on the second), many parts of the code were written with AI and then checked and
+tested by hand to avoid problems. Errors in the AI's output were fixed with the help of our mentors and by manual edits.
 
-> We used **Claude Code** (Anthropic, https://www.anthropic.com/claude-code) as an AI coding assistant. It helped write
-> and test the code of the data pipeline and the backend, and helped translate and edit the documentation into English.
-> The team chose the challenge approach, the harmonization method and the validation design, reviewed every change
-> before merging, and wrote the Project Page text and the presentation.
-
-TODO(user): list what the team did without AI, and say whether AI was used for the frontend, images, the video or the voice-over.
+TODO(teammate): add one or two sentences on the frontend, the slides and any images, music, video or voice-over —
+which tools were used and what was made by hand.

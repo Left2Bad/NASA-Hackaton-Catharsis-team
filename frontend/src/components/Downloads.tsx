@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { fetchCalendarCsv, fetchPointsCsv } from '../api/queries';
-import type { CalendarResponse, CurrentResponse, Meta } from '../api/types';
+import type { CalendarResponse, CurrentResponse, Meta, MonthValue } from '../api/types';
 import { calendarSvg } from '../export/calendarSvg';
 import { captionLines, nowCaptionLines, SOURCE_LINE } from '../export/caption';
 import { chartSvg } from '../export/chartSvg';
@@ -8,6 +8,8 @@ import {
   exportDates,
   exportFileName,
   hotspotsFileName,
+  monthDates,
+  monthFileName,
   nowFileName,
   saveBlob,
   type ExportScope,
@@ -43,6 +45,57 @@ const chartColor = (figure: HTMLElement, name: string, fallback: string) =>
   window.getComputedStyle(figure).getPropertyValue(name).trim() || fallback;
 
 /**
+ * Rows of the hot spot file per detection of the harmonized record, by the lead source of
+ * the month. The file has every detection of every sensor, low confidence included, while
+ * the record counts one sensor: a MODIS month has fewer rows (its coefficient is above 1),
+ * a VIIRS month more (MODIS adds its own, and NOAA-20 too from 2018). Measured on the
+ * example areas and rounded up, so the estimate errs on the high side.
+ */
+const ROWS_PER_DETECTION: Record<string, number> = {
+  MODIS_T: 0.3,
+  MODIS_TA: 0.5,
+  VIIRS_SNPP: 2,
+  VIIRS_N20: 3,
+};
+const NOAA20_FROM = 2018;
+
+const rowsPerDetection = (month: MonthValue) =>
+  month.source === 'VIIRS_SNPP' && month.year >= NOAA20_FROM
+    ? 3
+    : (ROWS_PER_DETECTION[month.source] ?? 3);
+
+/** Days from one ISO date to another, both included. */
+const daysBetween = (from: string, to: string) =>
+  (Date.parse(to) - Date.parse(from)) / 86_400_000 + 1;
+
+/** The likely number of rows of the hot spot file for these dates, from the monthly values. */
+function estimateRows(
+  calendar: CalendarResponse,
+  dates: { start_date: string; end_date: string },
+  meta: Meta,
+): number {
+  let rows = 0;
+  for (const month of calendar.months) {
+    const { start_date, end_date } = monthDates(month.year, month.month, meta);
+    // ISO dates compare correctly as strings.
+    const from = start_date > dates.start_date ? start_date : dates.start_date;
+    const to = end_date < dates.end_date ? end_date : dates.end_date;
+    if (from > to) continue;
+    const share = daysBetween(from, to) / daysBetween(start_date, end_date);
+    rows += month.value * rowsPerDetection(month) * share;
+  }
+  return rows;
+}
+
+/** The latest complete month of the period, or its last month when none is complete. */
+function latestMonth(calendar: CalendarResponse, scope: ExportScope): MonthValue | undefined {
+  const months = calendar.months.filter(
+    (month) => month.year >= scope.startYear && month.year <= scope.endYear,
+  );
+  return months.filter((month) => !month.partial).at(-1) ?? months.at(-1);
+}
+
+/**
  * Downloads of the panel (requirements F22 to F24): the hot spots and the monthly table as
  * CSV, the calendar and the charts as PNG with a caption that names the area, the period
  * and the data source.
@@ -55,21 +108,26 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
   // The image shows the harmonized record: the "original sensors" view is saved as detections.
   const imageMode = mode === 'anomaly' ? 'anomaly' : 'count';
   const caption = captionLines(scope, areaName, calendar, meta);
-  // The hot spot file covers the years of the period unless the dates are set by hand:
-  // a month of a large area can already reach the row limit. Dates typed for one period
-  // do not carry over to another.
+  // The hot spot file covers the latest complete month of the period unless the dates are
+  // set by hand: the whole record of a large area has millions of rows, far above the limit.
+  // Dates typed for one period do not carry over to another.
   const whole = exportDates(scope, meta);
   const wholeKey = `${whole.start_date}_${whole.end_date}`;
+  const latest = latestMonth(calendar, scope);
+  const latestDates = latest ? monthDates(latest.year, latest.month, meta) : whole;
   const [typed, setTyped] = useState<{ key: string; start: string; end: string } | null>(null);
-  const dates = typed?.key === wholeKey ? { start_date: typed.start, end_date: typed.end } : whole;
-  const customDates = dates.start_date !== whole.start_date || dates.end_date !== whole.end_date;
+  const dates =
+    typed?.key === wholeKey ? { start_date: typed.start, end_date: typed.end } : latestDates;
+  const same = (other: { start_date: string; end_date: string }) =>
+    dates.start_date === other.start_date && dates.end_date === other.end_date;
   const datesValid =
     dates.start_date !== '' && dates.end_date !== '' && dates.start_date <= dates.end_date;
   const setDate = (edge: 'start' | 'end', value: string) =>
     setTyped({ key: wholeKey, start: dates.start_date, end: dates.end_date, [edge]: value });
-  // The calendar counts VIIRS-equivalent detections, close to the number of rows in the
-  // hot spot file. Above the limit the server refuses, so the user is told beforehand.
-  const overLimit = !customDates && calendar.summary.total > meta.limits.max_export_rows;
+  const setDates = ({ start_date, end_date }: { start_date: string; end_date: string }) =>
+    setTyped({ key: wholeKey, start: start_date, end: end_date });
+  // Above the row limit the server refuses the file, so it is not offered.
+  const overLimit = datesValid && estimateRows(calendar, dates, meta) > meta.limits.max_export_rows;
 
   /** Runs one download: one at a time, with its error kept next to its button. */
   const run = async (id: string, make: () => Promise<{ blob: Blob; name: string }>) => {
@@ -109,7 +167,10 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
         label: 'Hot spots (CSV)',
         run: async () => ({
           blob: await fetchPointsCsv({ geometry: scope.geometry, ...dates }),
-          name: hotspotsFileName(scope, dates, meta),
+          name:
+            latest && same(latestDates)
+              ? monthFileName(scope, latest.year, latest.month)
+              : hotspotsFileName(scope, dates, meta),
         }),
       },
       {
@@ -121,7 +182,7 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
               imageMode === 'count'
                 ? 'Burn calendar: fire detections by month'
                 : 'Burn calendar: difference from the median by month',
-            figure: calendarSvg(calendar, imageMode),
+            figure: calendarSvg(calendar, meta.sources, imageMode),
             caption,
           }),
       },
@@ -212,6 +273,8 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
           <button
             key={action.id}
             type="button"
+            // The estimate only warns: its factors are rounded up, so it may refuse a file the
+            // server would give. The server's own limit answers with a clear message.
             disabled={busy !== null || (action.id === 'points-csv' && !datesValid)}
             aria-busy={busy === action.id}
             onClick={() => void run(action.id, action.run)}
@@ -228,8 +291,8 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
           <input
             type="date"
             value={dates.start_date}
-            min={meta.first_date}
-            max={meta.last_date}
+            min={whole.start_date}
+            max={whole.end_date}
             onChange={(event) => setDate('start', event.target.value)}
           />
         </label>
@@ -238,13 +301,18 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
           <input
             type="date"
             value={dates.end_date}
-            min={meta.first_date}
-            max={meta.last_date}
+            min={whole.start_date}
+            max={whole.end_date}
             onChange={(event) => setDate('end', event.target.value)}
           />
         </label>
-        {customDates && (
+        {latest && !same(latestDates) && (
           <button type="button" onClick={() => setTyped(null)}>
+            Latest month
+          </button>
+        )}
+        {!same(whole) && (
+          <button type="button" onClick={() => setDates(whole)}>
             Whole period
           </button>
         )}
@@ -259,7 +327,7 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
           harmonized record, up to {formatNumber(meta.limits.max_export_rows)} rows. Shorten the
           dates for a large area.
           {overLimit && (
-            <strong> This period likely has more: choose fewer years or a smaller area.</strong>
+            <strong> These dates likely have more: shorten them or reduce the area.</strong>
           )}
         </li>
         <li>Images carry the area, the period and the data source in their caption.</li>

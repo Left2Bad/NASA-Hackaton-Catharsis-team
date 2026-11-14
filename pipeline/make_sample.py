@@ -41,6 +41,7 @@ PRESETS = [
 # small files copied unchanged; the backend starts without the optional ones but serves less
 COPY_FILES = [
     "coefficients.parquet",
+    "static_mask.parquet",  # 1.4 MB, worldwide: the hot spot weights leave out volcanoes and gas flares
     "uncertainty.parquet",
     "outage_months.csv",
     "gap_days.csv",

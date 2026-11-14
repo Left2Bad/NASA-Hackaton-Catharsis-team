@@ -95,6 +95,16 @@ describe('CoordinateForm', () => {
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
+  it('names each way of setting the area by its label and value', () => {
+    render(<CoordinateForm geometry={null} onSubmit={() => {}} onCancel={() => {}} />);
+
+    expect(screen.getByRole('radio', { name: 'Bounds' })).toHaveAttribute('value', 'bounds');
+    expect(screen.getByRole('radio', { name: 'Point and radius' })).toHaveAttribute(
+      'value',
+      'circle',
+    );
+  });
+
   it('cancels without submitting', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();

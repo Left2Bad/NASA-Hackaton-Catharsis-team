@@ -1,7 +1,7 @@
 import type { CalendarResponse, CurrentResponse, Meta } from '../api/types';
 import { boundsOf, formatBounds } from '../geo/geometry';
 import { CATEGORY_LABELS, formatNumber } from '../labels';
-import { comparison, periodLabel } from '../now/describe';
+import { comparison, detections, periodLabel } from '../now/describe';
 import type { ExportScope } from './files';
 
 // The caption printed under every exported image (requirement F24): the area, the period
@@ -46,7 +46,7 @@ export function nowCaptionLines(
     current.category === null ? '' : `${CATEGORY_LABELS[current.category].toLowerCase()}, `;
   return [
     `${areaName}: ${bounds}, ${formatNumber(Math.round(calendar.area_km2))} km²`,
-    `${periodLabel(current)}: ${formatNumber(current.value)} detections, ${level}${comparison(current)}.`,
+    `${periodLabel(current)}: ${detections(current.value)}, ${level}${comparison(current)}.`,
     `Data through ${current.as_of}, version ${meta.data_version}.${current.preliminary ? ' Preliminary, to be revised.' : ''}`,
     SOURCE_LINE,
   ];

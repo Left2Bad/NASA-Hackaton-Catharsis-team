@@ -62,7 +62,9 @@ describe('the page font in exported images', () => {
   it('asks for the typeface of the page first, with system fonts behind it', () => {
     expect(EXPORT_FONT.startsWith(`'${PAGE_FONT}'`)).toBe(true);
     expect(EXPORT_FONT).toContain('system-ui');
-    expect(calendarSvg(calendar, 'count').markup).toContain(`font-family="${EXPORT_FONT}"`);
+    expect(calendarSvg(calendar, meta.sources, 'count').markup).toContain(
+      `font-family="${EXPORT_FONT}"`,
+    );
   });
 
   it('puts the font rule inside the drawing, right after its opening tag', () => {
@@ -127,7 +129,7 @@ describe('calendarSvg (F24)', () => {
     new DOMParser().parseFromString(markup, 'image/svg+xml').documentElement;
 
   it('is a well-formed standalone SVG of the stated size', () => {
-    const figure = calendarSvg(calendar, 'count');
+    const figure = calendarSvg(calendar, meta.sources, 'count');
     const svg = parse(figure.markup);
 
     expect(svg.querySelector('parsererror')).toBeNull();
@@ -138,7 +140,7 @@ describe('calendarSvg (F24)', () => {
 
   it('draws every year, every yearly total and the legend', () => {
     const texts = Array.from(
-      parse(calendarSvg(calendar, 'count').markup).querySelectorAll('text'),
+      parse(calendarSvg(calendar, meta.sources, 'count').markup).querySelectorAll('text'),
     ).map((node) => node.textContent);
 
     for (const year of calendar.yearly) {
@@ -151,7 +153,7 @@ describe('calendarSvg (F24)', () => {
   });
 
   it('marks the change of sensor and the preliminary months', () => {
-    const svg = parse(calendarSvg(calendar, 'count').markup);
+    const svg = parse(calendarSvg(calendar, meta.sources, 'count').markup);
 
     // One path carries all seam segments; a triangle marks each preliminary month.
     expect(svg.querySelector('path[stroke-width="2"]')?.getAttribute('d')).toMatch(/M.+V.+/);
@@ -160,7 +162,7 @@ describe('calendarSvg (F24)', () => {
   });
 
   it('switches the scale and the legend in the anomaly mode', () => {
-    const markup = calendarSvg(calendar, 'anomaly').markup;
+    const markup = calendarSvg(calendar, meta.sources, 'anomaly').markup;
 
     expect(markup).toContain('Difference from the median of the same calendar month');
     expect(markup).toContain('+150 %');
@@ -170,7 +172,7 @@ describe('calendarSvg (F24)', () => {
   });
 
   it('fits the notes of the legend inside the drawing', () => {
-    const figure = calendarSvg(calendar, 'count');
+    const figure = calendarSvg(calendar, meta.sources, 'count');
     const longest = Math.max(
       ...Array.from(parse(figure.markup).querySelectorAll('text')).map(
         (node) => (node.textContent ?? '').length,

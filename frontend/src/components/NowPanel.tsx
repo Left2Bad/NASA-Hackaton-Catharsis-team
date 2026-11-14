@@ -15,8 +15,25 @@ const percent = (share: number) => `${(share * 100).toFixed(2)}%`;
 
 /** The strip of five levels with a mark where the current value sits. */
 function LevelStrip({ current }: { current: CurrentResponse }) {
+  const baseline = current.baseline_same_days;
+
+  // An area where it never burned on these days has no scale to stand on: every level
+  // would be "0 to 0". A sentence says so instead of five empty levels.
+  if (baseline.max === 0) {
+    return (
+      <p className={styles.noLevels}>
+        No fires were detected on these days in any of the {baseline.n_years} baseline years, so
+        there are no levels to compare with.
+      </p>
+    );
+  }
+
   const strip = levelStrip(current);
-  const bands = levelBands(current.baseline_same_days);
+  // Levels collapse where percentiles coincide, for example "224 to 224" in an area with
+  // rare fires. Such a level is left out, unless it is the one the value is in.
+  const bands = levelBands(baseline).filter(
+    (band) => band.to === null || band.to > band.from || band.category === current.category,
+  );
 
   return (
     <div className={styles.levels}>

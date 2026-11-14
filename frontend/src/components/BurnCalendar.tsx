@@ -45,6 +45,8 @@ interface BurnCalendarProps {
 
 /** What the tooltip shows and where it sits, in pixels inside the calendar. */
 interface Tip {
+  /** The response the tooltip was opened for: it must not outlive those numbers. */
+  calendar: CalendarResponse;
   description: CellDescription;
   left: number;
   cellTop: number;
@@ -68,7 +70,10 @@ const cellId = (year: number, month: number) => `${year}-${String(month).padStar
 export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCalendarProps) {
   const { months, yearly, monthly_baseline: baselines } = calendar;
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [tip, setTip] = useState<Tip | null>(null);
+  const [openTip, setTip] = useState<Tip | null>(null);
+  // When another area or period arrives while a tooltip is open (the pointer rests on a
+  // cell, or a touch screen left it there), the old numbers would describe the new cells.
+  const tip = openTip?.calendar === calendar ? openTip : null;
   // The one cell that Tab reaches; arrow keys move it (the "roving tabindex" pattern).
   const [cursor, setCursor] = useState<string | null>(null);
 
@@ -104,6 +109,7 @@ export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCale
     const frame = wrap.getBoundingClientRect();
     const cell = target.getBoundingClientRect();
     setTip({
+      calendar,
       description,
       // Centered on the cell, but kept inside the calendar.
       left: Math.max(

@@ -1,5 +1,9 @@
 /* On a laptop the shell is as tall as the window, so the page scrolls inside this box. */
 .scroller {
+  /* Text hidden for screen readers is positioned absolutely. Without a positioned
+     ancestor it would escape this scroller and make the whole page scrollable: an empty
+     space would open under the app. */
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow-y: auto;

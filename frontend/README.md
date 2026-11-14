@@ -63,6 +63,8 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test`,
   (the model of Machado et al., 2009). `scales.test.ts` checks that for every kind of vision the steps stay
   in order and can be told apart. The page `/#/scales` shows the same thing to the eye.
 - **Layout:** on a laptop the map is on the left and the panel on the right, and only the panel scrolls.
+  The page itself never scrolls there: every scrolling area is a positioned box, so the tables hidden
+  for screen readers stay inside it and cannot stretch the page (the end-to-end test checks this).
   Up to 960 px wide, the map and the panel stack.
 - **Phone from 360 px:** the header wraps its sections under the name, charts are measured before the
   first paint and can never be wider than their box, and long addresses on the "Method" page break

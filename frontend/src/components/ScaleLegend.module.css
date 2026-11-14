@@ -80,3 +80,11 @@
   border: 1px dashed var(--line-strong);
   box-shadow: none;
 }
+
+.keyHatched {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--line-strong) 0 1.5px,
+    var(--surface) 1.5px 5px
+  );
+}

@@ -3,6 +3,34 @@
   gap: var(--space-3);
 }
 
+/* The mode switch: two buttons that read as one control. */
+.modes {
+  display: inline-flex;
+  justify-self: start;
+  padding: 2px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+
+.modes button {
+  padding: 4px 12px;
+  font-size: var(--text-sm);
+  background: transparent;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.modes button:hover:not([aria-pressed='true']) {
+  background: var(--plane);
+}
+
+.modes button[aria-pressed='true'] {
+  color: #fff;
+  font-weight: 500;
+  background: var(--ink);
+}
+
 /* The tooltip is positioned inside this box. */
 .wrap {
   position: relative;
@@ -72,6 +100,15 @@
   position: relative;
   box-shadow: var(--outline);
   cursor: default;
+}
+
+/* A month that cannot be compared with its median: hatched instead of colored. */
+.cell[data-uncompared] {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--line-strong) 0 1.5px,
+    var(--surface) 1.5px 5px
+  );
 }
 
 /* Seams between sensors: a dark line exactly in the gap between cells. */

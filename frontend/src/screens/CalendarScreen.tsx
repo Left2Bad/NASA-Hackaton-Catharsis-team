@@ -3,7 +3,7 @@ import { USE_MOCKS } from '../api/config';
 import { useCalendar, useMeta } from '../api/queries';
 import type { CalendarResponse, Geometry, Meta } from '../api/types';
 import { AreaMap } from '../components/AreaMap';
-import { BurnCalendar } from '../components/BurnCalendar';
+import { BurnCalendar, type CalendarMode } from '../components/BurnCalendar';
 import { CoordinateForm } from '../components/CoordinateForm';
 import { ErrorNote } from '../components/ErrorNote';
 import { PeriodSelect, type Period } from '../components/PeriodSelect';
@@ -77,7 +77,15 @@ function StartPrompt() {
   );
 }
 
-function AreaPanel({ area, meta, period }: { area: Area; meta: Meta; period: Period }) {
+interface AreaPanelProps {
+  area: Area;
+  meta: Meta;
+  period: Period;
+  mode: CalendarMode;
+  onModeChange: (mode: CalendarMode) => void;
+}
+
+function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
   const sizeKm2 = areaKm2(area.geometry);
   const limitKm2 = meta.limits.max_area_km2;
   const tooLarge = sizeKm2 > limitKm2;
@@ -118,7 +126,12 @@ function AreaPanel({ area, meta, period }: { area: Area; meta: Meta; period: Per
         <>
           <section className={styles.section} aria-labelledby="calendar-heading">
             <h2 id="calendar-heading">Burn calendar</h2>
-            <BurnCalendar calendar={calendar.data} sources={meta.sources} />
+            <BurnCalendar
+              calendar={calendar.data}
+              sources={meta.sources}
+              mode={mode}
+              onModeChange={onModeChange}
+            />
             {calendar.data.warnings.length > 0 && (
               <ul className={styles.warnings}>
                 {calendar.data.warnings.map((warning) => (
@@ -157,6 +170,8 @@ function Workspace({ meta }: { meta: Meta }) {
     endYear: Number(meta.last_date.slice(0, 4)),
   };
   const [period, setPeriod] = useState<Period>(range);
+  // The calendar mode is kept here, so it survives a change of area or period.
+  const [mode, setMode] = useState<CalendarMode>('count');
 
   return (
     <main className={styles.screen}>
@@ -207,7 +222,11 @@ function Workspace({ meta }: { meta: Meta }) {
       </section>
 
       <section className={styles.panel} aria-label="Fire activity">
-        {area ? <AreaPanel area={area} meta={meta} period={period} /> : <StartPrompt />}
+        {area ? (
+          <AreaPanel area={area} meta={meta} period={period} mode={mode} onModeChange={setMode} />
+        ) : (
+          <StartPrompt />
+        )}
 
         <footer className={styles.footer}>
           <p>

@@ -30,3 +30,4 @@ The `screenshots/` folder. File names start with the task a screenshot belongs t
 | `b5-area-limit.jpg` | The message for an area above the size limit |
 | `b6-calendar-laptop.jpg` | The burn calendar with yearly totals and the marks of preliminary months |
 | `b6-calendar-tooltip-phone.jpg` | The cell tooltip on a phone |
+| `b7-anomaly-mode.jpg` | The calendar in the anomaly mode: blue below the median, orange above |

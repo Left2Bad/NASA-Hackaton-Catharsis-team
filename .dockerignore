@@ -1,4 +1,4 @@
-# Build context is the repository root; the images need only backend/, contract/, docs/, frontend/ and deploy/.
+# Build context is the repository root; the images need backend/, contract/, docs/, frontend/, deploy/ and pipeline/lead.py.
 .git
 data
 pipeline/*

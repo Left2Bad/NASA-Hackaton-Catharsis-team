@@ -149,6 +149,30 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` 
 - **Mocks** honor the period and the size of the area (`src/mocks/tailor.ts`), so these controls can
   be tried without the backend. The fire numbers stay synthetic.
 
+## "Method" page
+
+The page at `/#/method` (`src/screens/MethodPage.tsx`, requirement F25).
+
+- **What harmonization changes:** yearly sums of the sensors as they recorded next to the harmonized
+  record, for an example area chosen from a list. The data is `POST /calendar` with `series=raw`
+  (`yearlySensors` in `src/method/series.ts`); a sensor is drawn for a year only when it has all
+  twelve months.
+- **How it was checked:** from `GET /method/validation`. For every region: correlation, bias, median
+  monthly error, months compared, and a chart of the forecast from MODIS against what VIIRS really
+  recorded on the test years. Then the table of the seams: the ratio after and before the seam in the
+  harmonized record and with a naive splice.
+- **Which sensor leads the record:** `meta.sources`.
+- **Limitations:** `validation.limitations`, the server text as it is.
+- **The method in detail:** `docs/methodology.md`, written by the developer of the method, is shown
+  as it is (`src/method/markdown.ts`, the `marked` library). The page and the document cannot drift
+  apart: the document is the single source. Only the note for the team above the first section is
+  left out. The HTML is trusted because the file belongs to this repository.
+- **Acknowledgment** of NASA FIRMS with the data products that are used.
+- **Loaded on demand:** the page, the method text and the Markdown renderer are a separate chunk, so
+  the calendar starts without them.
+- **Charts** use the shared `LineChart` component: several series over the same positions, gaps
+  where a sensor has no data, and three colors checked for color-vision deficiency.
+
 ## Downloads
 
 The "Downloads" section of the panel (`src/components/Downloads.tsx`, helpers in `src/export/`).

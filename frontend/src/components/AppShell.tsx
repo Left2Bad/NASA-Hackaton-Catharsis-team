@@ -3,6 +3,7 @@ import styles from './AppShell.module.css';
 
 const SECTIONS = [
   { route: '/', label: 'Calendar' },
+  { route: '/method', label: 'Method' },
   { route: '/scales', label: 'Color scales' },
 ] as const;
 

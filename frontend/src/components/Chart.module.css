@@ -4,6 +4,9 @@
   --series-strong: #9d3d07;
   --series-median: var(--muted);
   --series-light: #f9d1a8;
+  /* Two more hues for charts of several sensors, told apart under every kind of color vision. */
+  --series-blue: #1f77b4;
+  --series-purple: #6a3d9a;
   /* The usual range: a wash of the reference gray, never a solid block. */
   --band: rgb(93 105 117 / 0.16);
 
@@ -188,6 +191,12 @@
 }
 
 /* A value that is not final, such as a month that is not over: a ring instead of a dot. */
+/* The dot of the picked position on a line whose color is set inline. */
+.pointDot {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
 .hollowDot {
   fill: var(--surface);
   stroke: var(--series-main);

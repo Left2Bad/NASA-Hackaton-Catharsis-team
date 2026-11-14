@@ -1,5 +1,6 @@
 """Request bodies (contract/openapi.yaml, components.schemas). Responses are plain dicts checked by tests."""
 
+import datetime as dt
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -26,6 +27,20 @@ class DailyQuery(BaseModel):
     geometry: dict
     year: int = Field(ge=2000)
     metric: Literal["count", "frp"] = "count"
+
+
+class PointsQuery(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    geometry: dict
+    year: int = Field(ge=2000)
+    month: int = Field(ge=1, le=12)
+
+
+class ExportPointsQuery(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    geometry: dict
+    start_date: dt.date
+    end_date: dt.date
 
 
 PRESETS = [

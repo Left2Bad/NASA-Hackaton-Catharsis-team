@@ -32,8 +32,6 @@ class Settings:
     min_cells_warning: int = 9
     max_export_rows: int = 500_000
     max_points: int = 20_000
-    # /points reads at most this many rows inside the bounding box before the exact polygon test (memory guard)
-    points_scan_limit: int = 2_000_000
 
     @property
     def points_path(self) -> Path:

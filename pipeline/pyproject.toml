@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "firms-pipeline"
 version = "0.1.0"
 description = "FIRMS MODIS + VIIRS download, unified schema and harmonization"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = ["duckdb>=1.1", "pandas>=2.2", "pyarrow>=16"]
 
 [project.optional-dependencies]

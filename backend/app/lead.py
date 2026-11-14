@@ -19,3 +19,6 @@ lead_source = _mod.lead_source
 lead_sql = _mod.lead_sql
 value_sql = _mod.value_sql
 load_outages = _mod.load_outages
+load_gap_days = _mod.load_gap_days
+gap_months = _mod.gap_months
+substituted_months = _mod.substituted_months

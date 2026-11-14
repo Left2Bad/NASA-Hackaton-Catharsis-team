@@ -24,7 +24,13 @@ def _warnings(data: Data, area, preliminary: bool, gap_months: list[dt.date]) ->
         out.append({"code": "PRELIMINARY_DATA", "message": "The current month is computed from near-real-time data."})
     if gap_months:
         months = ", ".join(f"{m:%Y-%m}" for m in gap_months)
-        out.append({"code": "SENSOR_GAP", "message": f"Suomi NPP outage; values are taken from NOAA-20: {months}."})
+        out.append(
+            {
+                "code": "SENSOR_GAP",
+                "message": f"The lead satellite had outages in {months}; days without its data are taken from "
+                "another satellite where one exists, otherwise the value may be understated.",
+            }
+        )
     return out
 
 
@@ -76,13 +82,13 @@ def current(data: Data, q: AreaQuery) -> dict:
         "anomaly_pct": stats.anomaly_pct(value, base_stats["median"] if base_stats["n_years"] else None),
         "percentile": stats.percentile_of(totals, value),
         "category": stats.category(value, base_stats, in_baseline=False),
-        "source": lead.lead_source(as_of, data.outages),
+        "source": lead.lead_source(as_of, data.outages, data.gap_days),
         "preliminary": as_of > data.last_standard_date,
         "cumulative": [
             {"day": d + 1, "value": stats.r1(now[d]), "median": stats.r1(median_by_day[d])} for d in range(days)
         ],
         "warnings": _warnings(
-            data, area, as_of > data.last_standard_date, [month_start] if month_start in data.outages else []
+            data, area, as_of > data.last_standard_date, [month_start] if month_start in data.gap_months else []
         ),
     }
 

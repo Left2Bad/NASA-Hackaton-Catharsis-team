@@ -82,11 +82,11 @@ def build(data: Data, q: AreaQuery) -> dict:
             "source": source,
             "preliminary": month_end(m) > data.last_standard_date,
             "partial": partial,
-            "sensor_gap": m in data.outages,
+            "sensor_gap": m in data.gap_months,
         }
         if q.series == "raw":
             r = by_month.get(m)
-            avail = series.raw_available(m)
+            avail = series.raw_available(m, data.snpp_last_date)
             item["raw"] = {
                 k: (stats.r1(getattr(r, k)) if r is not None else 0.0) if avail[k] else None
                 for k in ("modis", "viirs_snpp", "viirs_n20")
@@ -123,7 +123,8 @@ def build(data: Data, q: AreaQuery) -> dict:
         warnings.append(
             {
                 "code": "SENSOR_GAP",
-                "message": "Suomi NPP outages; values are taken from NOAA-20: " + ", ".join(gaps) + ".",
+                "message": "The lead satellite had outages in these months; days without its data are taken from "
+                "another satellite where one exists, otherwise the value may be understated: " + ", ".join(gaps) + ".",
             }
         )
 

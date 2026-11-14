@@ -1,9 +1,16 @@
 """Read-only access to pipeline outputs in DATA_DIR (see data/README.md).
 
 Files used: grid_daily.parquet, grid_monthly.parquet, coefficients.parquet, uncertainty.parquet,
-outage_months.csv, harmonized/summary.json, validation/report.json; hotspot points (points_serve/) are read by
-points_service.py. Small tables are loaded into memory once; the grids stay
+outage_months.csv, gap_days.csv, harmonized/summary.json, validation/report.json; hotspot points (points_serve/) are
+read by points_service.py. Small tables are loaded into memory once; the grids stay
 on disk and are scanned per request (sorted by iy, so a latitude band reads only its row groups).
+
+Dates come from summary.json when harmonize.py wrote them: last_date is the last complete day (the day of a FIRMS
+fetch is partial and is left out), last_standard_date the last day of standard processing. Older data folders without
+these keys fall back to the last day in grid_daily and to the SP/NRT boundary found in the points files.
+
+Sensor gaps (gap_days.csv): on a gap day the lead source is replaced day by day (pipeline/lead.py). Months that contain
+such a day are summed from grid_daily through the view grid_monthly_lead, so monthly and daily values agree.
 """
 
 import datetime as dt
@@ -71,10 +78,41 @@ class Data:
         if g := self.summary.get("global_coefficients"):
             self.global_coef = (g["count_ta"], g["count_t"], g["count_n20"], g["frp_ta"], g["frp_t"], g["frp_n20"])
         self.outages = lead.load_outages(self.dir / "outage_months.csv")
+        self.gap_days = lead.load_gap_days(self.dir / "gap_days.csv")
+        # months flagged sensor_gap: S-NPP outage months and months with a gap day of their lead sensor
+        self.gap_months = lead.gap_months(self.outages, self.gap_days)
+        self.monthly_table = self._monthly_table()
         self.uncertainty = self._load_uncertainty()
-        self.last_date = self.con.execute("SELECT max(date) FROM grid_daily").fetchone()[0]
+        grid_last = self.con.execute("SELECT max(date) FROM grid_daily").fetchone()[0]
+        self.last_date = min(grid_last, self._summary_date("last_complete_date", grid_last))
         self.first_date = lead.FIRST_DATE  # dataset start; the first fire day may come later
-        self.last_standard_date = self._last_standard_date()
+        standard = self.summary.get("last_standard_date")
+        self.last_standard_date = (
+            min(self.last_date, dt.date.fromisoformat(standard)) if standard else self._last_standard_date()
+        )
+        snpp_last = self.summary.get("sensor_last_dates", {}).get("viirs_snpp")
+        self.snpp_last_date = dt.date.fromisoformat(snpp_last) if snpp_last else lead.SNPP_END
+
+    def _summary_date(self, key: str, default: dt.date) -> dt.date:
+        value = self.summary.get(key)
+        return dt.date.fromisoformat(value) if value else default
+
+    def _monthly_table(self) -> str:
+        """grid_monthly, or a view that takes months with substituted gap days from grid_daily."""
+        months = sorted(lead.substituted_months(self.outages, self.gap_days))
+        if not months:
+            return "grid_monthly"
+        self.con.execute("CREATE TABLE substituted_months AS SELECT unnest(?::DATE[]) AS m", [months])
+        rows = self.dir / "grid_daily_gap_months.parquet"  # harmonize.py: these months' rows, one per source group
+        daily = f"read_parquet('{rows.as_posix()}')" if rows.exists() else "grid_daily"
+        # an ANTI JOIN keeps the row-group pruning of grid_monthly (a NOT IN list doubles the scan time)
+        self.con.execute(f"""
+        CREATE VIEW grid_monthly_lead AS
+        SELECT grid_monthly.* FROM grid_monthly ANTI JOIN substituted_months s ON grid_monthly.month = s.m
+        UNION ALL BY NAME
+        SELECT d.* EXCLUDE (date), d.date AS month
+        FROM {daily} d SEMI JOIN substituted_months s ON date_trunc('month', d.date)::DATE = s.m""")
+        return "grid_monthly_lead"
 
     def cursor(self) -> duckdb.DuckDBPyConnection:
         with self._lock:
@@ -102,7 +140,7 @@ class Data:
                     f"SELECT max(acq_date) FROM read_parquet('{(points / f'*_{self.last_date.year}.parquet').as_posix()}', "
                     "union_by_name=true) WHERE quality = 'SP' AND source <> 'modis'"  # VIIRS leads since 2012
                 ).fetchone()[0]
-                return d or self.last_date
+                return min(d, self.last_date) if d else self.last_date
         return self.last_date  # yearly archives are all standard processing
 
     def validation_report(self) -> bytes | None:

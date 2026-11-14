@@ -116,8 +116,12 @@
   touch-action: pan-y;
 }
 
+/* The drawing is sized in pixels by the component; this keeps it inside its box even
+   before the size is known, so a chart can never make the page scroll sideways. */
 .plot svg {
   display: block;
+  max-width: 100%;
+  height: auto;
   overflow: visible;
 }
 

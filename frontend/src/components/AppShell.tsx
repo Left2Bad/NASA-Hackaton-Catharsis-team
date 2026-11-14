@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { calendarHref } from '../state/link';
 import styles from './AppShell.module.css';
 import { SnapshotBanner } from './SnapshotBanner';
 
@@ -21,7 +22,9 @@ export function AppShell({ route, children }: { route: string; children: ReactNo
           {SECTIONS.map((section) => (
             <a
               key={section.route}
-              href={`#${section.route}`}
+              // The calendar link keeps the chosen area and period, so a visit to another
+              // section does not lose them.
+              href={section.route === '/' ? calendarHref() : `#${section.route}`}
               aria-current={route === section.route ? 'page' : undefined}
             >
               {section.label}

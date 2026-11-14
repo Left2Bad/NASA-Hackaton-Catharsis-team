@@ -25,6 +25,18 @@ export const WARNING_LABELS: Record<WarningCode, string> = {
   PARTIAL_COVERAGE: 'Part of the area lies outside the loaded data.',
 };
 
+type ErrorCode = components['schemas']['ErrorResponse']['error']['code'];
+
+/** What to tell the user for each API error code: what happened and what to do next. */
+export const ERROR_LABELS: Record<ErrorCode, string> = {
+  INVALID_GEOMETRY: 'The area has an invalid shape. Redraw it without crossing its own sides.',
+  INVALID_REQUEST: 'The request was not accepted. Check the area and the period.',
+  AREA_TOO_LARGE: 'The area is larger than the limit. Choose a smaller one.',
+  EXPORT_TOO_LARGE: 'The export has too many rows. Shorten the period or reduce the area.',
+  NO_DATA: 'The area lies outside the loaded data. Choose an area inside the covered regions.',
+  INTERNAL: 'The server could not answer. Try again in a moment.',
+};
+
 /** English names of example areas by `id`; an unknown `id` falls back to the server text. */
 const PRESET_LABELS: Record<string, { name: string; description: string }> = {
   'kz-steppe': {

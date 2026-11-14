@@ -1,0 +1,100 @@
+.form {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.modes legend {
+  float: left;
+  margin-right: var(--space-4);
+  padding: 0;
+  color: var(--ink-2);
+}
+
+.modes label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.modes input {
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: var(--space-3);
+}
+
+.field {
+  display: grid;
+  gap: 2px;
+}
+
+.field label {
+  font-weight: 500;
+}
+
+.field input {
+  width: 100%;
+  padding: 6px 8px;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+
+.field input[aria-invalid='true'] {
+  border-color: var(--error);
+  box-shadow: 0 0 0 1px var(--error);
+}
+
+.hint {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.problem {
+  color: var(--error);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.actions button {
+  padding: 6px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.actions button:hover {
+  border-color: var(--ink);
+}
+
+.actions .primary {
+  color: #fff;
+  font-weight: 500;
+  background: var(--ink);
+  border-color: var(--ink);
+}

@@ -22,7 +22,7 @@ describe('SummaryFacts (F16)', () => {
     render(<SummaryFacts calendar={calendar} />);
 
     expect(factTexts('Most active year')).toEqual(['2010', '12,877 detections']);
-    expect(factTexts('Peak month')).toEqual(['September', 'median 779.4']);
+    expect(factTexts('Peak month')).toEqual(['September', 'median 779']);
     expect(factTexts('Total detections')).toEqual(['108,872', '2000 to 2026']);
     expect(factTexts('Trend')).toEqual(['Falling', '−10 % per decade']);
     expect(screen.queryByText(/No fires were detected/)).toBeNull();

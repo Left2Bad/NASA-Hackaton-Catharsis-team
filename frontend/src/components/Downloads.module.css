@@ -50,3 +50,43 @@
   color: var(--ink-2);
   font-weight: 600;
 }
+
+/* The dates of the hot spot file: two fields on one line, wrapping on a phone. */
+.dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  font-size: var(--text-sm);
+  border: 0;
+}
+
+.dates legend {
+  margin-bottom: var(--space-1);
+  padding: 0;
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.dates input {
+  padding: 3px 6px;
+  font: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+
+.dates button {
+  padding: 3px 10px;
+  font-size: var(--text-sm);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.dates [role='alert'] {
+  color: var(--error);
+}

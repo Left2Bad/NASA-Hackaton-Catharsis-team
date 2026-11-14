@@ -4,7 +4,8 @@
     <meta charset="utf-8" />
     <title>Burn Calendar: pitch slides</title>
     <!--
-      The pitch deck: seven slides, 1920 x 1080 each. Edit the text here and print the deck
+      The pitch deck: seven slides, 1920 x 1080 each, in the order the organizers recommend:
+      title, problem, solution (two slides), NASA data, plans, team. Edit the text here and print the deck
       again with `npm run demo:slides` (from frontend/), which writes burn-calendar-pitch.pdf.
       The pictures are the frames of ../screenshots/, taken by `npm run demo:shots`.
       Every number on the slides comes from the app on real FIRMS data: check them against
@@ -323,32 +324,28 @@
       </div>
       <div>
         <div class="crop" style="height: 640px">
-          <img src="../screenshots/demo-03-tooltip.jpg" alt="" style="width: 1770px; left: -960px; top: -330px" />
+          <img src="../screenshots/demo-03-tooltip.jpg" alt="" style="width: 1770px; left: -960px; top: -150px" />
         </div>
       </div>
       <div class="foot"><span>Burn Calendar</span><span>3 / 7</span></div>
     </section>
 
-    <!-- 4. Now -->
+    <!-- 4. The solution, continued: what it answers and what you can do with it -->
     <section class="slide">
-      <p class="kicker">What it answers</p>
+      <p class="kicker">The solution</p>
       <h2>Is this month unusual for this place?</h2>
       <div>
         <p>
           The current month is compared with the <strong>same days</strong> of every earlier
-          year, on one scale.
+          year, on one scale. Northern California, November 1 to 13, 2026:
+          <strong>59 % above the median</strong>.
         </p>
-        <p>
-          Northern California, November 1 to 13, 2026:
-          <strong>59 % above the median</strong>, higher than in 84 % of the earlier years.
-        </p>
-        <p>
-          The anomaly mode recolors the whole calendar: blue is quieter than usual, orange is
-          worse.
-        </p>
-        <div class="crop" style="height: 250px; margin-top: 12px">
-          <img src="../screenshots/demo-04-anomaly.jpg" alt="" style="width: 1500px; left: -830px; top: -468px" />
-        </div>
+        <ul>
+          <li><strong>Any area:</strong> draw it on the map or type its coordinates.</li>
+          <li><strong>Deeper views:</strong> anomalies, daily calendar, hot spots of a month.</li>
+          <li><strong>Take it with you:</strong> CSV of hot spots and tables, charts as PNG.</li>
+          <li><strong>For everyone:</strong> phone, keyboard, color-blind-safe scales.</li>
+        </ul>
       </div>
       <div>
         <div class="crop" style="height: 690px">
@@ -358,10 +355,22 @@
       <div class="foot"><span>Burn Calendar</span><span>4 / 7</span></div>
     </section>
 
-    <!-- 5. Validation -->
+    <!-- 5. NASA data and how the result was checked -->
     <section class="slide">
-      <p class="kicker">Does it hold?</p>
-      <h2>Checked on five years the method has never seen</h2>
+      <p class="kicker">NASA data</p>
+      <h2>Built on NASA FIRMS, checked on years the method has never seen</h2>
+      <div>
+        <ul>
+          <li><strong>MODIS Collection 6.1</strong>, Terra and Aqua, since November 2000.</li>
+          <li><strong>VIIRS 375 m</strong>, Suomi NPP since 2012 and NOAA-20 since 2018.</li>
+          <li><strong>2026</strong> through the FIRMS Area API, near real time.</li>
+          <li><strong>NASA GIBS</strong> Blue Marble imagery under the map.</li>
+        </ul>
+        <p class="small" style="margin-top: 28px">
+          Every detection of 26 years is kept: about 9 GB of archives from NASA FIRMS, on a 0.1°
+          grid.
+        </p>
+      </div>
       <div>
         <p>
           Fitted on 2012 to 2020. For <strong>2021 to 2025</strong> VIIRS is predicted from
@@ -402,80 +411,63 @@
           are listed in the app, next to the results.
         </p>
       </div>
-      <div>
-        <div class="crop" style="height: 440px">
-          <img src="../screenshots/demo-09-method-validation.jpg" alt="" style="width: 1500px; left: -332px; top: -200px" />
-        </div>
-        <p class="small" style="margin-top: 20px">
-          Dashed purple: what VIIRS recorded. Solid orange: the forecast from MODIS. Dashed blue:
-          MODIS as recorded.
-        </p>
-      </div>
       <div class="foot"><span>Burn Calendar</span><span>5 / 7</span></div>
     </section>
 
-    <!-- 6. Built to be used -->
+    <!-- 6. Plans -->
+    <!-- TODO(team): these plans are a draft. Keep the ones the team stands behind. -->
     <section class="slide">
-      <p class="kicker">The product</p>
-      <h2>Built to be used, not only shown</h2>
+      <p class="kicker">What is next</p>
+      <h2>From a calendar to an early-warning tool</h2>
       <div>
         <ul>
-          <li><strong>Any area:</strong> draw it on the map or type its coordinates.</li>
           <li>
-            <strong>Take it with you:</strong> tables as CSV, charts as PNG with the area, the
-            period and the data source in the caption.
-          </li>
-          <li><strong>Share a view:</strong> the link reopens the same area, period and mode.</li>
-          <li>
-            <strong>For everyone:</strong> works on a phone and from the keyboard; the color
-            scales are checked for color-vision deficiency.
+            <strong>Daily updates:</strong> a public site that takes new FIRMS detections every
+            day.
           </li>
           <li>
-            <strong>Open source</strong>, Apache 2.0: a Python and DuckDB pipeline, a FastAPI
-            service, a React app.
+            <strong>Alerts for an area:</strong> a notice when the current month leaves its
+            normal range.
+          </li>
+          <li>
+            <strong>Fire radiative power:</strong> the same calendar for the intensity of
+            burning, not only the number of detections.
+          </li>
+          <li>
+            <strong>Finer coefficients</strong> for small areas, and NOAA-21 as the next sensor
+            of the record.
           </li>
         </ul>
       </div>
-      <div class="pair">
-        <div class="crop" style="width: 330px; height: 678px; flex: none">
-          <img src="../screenshots/demo-11-phone.jpg" alt="" style="width: 330px; left: 0; top: 0" />
-        </div>
-        <div class="crop" style="flex: 1; height: 678px">
-          <img src="../screenshots/demo-06-season-yearly.jpg" alt="" style="width: 1010px; left: -550px; top: -40px" />
+      <div>
+        <div class="crop" style="height: 560px">
+          <img src="../screenshots/demo-06-season-yearly.jpg" alt="" style="width: 1740px; left: -950px; top: -100px" />
         </div>
       </div>
       <div class="foot"><span>Burn Calendar</span><span>6 / 7</span></div>
     </section>
 
-    <!-- 7. Impact -->
+    <!-- 7. Team -->
     <section class="slide">
-      <p class="kicker">Why it matters</p>
+      <p class="kicker">Team Catharsis</p>
       <h2>A fire history people can compare across a quarter of a century</h2>
       <div>
+        <!-- TODO(team): replace the GitHub names with the names of the team members. -->
         <ul>
-          <li>
-            <strong>Fire services</strong> see at once whether this month is ordinary for their
-            region.
-          </li>
-          <li>
-            <strong>Researchers</strong> get a trend that does not break in 2012, with its
-            uncertainty.
-          </li>
-          <li>
-            <strong>Journalists</strong> get a chart with its source, ready to publish.
-          </li>
+          <li><strong>Left2Bad:</strong> data pipeline, harmonization method, API.</li>
+          <li><strong>Miraculum-ada:</strong> web application, visual design, demo.</li>
         </ul>
+        <p style="margin-top: 40px">
+          For <strong>fire services</strong>, <strong>researchers</strong> and
+          <strong>land managers</strong> who need one consistent record of a region.
+        </p>
       </div>
-      <div style="grid-row: span 2">
-        <div class="crop" style="height: 560px">
-          <img src="../screenshots/demo-04-anomaly.jpg" alt="" style="width: 1740px; left: -950px; top: -410px" />
-        </div>
-      </div>
-      <div style="margin-top: 20px">
+      <div>
         <!-- TODO(team): put the address of the deployed site here once it exists. -->
         <p><strong>Try it:</strong> the address of the live demo</p>
         <p><strong>Code:</strong> github.com/Left2Bad/NASA-Hackaton-Catharsis-team</p>
-        <p class="small">
+        <p><strong>License:</strong> Apache 2.0, open source</p>
+        <p class="small" style="margin-top: 40px">
           We acknowledge the use of data from NASA's Fire Information for Resource Management
           System (FIRMS), part of NASA's Earth Science Data and Information System (ESDIS).
         </p>

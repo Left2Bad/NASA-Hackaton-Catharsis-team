@@ -50,7 +50,9 @@ function LevelStrip({ current }: { current: CurrentResponse }) {
               }}
             />
           ))}
-          <span className={styles.marker} style={{ left: percent(strip.marker) }} />
+          <span className={styles.marker} style={{ left: percent(strip.marker) }}>
+            <span className={styles.markerLabel}>Now</span>
+          </span>
         </div>
       )}
       <ul className={styles.legend} aria-label="Levels for these days of the month">
@@ -68,6 +70,10 @@ function LevelStrip({ current }: { current: CurrentResponse }) {
           </li>
         ))}
       </ul>
+      <p className={styles.levelsNote}>
+        Levels are percentiles of the same days in the {baseline.n_years} baseline years: normal is
+        P25 to P75, above normal up to P90, high up to the highest year, record above it.
+      </p>
     </div>
   );
 }
@@ -104,14 +110,21 @@ export function NowPanel({ current }: { current: CurrentResponse }) {
         <div>
           <dt>Detections so far</dt>
           <dd>{formatNumber(current.value)}</dd>
+          <dd className={styles.factNote}>VIIRS-equivalent</dd>
         </div>
         <div>
           <dt>Median of the same days</dt>
           <dd>{formatNumber(baseline.median)}</dd>
+          <dd className={styles.factNote}>{baseline.n_years} baseline years</dd>
         </div>
         <div>
           <dt>Percentile</dt>
           <dd>{current.percentile === null ? '—' : formatNumber(current.percentile)}</dd>
+          {current.percentile !== null && (
+            <dd className={styles.factNote}>
+              above {formatNumber(Math.round(current.percentile))} % of those years
+            </dd>
+          )}
         </div>
       </dl>
 

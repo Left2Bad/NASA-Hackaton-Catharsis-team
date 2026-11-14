@@ -367,7 +367,7 @@ describe('charts under the calendar (F17, F18)', () => {
 
     // Choosing another year re-reads the same response: no new request.
     await user.selectOptions(within(season).getByLabelText('Year over the typical season'), '2010');
-    expect(within(season).getByTestId('season-readout')).toHaveTextContent('2010 4,120.6');
+    expect(within(season).getByTestId('season-readout')).toHaveTextContent('2010 4,121');
     expect(bodies).toHaveLength(1);
   });
 
@@ -561,7 +561,7 @@ describe('states of a real API (B10)', () => {
     renderApp();
 
     expect(
-      await screen.findByText(/shows fire activity for every month since March 2001\./),
+      await screen.findByText(/Fire activity for every month since March 2001,/),
     ).toBeInTheDocument();
     expect(
       screen.getByText('Data is loaded for these regions only: Kazakhstan, Brazil.'),
@@ -698,11 +698,9 @@ describe('downloads (F22 to F24)', () => {
       'Current month (PNG)',
     ]);
     // The dates of the hot spot file follow the period and the record of the dataset.
-    expect(
-      within(downloads).getByText(
-        new RegExp(`every detection from ${metaExample.first_date} to ${metaExample.last_date}`),
-      ),
-    ).toBeInTheDocument();
+    const dates = within(downloads).getByRole('group', { name: 'Dates of the hot spot file' });
+    expect(within(dates).getByLabelText('From')).toHaveValue(metaExample.first_date);
+    expect(within(dates).getByLabelText('to')).toHaveValue(metaExample.last_date);
   });
 
   it('has nothing to download before an area is chosen', async () => {

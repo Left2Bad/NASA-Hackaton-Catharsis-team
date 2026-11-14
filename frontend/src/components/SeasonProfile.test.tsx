@@ -17,9 +17,9 @@ describe('SeasonProfile (F17)', () => {
 
     expect(yearSelect()).toHaveValue('2026');
     expect(readout()).toHaveTextContent('May');
-    expect(readout()).toHaveTextContent('2026 1,350.1');
-    expect(readout()).toHaveTextContent('Median 723.7');
-    expect(readout()).toHaveTextContent('Usual range 418.5 to 1,352.1');
+    expect(readout()).toHaveTextContent('2026 1,350');
+    expect(readout()).toHaveTextContent('Median 724');
+    expect(readout()).toHaveTextContent('Usual range 419 to 1,352');
   });
 
   it('offers every year of the response, newest first', () => {
@@ -40,7 +40,7 @@ describe('SeasonProfile (F17)', () => {
     await user.selectOptions(yearSelect(), '2010');
 
     expect(readout()).toHaveTextContent('May');
-    expect(readout()).toHaveTextContent('2010 4,120.6');
+    expect(readout()).toHaveTextContent('2010 4,121');
     expect(
       screen.getByRole('table', {
         name: 'Season profile by month: 2010 against the median and the usual range',
@@ -86,7 +86,7 @@ describe('SeasonProfile (F17)', () => {
     });
     expect(within(table).getAllByRole('row')).toHaveLength(1 + 12);
     expect(
-      within(table).getByRole('row', { name: 'September 902.1 779.4 394.5 1,322.1' }),
+      within(table).getByRole('row', { name: 'September 902 779 395 1,322' }),
     ).toBeInTheDocument();
     expect(
       within(table).getByRole('row', { name: 'December no data 6.2 3 11.1' }),

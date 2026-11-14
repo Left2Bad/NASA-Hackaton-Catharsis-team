@@ -78,10 +78,10 @@ describe('DailyCalendar (F14)', () => {
 
     await screen.findByRole('grid', { name: /^Fire detections by day, 2010/ });
     expect(container.querySelectorAll('[data-day]')).toHaveLength(365);
-    expect(readout()).toHaveTextContent('Busiest day: May 3, 2010: 405.9 detections');
+    expect(readout()).toHaveTextContent('Busiest day: May 3, 2010: 406 detections');
     expect(readout()).toHaveTextContent('12,877 in 2010');
     // Every day is said in words, so the value never depends on color alone.
-    expect(screen.getByRole('gridcell', { name: 'May 3, 2010: 405.9 detections' })).toBeVisible();
+    expect(screen.getByRole('gridcell', { name: 'May 3, 2010: 406 detections' })).toBeVisible();
   });
 
   it('reads out the day under the pointer and returns to the busiest one', async () => {

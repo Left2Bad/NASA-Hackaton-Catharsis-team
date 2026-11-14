@@ -7,6 +7,7 @@ import { chartSvg } from '../export/chartSvg';
 import {
   exportDates,
   exportFileName,
+  hotspotsFileName,
   nowFileName,
   saveBlob,
   type ExportScope,
@@ -54,10 +55,21 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
   // The image shows the harmonized record: the "original sensors" view is saved as detections.
   const imageMode = mode === 'anomaly' ? 'anomaly' : 'count';
   const caption = captionLines(scope, areaName, calendar, meta);
-  const dates = exportDates(scope, meta);
+  // The hot spot file covers the years of the period unless the dates are set by hand:
+  // a month of a large area can already reach the row limit. Dates typed for one period
+  // do not carry over to another.
+  const whole = exportDates(scope, meta);
+  const wholeKey = `${whole.start_date}_${whole.end_date}`;
+  const [typed, setTyped] = useState<{ key: string; start: string; end: string } | null>(null);
+  const dates = typed?.key === wholeKey ? { start_date: typed.start, end_date: typed.end } : whole;
+  const customDates = dates.start_date !== whole.start_date || dates.end_date !== whole.end_date;
+  const datesValid =
+    dates.start_date !== '' && dates.end_date !== '' && dates.start_date <= dates.end_date;
+  const setDate = (edge: 'start' | 'end', value: string) =>
+    setTyped({ key: wholeKey, start: dates.start_date, end: dates.end_date, [edge]: value });
   // The calendar counts VIIRS-equivalent detections, close to the number of rows in the
   // hot spot file. Above the limit the server refuses, so the user is told beforehand.
-  const overLimit = calendar.summary.total > meta.limits.max_export_rows;
+  const overLimit = !customDates && calendar.summary.total > meta.limits.max_export_rows;
 
   /** Runs one download: one at a time, with its error kept next to its button. */
   const run = async (id: string, make: () => Promise<{ blob: Blob; name: string }>) => {
@@ -97,7 +109,7 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
         label: 'Hot spots (CSV)',
         run: async () => ({
           blob: await fetchPointsCsv({ geometry: scope.geometry, ...dates }),
-          name: exportFileName('hotspots', scope, 'csv'),
+          name: hotspotsFileName(scope, dates, meta),
         }),
       },
       {
@@ -200,7 +212,7 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
           <button
             key={action.id}
             type="button"
-            disabled={busy !== null}
+            disabled={busy !== null || (action.id === 'points-csv' && !datesValid)}
             aria-busy={busy === action.id}
             onClick={() => void run(action.id, action.run)}
           >
@@ -209,13 +221,43 @@ export function Downloads({ scope, areaName, calendar, meta, mode, current }: Do
         ))}
       </div>
 
+      <fieldset className={styles.dates}>
+        <legend>Dates of the hot spot file</legend>
+        <label>
+          From{' '}
+          <input
+            type="date"
+            value={dates.start_date}
+            min={meta.first_date}
+            max={meta.last_date}
+            onChange={(event) => setDate('start', event.target.value)}
+          />
+        </label>
+        <label>
+          to{' '}
+          <input
+            type="date"
+            value={dates.end_date}
+            min={meta.first_date}
+            max={meta.last_date}
+            onChange={(event) => setDate('end', event.target.value)}
+          />
+        </label>
+        {customDates && (
+          <button type="button" onClick={() => setTyped(null)}>
+            Whole period
+          </button>
+        )}
+        {!datesValid && <span role="alert">The first date must not be after the last one.</span>}
+      </fieldset>
+
       {failure && <ErrorNote error={failure.error} />}
 
       <ul className={styles.notes}>
         <li>
-          Hot spots: every detection from {dates.start_date} to {dates.end_date} with its sensor and
-          its weight in the harmonized record, up to {formatNumber(meta.limits.max_export_rows)}{' '}
-          rows.
+          Hot spots: every detection of the chosen dates with its sensor and its weight in the
+          harmonized record, up to {formatNumber(meta.limits.max_export_rows)} rows. Shorten the
+          dates for a large area.
           {overLimit && (
             <strong> This period likely has more: choose fewer years or a smaller area.</strong>
           )}

@@ -71,6 +71,17 @@ test('main scenario: area, calendar, anomalies, now, period, downloads, method, 
   const summary = page.getByRole('region', { name: 'Summary' });
   await expect(summary.getByText(String(saved.summary.peak_year), { exact: true })).toBeVisible();
 
+  // The current month is answered in one line above the calendar, and the links of the
+  // panel bring a section into view.
+  await expect(page.getByTestId('now-headline')).toContainText(/^Now, /);
+  const sections = page.getByRole('navigation', { name: 'Sections of the panel' });
+  const downloadsHeading = page.getByRole('heading', { level: 2, name: 'Downloads' });
+  await expect(downloadsHeading).not.toBeInViewport();
+  await sections.getByRole('button', { name: 'Downloads' }).click();
+  await expect(downloadsHeading).toBeInViewport();
+  await sections.getByRole('button', { name: 'Calendar' }).click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Burn calendar' })).toBeInViewport();
+
   // 3. The anomaly mode recolors the same calendar.
   const modes = page.getByRole('group', { name: 'Calendar mode' });
   await modes.getByRole('button', { name: 'Anomaly' }).click();

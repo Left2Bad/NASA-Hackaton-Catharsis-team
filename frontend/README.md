@@ -68,6 +68,28 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test`,
   first paint and can never be wider than their box, and long addresses on the "Method" page break
   inside words. Nothing makes the page scroll sideways.
 
+## How the panel reads
+
+The panel answers the questions of the challenge in the order a reader asks them, and says what its
+numbers are, so a specialist can check them.
+
+- **The answer first:** one line under the name of the area gives the current month: its level, the
+  count and the difference from the median of the same days (`nowHeadline` in `src/now/describe.ts`).
+  The "Now" section further down has the numbers behind it.
+- **The calendar next:** it is the subject of the challenge, so it stays on the first screen.
+- **Jump links:** "Calendar, Summary, Now, Season, Years, Days, Downloads" stay at the top of the panel
+  while it scrolls (`src/components/SectionNav.tsx`). On a phone they are one row that scrolls sideways.
+- **What is counted:** a closed note under the header names the unit (VIIRS Suomi NPP equivalents), why
+  values can be fractional, what is left out (low confidence, static sources) and the baseline years.
+- **Terms are kept and explained:** "median", "percentile" and "baseline" stay, because the reader may
+  need to cite them. Next to them stand the words that make them usable: "above 84 % of those years",
+  "25 baseline years", and a sentence that ties the five levels to P25, P75, P90 and the maximum.
+- **Whole numbers from 100 up:** "16,430 detections", not "16,430.3" (`formatNumber` in `src/labels.ts`).
+  Below 100 one decimal stays, because converted MODIS counts of a small area are fractional.
+- **The start screen** says how to begin in three steps, and the area buttons are marked as examples.
+- **One error, not two:** when the calendar cannot be loaded, the "Now" section does not repeat the
+  same message.
+
 ## Map
 
 - **Engine:** MapLibre GL JS, with Terra Draw for drawing. Both libraries load as separate files
@@ -225,7 +247,10 @@ The "Downloads" section of the panel (`src/components/Downloads.tsx`, helpers in
 
 - **Monthly table, CSV (F23):** `POST /export/calendar.csv` for the area and the chosen years.
 - **Hot spots, CSV (F22):** `POST /export/points.csv`. The years of the period become dates, January 1
-  to December 31, cut to the record of the dataset (`exportDates`). Every row has its sensor and its
+  to December 31, cut to the record of the dataset (`exportDates`). Two date fields under the buttons
+  set any other range, so a single month of a large area fits under the row limit; the file is then
+  named after the dates. The strip above the map offers the same file for the month whose hot spots
+  are drawn ("Download this month (CSV)"). Every row has its sensor and its
   weight in the harmonized record. Above `limits.max_export_rows` the server answers `EXPORT_TOO_LARGE`
   and the app says to shorten the period; when the calendar total already exceeds the limit, the
   note under the buttons warns before the click.

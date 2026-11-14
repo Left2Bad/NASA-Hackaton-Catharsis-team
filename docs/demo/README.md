@@ -8,13 +8,17 @@ The pitch for the Space Apps submission is **one of two**: a video of at most 30
 | What | Where |
 | --- | --- |
 | Script and storyboard of the 30-second video | this file, below |
-| Deck, 7 slides | [slides/burn-calendar-pitch.pdf](slides/burn-calendar-pitch.pdf), source [slides/slides.html](slides/slides.html) |
+| Deck, 7 slides: title, problem, solution (two slides), NASA data, plans, team | [slides/burn-calendar-pitch.pdf](slides/burn-calendar-pitch.pdf), source [slides/slides.html](slides/slides.html) |
 | Frames of the demo | `screenshots/demo-NN-*.jpg`, 1920 × 1200 |
 | Link to the video | TODO(team): add after the video is uploaded |
 
 The wording of the voice-over and of the slides is a draft. The team says it in its own words before recording,
 and names the AI tools it used in the "Data & Resources Usage" field of the submission
 (see [../submission/resources.md](../submission/resources.md)).
+
+Before the deck is submitted: put the names of the team on slide 7 and the address of the site,
+keep on slide 6 only the plans the team stands behind, and upload the PDF where anyone can open it
+without signing in (check the link in a private window).
 
 ## Video: 30 seconds
 
@@ -28,7 +32,7 @@ screen again and change the voice-over to match.
 | 2 | 0:06–0:11 | "Method" page, the chart "What harmonization changes": dashed MODIS far below, the solid line on one scale | `demo-08-method-harmonization` | Burn Calendar converts every MODIS detection to the VIIRS scale, cell by cell. |
 | 3 | 0:11–0:16 | Click "Northern California": the calendar fills in; the pointer stops on September 2020 and the tooltip opens | `demo-02-calendar`, `demo-03-tooltip` | Pick any area: one consistent record, every month since 2000. |
 | 4 | 0:16–0:19 | Click "Anomaly": the calendar turns blue and orange | `demo-04-anomaly` | Blue is quieter than usual, orange is worse. |
-| 5 | 0:19–0:24 | Scroll to "Now": "Above normal, +58.6 %" and the cumulative chart | `demo-05-summary-now` | Right now, Northern California runs 59 percent above normal. |
+| 5 | 0:19–0:24 | Click "Now" in the links of the panel: "Above normal, +58.6 %" and the cumulative chart | `demo-05-summary-now` | Right now, Northern California runs 59 percent above normal. |
 | 6 | 0:24–0:28 | "Method" page, "How it was checked": the forecast lies on the VIIRS line; correlation 0.999 | `demo-09-method-validation` | Checked on years the method never saw: correlation 0.99. |
 | 7 | 0:28–0:30 | End card: name, team, "Data: NASA FIRMS", the address of the site | slide 1 of the deck | Burn Calendar: open source, built on NASA FIRMS. |
 

@@ -23,8 +23,13 @@ def _joined(data: Data, table: str, time_col: str, area: Area, start: dt.date, e
         AND g.{time_col} BETWEEN DATE '{start}' AND DATE '{end}'"""
 
 
-def query(data: Data, area: Area, metric: str, start: dt.date, end: dt.date, daily: bool = False) -> pd.DataFrame:
-    """One row per month (or day) that has any detection: value (harmonized), raw sums per sensor."""
+def query(
+    data: Data, area: Area, metric: str, start: dt.date, end: dt.date, daily: bool = False, where: str = ""
+) -> pd.DataFrame:
+    """One row per month (or day) that has any detection: value (harmonized), raw sums per sensor.
+
+    `where` is an extra SQL condition on the joined rows (alias j), e.g. one calendar month of every year.
+    """
     table, time_col = ("grid_daily", "date") if daily else ("grid_monthly", "month")
     p = "n" if metric == "count" else "f"
     source = lead.lead_sql(f"j.{time_col}", data.outages)
@@ -37,7 +42,7 @@ def query(data: Data, area: Area, metric: str, start: dt.date, end: dt.date, dai
              sum(j.{p}_t + j.{p}_a)::DOUBLE AS modis,
              sum(j.{p}_snpp)::DOUBLE AS viirs_snpp,
              sum(j.{p}_n20)::DOUBLE AS viirs_n20
-      FROM j GROUP BY 1 ORDER BY 1""").df()
+      FROM j {f"WHERE {where}" if where else ""} GROUP BY 1 ORDER BY 1""").df()
     cur.close()
     df["t"] = pd.to_datetime(df["t"]).dt.date
     return df

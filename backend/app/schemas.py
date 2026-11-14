@@ -21,6 +21,13 @@ class AreaQuery(BaseModel):
     series: Literal["harmonized", "raw"] = "harmonized"
 
 
+class DailyQuery(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    geometry: dict
+    year: int = Field(ge=2000)
+    metric: Literal["count", "frp"] = "count"
+
+
 PRESETS = [
     {
         "id": "kz-steppe",

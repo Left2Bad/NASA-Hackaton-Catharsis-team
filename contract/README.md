@@ -1,23 +1,23 @@
-# contract/ — общая зона
+# contract/ — shared zone
 
-Контракт API между бэкендом (разработчик A) и фронтендом (разработчик B).
-Это единственное место, где работа двух разработчиков пересекается.
+The API contract between the backend (developer A) and the frontend (developer B).
+This is the only place where the work of the two developers overlaps.
 
-| Файл | Что это |
+| File | What it is |
 | --- | --- |
-| `openapi.yaml` | Схема API: эндпоинты, тела запросов и ответов, коды ошибок |
-| `examples/` | Примеры запросов и ответов для каждого эндпоинта |
-| `tools/validate.py` | Проверка: схема корректна, примеры ей соответствуют |
-| `tools/generate_examples.py` | Генератор примеров (синтетические данные, фиксированное зерно) |
+| `openapi.yaml` | API schema: endpoints, request and response bodies, error codes |
+| `examples/` | Example requests and responses for every endpoint |
+| `tools/validate.py` | Check: the schema is valid and the examples match it |
+| `tools/generate_examples.py` | Example generator (synthetic data, fixed seed) |
 
-## Как пользоваться
+## How to use it
 
-**Разработчик A** реализует эндпоинты так, чтобы настоящие ответы проходили проверку по тем же схемам,
-что и примеры.
+**Developer A** implements the endpoints so that real responses pass validation against the same schemas
+as the examples.
 
-**Разработчик B** генерирует типы TypeScript из `openapi.yaml` и строит моки на файлах из `examples/`.
+**Developer B** generates TypeScript types from `openapi.yaml` and builds mocks from the files in `examples/`.
 
-Проверка перед PR:
+Check before a PR:
 
 ```bash
 pip install -r contract/tools/requirements.txt
@@ -27,24 +27,24 @@ pip install -r contract/tools/requirements.txt
 python contract/tools/validate.py
 ```
 
-## Правила изменения
+## Rules for changes
 
-1. Контракт меняется **отдельным маленьким PR**, без кода бэкенда или фронтенда в том же PR.
-2. PR одобряет второй разработчик. Сливаем в тот же час, чтобы никто не работал на старой версии.
-3. **Добавить** необязательное поле или новый эндпоинт можно в любой момент.
-4. **Переименовать, удалить поле или сменить его тип** — только после созвона. В том же PR обновляются примеры.
-5. Примеры правятся через генератор: изменили `generate_examples.py` → запустили его → запустили `validate.py`.
-   Новый файл примера нужно добавить в список в `validate.py`, иначе проверка упадёт.
+1. The contract changes in a **separate small PR**, with no backend or frontend code in the same PR.
+2. The PR is approved by the other developer. Merge it within the hour so nobody works on a stale version.
+3. **Adding** an optional field or a new endpoint is allowed at any time.
+4. **Renaming or removing a field, or changing its type** — only after a call. The examples are updated in the same PR.
+5. Examples are edited through the generator: change `generate_examples.py` → run it → run `validate.py`.
+   A new example file must be added to the list in `validate.py`, otherwise the check fails.
 
-## Соглашения
+## Conventions
 
-- Имена полей в `snake_case`.
-- Даты в ISO 8601 (`YYYY-MM-DD`), время в UTC.
-- Координаты в порядке GeoJSON: сначала долгота, потом широта.
-- Месяцы нумеруются 1–12.
-- Отсутствующее значение — `null`, а не пропуск поля.
-- Ошибки всегда в виде `{"error": {"code": "...", "message": "..."}}`.
-- Область без пожаров — не ошибка: ответ 200 со значениями 0.
-- Тексты для человека (`message`, `label`, `name`, `description`, `limitations`) сервер отдаёт на одном языке.
-  Идентификаторы (`id`, `code`, значения перечислений) стабильны: клиент может показывать по ним
-  собственный перевод, а текст сервера — как запасной вариант.
+- Field names in `snake_case`.
+- Dates in ISO 8601 (`YYYY-MM-DD`), times in UTC.
+- Coordinates in GeoJSON order: longitude first, then latitude.
+- Months are numbered 1–12.
+- A missing value is `null`, not an omitted field.
+- Errors always have the form `{"error": {"code": "...", "message": "..."}}`.
+- An area without fires is not an error: the response is 200 with values of 0.
+- Human-readable texts (`message`, `label`, `name`, `description`, `limitations`) are served in a single language.
+  Identifiers (`id`, `code`, enum values) are stable: a client can show its own translation based on them,
+  using the server text as a fallback.

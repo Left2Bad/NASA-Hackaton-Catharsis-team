@@ -87,7 +87,7 @@
   "warnings": [
     {
       "code": "PRELIMINARY_DATA",
-      "message": "Текущий месяц посчитан по оперативным данным."
+      "message": "The current month is computed from near-real-time data."
     }
   ]
 }

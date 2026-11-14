@@ -1,10 +1,10 @@
-"""Генерирует примеры ответов API в contract/examples/.
+"""Generates example API responses in contract/examples/.
 
-Данные СИНТЕТИЧЕСКИЕ: это правдоподобные числа для макетов и моков фронтенда,
-а не результаты обработки FIRMS. Генератор детерминирован (фиксированное зерно),
-поэтому повторный запуск даёт те же файлы.
+The data is SYNTHETIC: plausible numbers for mock-ups and frontend mocks,
+not the result of processing FIRMS data. The generator is deterministic (fixed seed),
+so re-running it produces the same files.
 
-Запуск из корня репозитория:
+Run from the repository root:
     python contract/tools/generate_examples.py
 """
 
@@ -25,17 +25,17 @@ SEED = 20261114
 UNIT = "viirs_snpp_equivalent_detections"
 DATA_VERSION = "synthetic-example-0.1"
 FIRST_DATE = date(2000, 11, 1)
-LAST_DATE = date(2026, 11, 13)          # последний день с данными в примерах
-LAST_STANDARD_DATE = date(2026, 6, 30)  # позже — оперативные (предварительные) данные
+LAST_DATE = date(2026, 11, 13)          # last day with data in the examples
+LAST_STANDARD_DATE = date(2026, 6, 30)  # later dates are near-real-time (preliminary) data
 BASELINE = (2001, 2025)
 
-# Месяцы сбоев Suomi NPP: как в пайплайне, ряд в них ведёт NOAA-20, а месяц помечен sensor_gap.
+# Suomi NPP outage months: as in the pipeline, NOAA-20 drives the series in them and the month is flagged sensor_gap.
 SNPP_OUTAGES = {(2022, 7), (2022, 8), (2024, 7), (2024, 11)}
 
-# Область из примера запроса: степная зона, две волны горения — весной и в конце лета.
+# Area from the example request: steppe zone, two burning waves - in spring and in late summer.
 AREA = {"west": 61.0, "south": 51.0, "east": 71.0, "north": 55.0}
-SEASON = [5, 8, 60, 520, 780, 210, 260, 640, 720, 240, 40, 6]  # типичный месяц, VIIRS-эквивалент
-K_MODIS = [3.4, 3.4, 4.6, 5.2, 4.8, 4.0, 3.8, 3.9, 4.1, 4.4, 3.6, 3.4]  # точек VIIRS на точку MODIS
+SEASON = [5, 8, 60, 520, 780, 210, 260, 640, 720, 240, 40, 6]  # typical month, VIIRS equivalent
+K_MODIS = [3.4, 3.4, 4.6, 5.2, 4.8, 4.0, 3.8, 3.9, 4.1, 4.4, 3.6, 3.4]  # VIIRS detections per MODIS detection
 
 
 def bbox_polygon(west: float, south: float, east: float, north: float) -> dict:
@@ -61,7 +61,7 @@ def interval(source: str, value: float) -> tuple[float, float]:
 
 
 def quantile(sorted_values: list[float], q: float) -> float:
-    """Квантиль с линейной интерполяцией (как numpy.quantile по умолчанию)."""
+    """Quantile with linear interpolation (like numpy.quantile by default)."""
     if not sorted_values:
         return 0.0
     pos = (len(sorted_values) - 1) * q
@@ -96,14 +96,14 @@ def month_iter():
 
 
 def build_series(rng: random.Random) -> dict[tuple[int, int], float]:
-    """Месячные значения единого ряда: сезонность × «характер года» × шум."""
+    """Monthly values of the unified series: seasonality x "year character" x noise."""
     year_factor = {y: math.exp(rng.gauss(0.0, 0.42)) for y in range(2000, 2027)}
-    year_factor[2010] *= 1.9  # один заметно тяжёлый год — чтобы в макете был виден экстремум
+    year_factor[2010] *= 1.9  # one clearly heavy year, so the mock-up shows an extreme
     values = {}
     for year, month in month_iter():
         value = SEASON[month - 1] * year_factor[year] * math.exp(rng.gauss(0.0, 0.35))
         if (year, month) == (LAST_DATE.year, LAST_DATE.month):
-            value *= LAST_DATE.day / calendar.monthrange(year, month)[1]  # неполный текущий месяц
+            value *= LAST_DATE.day / calendar.monthrange(year, month)[1]  # incomplete current month
         values[(year, month)] = round(value, 1)
     return values
 
@@ -130,7 +130,7 @@ def build_baseline(values: dict) -> list[dict]:
 def raw_values(rng: random.Random, year: int, month: int, value: float) -> dict:
     ym = (year, month)
     modis = round(value / K_MODIS[month - 1] * math.exp(rng.gauss(0.0, 0.08)), 1)
-    outage = 0.6 if ym in SNPP_OUTAGES else 1.0  # в месяц сбоя Suomi NPP видит заметно меньше точек
+    outage = 0.6 if ym in SNPP_OUTAGES else 1.0  # in an outage month Suomi NPP sees noticeably fewer detections
     snpp = round(value * outage * math.exp(rng.gauss(0.0, 0.03)), 1) if (2012, 1) <= ym <= (2026, 10) else None
     n20 = round(value * 1.03 * math.exp(rng.gauss(0.0, 0.03)), 1) if ym >= (2018, 4) else None
     return {"modis": modis, "viirs_snpp": snpp, "viirs_n20": n20}
@@ -160,7 +160,7 @@ def build_calendar(values: dict, baseline: list[dict], series: str, rng: random.
             "sensor_gap": (year, month) in SNPP_OUTAGES,
         }
         if partial:
-            item["anomaly_pct"] = None  # неполный месяц нельзя сравнивать с полной медианой
+            item["anomaly_pct"] = None  # an incomplete month cannot be compared with a full-month median
         if series == "raw":
             item["raw"] = raw_values(rng, year, month, value)
         months.append(item)
@@ -208,11 +208,11 @@ def build_calendar(values: dict, baseline: list[dict], series: str, rng: random.
         "warnings": [
             {
                 "code": "PRELIMINARY_DATA",
-                "message": "Месяцы после 2026-06-30 посчитаны по оперативным данным и будут уточнены.",
+                "message": "Months after 2026-06-30 are computed from near-real-time data and will be refined.",
             },
             {
                 "code": "SENSOR_GAP",
-                "message": "В 4 месяцах Suomi NPP работал с перерывами: значения посчитаны по NOAA-20.",
+                "message": "In 4 months Suomi NPP had outages: values are computed from NOAA-20.",
             },
         ],
     }
@@ -249,7 +249,7 @@ def build_current(rng: random.Random) -> dict:
         "preliminary": True,
         "cumulative": cumulative,
         "warnings": [
-            {"code": "PRELIMINARY_DATA", "message": "Текущий месяц посчитан по оперативным данным."}
+            {"code": "PRELIMINARY_DATA", "message": "The current month is computed from near-real-time data."}
         ],
     }
 
@@ -259,7 +259,7 @@ def build_points(rng: random.Random, year: int, month: int, n: int) -> dict:
     for _ in range(n):
         day = rng.randint(1, calendar.monthrange(year, month)[1])
         night = rng.random() < 0.25
-        hour = rng.choice([20, 21]) if night else rng.choice([7, 8])  # UTC, около 13:30 и 01:30 местного
+        hour = rng.choice([20, 21]) if night else rng.choice([7, 8])  # UTC, around 13:30 and 01:30 local time
         moment = datetime(year, month, day, hour, rng.randint(0, 59), tzinfo=timezone.utc)
         satellite = rng.choice(["T", "A"])
         features.append(
@@ -292,7 +292,7 @@ def build_daily(rng: random.Random, values: dict, year: int) -> dict:
     days = []
     for month in range(1, 13):
         n_days = calendar.monthrange(year, month)[1]
-        weights = [rng.random() ** 3 for _ in range(n_days)]  # горение идёт короткими вспышками
+        weights = [rng.random() ** 3 for _ in range(n_days)]  # burning comes in short flare-ups
         total = sum(weights)
         for day in range(1, n_days + 1):
             days.append(
@@ -307,7 +307,7 @@ def build_daily(rng: random.Random, values: dict, year: int) -> dict:
 
 def build_validation(rng: random.Random) -> dict:
     regions = []
-    presets = [("kz-steppe", "Северный Казахстан", 1.0), ("amazon-south", "Южная Амазония", 6.5), ("california-north", "Северная Калифорния", 0.35)]
+    presets = [("kz-steppe", "Northern Kazakhstan", 1.0), ("amazon-south", "Southern Amazon", 6.5), ("california-north", "Northern California", 0.35)]
     for region_id, name, scale in presets:
         series = []
         for year in range(2021, 2026):
@@ -315,7 +315,7 @@ def build_validation(rng: random.Random) -> dict:
             for month in range(1, 13):
                 viirs = SEASON[month - 1] * scale * year_factor * math.exp(rng.gauss(0.0, 0.3))
                 modis = viirs / K_MODIS[month - 1] * math.exp(rng.gauss(0.0, 0.12))
-                harmonized = modis * K_MODIS[month - 1] * 1.04  # небольшое смещение, как на отложенных годах
+                harmonized = modis * K_MODIS[month - 1] * 1.04  # a small bias, as on the held-out years
                 series.append(
                     {
                         "year": year,
@@ -351,21 +351,21 @@ def build_validation(rng: random.Random) -> dict:
         "seams": [
             {
                 "id": "modis_to_snpp_2012",
-                "label": "Переход MODIS → Suomi NPP, 2009–2011 против 2012–2014",
+                "label": "MODIS → Suomi NPP transition, 2009–2011 vs 2012–2014",
                 "ratio_harmonized": 1.04,
                 "ratio_naive": 4.31,
             },
             {
                 "id": "snpp_to_n20_2026",
-                "label": "Переход Suomi NPP → NOAA-20, проверка на 2024–2025",
+                "label": "Suomi NPP → NOAA-20 transition, checked on 2024–2025",
                 "ratio_harmonized": 1.01,
                 "ratio_naive": 1.03,
             },
         ],
         "limitations": [
-            "Пожары, которые MODIS не увидел совсем, коэффициент не восстанавливает.",
-            "Для областей меньше нескольких ячеек сетки ряд шумный.",
-            "Перерывы в работе спутников выглядят как периоды низкой активности.",
+            "Fires that MODIS missed entirely are not recovered by the coefficient.",
+            "For areas smaller than a few grid cells the series is noisy.",
+            "Satellite outages look like periods of low activity.",
         ],
     }
 
@@ -379,30 +379,30 @@ def build_meta() -> dict:
         "last_date": LAST_DATE.isoformat(),
         "last_standard_date": LAST_STANDARD_DATE.isoformat(),
         "sources": [
-            {"id": "MODIS_T", "label": "MODIS Terra × коэффициент", "start": "2000-11-01", "end": "2002-07-31"},
-            {"id": "MODIS_TA", "label": "MODIS Terra + Aqua × коэффициент", "start": "2002-08-01", "end": "2012-01-31"},
-            {"id": "VIIRS_SNPP", "label": "VIIRS Suomi NPP (эталон)", "start": "2012-02-01", "end": "2026-10-31"},
-            {"id": "VIIRS_N20", "label": "VIIRS NOAA-20 × коэффициент", "start": "2026-11-01", "end": None},
+            {"id": "MODIS_T", "label": "MODIS Terra × coefficient", "start": "2000-11-01", "end": "2002-07-31"},
+            {"id": "MODIS_TA", "label": "MODIS Terra + Aqua × coefficient", "start": "2002-08-01", "end": "2012-01-31"},
+            {"id": "VIIRS_SNPP", "label": "VIIRS Suomi NPP (reference)", "start": "2012-02-01", "end": "2026-10-31"},
+            {"id": "VIIRS_N20", "label": "VIIRS NOAA-20 × coefficient", "start": "2026-11-01", "end": None},
         ],
         "limits": {"max_area_km2": 3000000, "min_cells_warning": 9, "max_export_rows": 500000, "max_points": 20000},
         "coverage": {"global": False, "regions": ["Kazakhstan", "Brazil", "United States"]},
         "presets": [
             {
                 "id": "kz-steppe",
-                "name": "Северный Казахстан",
-                "description": "Степные и сельскохозяйственные палы весной и в конце лета",
+                "name": "Northern Kazakhstan",
+                "description": "Steppe and cropland burning in spring and late summer",
                 "geometry": bbox_polygon(**AREA),
             },
             {
                 "id": "amazon-south",
-                "name": "Южная Амазония",
-                "description": "Сезон выжигания в августе–сентябре",
+                "name": "Southern Amazon",
+                "description": "Burning season in August and September",
                 "geometry": bbox_polygon(-62.0, -13.0, -52.0, -7.0),
             },
             {
                 "id": "california-north",
-                "name": "Северная Калифорния",
-                "description": "Крупные лесные пожары летом и осенью",
+                "name": "Northern California",
+                "description": "Large wildfires in summer and autumn",
                 "geometry": bbox_polygon(-124.0, 38.5, -120.0, 42.0),
             },
         ],
@@ -460,15 +460,15 @@ def main() -> None:
     write_json("method_validation.response.json", build_validation(rng))
     write_json(
         "error_area_too_large.json",
-        {"error": {"code": "AREA_TOO_LARGE", "message": "Площадь области больше 3 000 000 км². Уменьшите область."}},
+        {"error": {"code": "AREA_TOO_LARGE", "message": "The area is larger than 3,000,000 km². Reduce the area."}},
     )
     write_json(
         "error_invalid_geometry.json",
-        {"error": {"code": "INVALID_GEOMETRY", "message": "Полигон не замкнут или пересекает сам себя."}},
+        {"error": {"code": "INVALID_GEOMETRY", "message": "The polygon is not closed or intersects itself."}},
     )
     write_json(
         "error_no_data.json",
-        {"error": {"code": "NO_DATA", "message": "Область находится вне покрытия набора данных."}},
+        {"error": {"code": "NO_DATA", "message": "The area is outside the dataset coverage."}},
     )
 
     write_csv(
@@ -508,7 +508,7 @@ def main() -> None:
             for m in calendar_response["months"]
         ],
     )
-    print(f"Примеры записаны в {EXAMPLES}")
+    print(f"Examples written to {EXAMPLES}")
 
 
 if __name__ == "__main__":

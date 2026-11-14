@@ -1,0 +1,20 @@
+# Владельцы зон. GitHub автоматически запрашивает их ревью в PR.
+#
+# ЧТО СДЕЛАТЬ: замените LOGIN_A и LOGIN_B на свои логины GitHub
+# и уберите решётку в начале строк ниже. Пока строки закомментированы,
+# файл ни на что не влияет.
+
+# Зона разработчика A: данные, гармонизация, бэкенд
+# /pipeline/                      @LOGIN_A
+# /backend/                       @LOGIN_A
+# /docs/methodology.md            @LOGIN_A
+# /.github/workflows/backend.yml  @LOGIN_A
+
+# Зона разработчика B: интерфейс
+# /frontend/                      @LOGIN_B
+# /docs/demo/                     @LOGIN_B
+# /.github/workflows/frontend.yml @LOGIN_B
+
+# Общая зона: правки только отдельным PR с одобрением второго
+# /contract/                      @LOGIN_A @LOGIN_B
+# /README.md                      @LOGIN_A @LOGIN_B

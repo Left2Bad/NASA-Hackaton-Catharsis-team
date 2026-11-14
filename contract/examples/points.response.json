@@ -1,0 +1,247 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          67.5804,
+          53.0476
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-02T08:22:00Z",
+        "sensor": "MODIS",
+        "satellite": "T",
+        "conf_class": "nominal",
+        "frp": 14.7,
+        "daynight": "D",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          64.2004,
+          53.3313
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-02T21:29:00Z",
+        "sensor": "MODIS",
+        "satellite": "T",
+        "conf_class": "high",
+        "frp": 4.8,
+        "daynight": "N",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          68.8466,
+          51.7809
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-04T07:15:00Z",
+        "sensor": "MODIS",
+        "satellite": "A",
+        "conf_class": "nominal",
+        "frp": 35.8,
+        "daynight": "D",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          67.3036,
+          52.7663
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-04T08:55:00Z",
+        "sensor": "MODIS",
+        "satellite": "T",
+        "conf_class": "high",
+        "frp": 201.5,
+        "daynight": "D",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          64.5285,
+          52.3709
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-09T08:17:00Z",
+        "sensor": "MODIS",
+        "satellite": "T",
+        "conf_class": "nominal",
+        "frp": 7.1,
+        "daynight": "D",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          63.407,
+          52.3929
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-10T08:41:00Z",
+        "sensor": "MODIS",
+        "satellite": "A",
+        "conf_class": "nominal",
+        "frp": 30.4,
+        "daynight": "D",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          65.2132,
+          52.7388
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-13T07:34:00Z",
+        "sensor": "MODIS",
+        "satellite": "A",
+        "conf_class": "nominal",
+        "frp": 15.4,
+        "daynight": "D",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          68.9798,
+          52.8279
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-15T08:34:00Z",
+        "sensor": "MODIS",
+        "satellite": "T",
+        "conf_class": "nominal",
+        "frp": 7.4,
+        "daynight": "D",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          66.6221,
+          53.103
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-17T07:37:00Z",
+        "sensor": "MODIS",
+        "satellite": "T",
+        "conf_class": "nominal",
+        "frp": 18.9,
+        "daynight": "D",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          63.1827,
+          51.4119
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-17T08:35:00Z",
+        "sensor": "MODIS",
+        "satellite": "T",
+        "conf_class": "high",
+        "frp": 16.6,
+        "daynight": "D",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          64.0693,
+          52.8147
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-20T08:17:00Z",
+        "sensor": "MODIS",
+        "satellite": "T",
+        "conf_class": "high",
+        "frp": 15.3,
+        "daynight": "D",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          68.2217,
+          53.7057
+        ]
+      },
+      "properties": {
+        "acq_datetime": "2010-08-23T21:49:00Z",
+        "sensor": "MODIS",
+        "satellite": "T",
+        "conf_class": "nominal",
+        "frp": 41.2,
+        "daynight": "N",
+        "quality": "SP",
+        "harmonized_weight": 3.9
+      }
+    }
+  ],
+  "total": 12,
+  "truncated": false
+}

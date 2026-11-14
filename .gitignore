@@ -1,0 +1,42 @@
+# --- Данные и секреты: никогда не попадают в git ---
+data/*
+!data/README.md
+.env
+.env.*
+!.env.example
+
+# --- Python (pipeline/, backend/, contract/tools/) ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+build/
+dist/
+.ipynb_checkpoints/
+
+# --- Фронтенд (frontend/) ---
+node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+*.tsbuildinfo
+
+# --- Локальные базы и крупные файлы ---
+*.duckdb
+*.duckdb.wal
+*.parquet
+*.zip
+
+# --- Редакторы и ОС ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log

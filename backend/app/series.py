@@ -16,11 +16,9 @@ def _joined(data: Data, table: str, time_col: str, area: Area, start: dt.date, e
     coalesced = ", ".join(f"coalesce(w.{w}, {g}) AS {w}" for w, g in zip(WEIGHTS, data.global_coef, strict=True))
     return f"""
       SELECT g.*, {coalesced}
-      FROM {table} g
+      FROM {area.cell_scan_sql(table, f"{time_col} BETWEEN DATE '{start}' AND DATE '{end}'")} g
       JOIN cells c ON g.iy = c.iy AND g.ix = c.ix
-      LEFT JOIN coef w ON w.cy = g.iy // 10 AND w.cx = g.ix // 10
-      WHERE g.iy BETWEEN {int(area.iy.min())} AND {int(area.iy.max())}
-        AND g.{time_col} BETWEEN DATE '{start}' AND DATE '{end}'"""
+      LEFT JOIN coef w ON w.cy = g.iy // 10 AND w.cx = g.ix // 10"""
 
 
 def query(

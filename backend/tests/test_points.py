@@ -6,12 +6,11 @@ import io
 
 import duckdb
 import pytest
-from conftest import LAST, assert_schema, box, make_data
+from conftest import LAST, assert_schema, box, make_data, settings_for
 from fastapi.testclient import TestClient
 
 from app import geometry, points_service
 from app.main import create_app
-from app.settings import Settings
 
 API = "/api/v1"
 AREA = box(10.0, 20.0, 11.0, 21.0)  # one 1-degree coefficient cell: count_t 4, count_ta 2, count_n20 1
@@ -45,6 +44,13 @@ FILES = {
     "viirs-snpp_2021": [viirs(20.05 + i / 20, 10.5, "2021-08-10", 100 + i, "viirs-snpp", frp=i) for i in range(1, 11)],
     "viirs-snpp_2022": [viirs(20.5, 10.5, "2022-08-03", 100, "viirs-snpp")],  # S-NPP outage month: NOAA-20 leads
     "viirs-jpss1_2022": [viirs(20.5, 10.6, "2022-08-03", 150, "viirs-jpss1", quality="NRT")],
+    # points exactly on the east edge (lon 11.0) and the north edge (lat 21.0) of AREA: they belong to the
+    # neighbouring grid cells (floor rule), so to the neighbouring areas
+    "viirs-snpp_2023": [
+        viirs(20.5, 11.0, "2023-03-05", 100, "viirs-snpp"),
+        viirs(21.0, 10.5, "2023-03-05", 101, "viirs-snpp"),
+        viirs(20.5, 10.5, "2023-03-05", 102, "viirs-snpp"),
+    ],
 }
 
 
@@ -68,7 +74,7 @@ def client(tmp_path_factory):
         FROM read_parquet('{serve.as_posix()}/*.parquet') WHERE type = 0 AND conf_class <> 'l' GROUP BY ALL
         UNION ALL SELECT 0, 0, DATE '{LAST}', 0, 0, 0, 0, 0, 0, 0, 0
         ORDER BY iy, ix, date) TO '{(data / "grid_daily.parquet").as_posix()}'""")
-    settings = Settings(data_dir=data, max_points=5, max_export_rows=8)
+    settings = settings_for(data, max_points=5, max_export_rows=8)
     with TestClient(create_app(settings)) as c:
         yield c
 
@@ -200,3 +206,59 @@ def test_grid_lower_bound(client):
     area = geometry.parse(tri, data.settings.max_area_km2)  # no cell lies wholly inside
     assert points_service.grid_lower_bound(cur, data, area, *aug) == 0
     cur.close()
+
+
+def test_polygon_total_is_exact_and_keeps_strongest(client):
+    # streamed polygon path: 9 of the 10 points of 2021-08 are inside the triangle, the 5 strongest are returned
+    tri = {"type": "Polygon", "coordinates": [[[10.0, 20.0], [11.0, 20.0], [10.0, 21.0], [10.0, 20.0]]]}
+    fc = post_points(client, 2021, 8, tri)
+    assert fc["total"] == 9 and fc["truncated"] is True
+    assert sorted(x["frp"] for x in props(fc)) == [5.0, 6.0, 7.0, 8.0, 9.0]
+    assert [x["acq_datetime"] for x in props(fc)] == sorted(x["acq_datetime"] for x in props(fc))
+    # the same request twice gives the same answer
+    assert post_points(client, 2021, 8, tri) == fc
+
+
+def test_multipolygon_parts_far_apart(client):
+    far = {
+        "type": "MultiPolygon",
+        "coordinates": [AREA["coordinates"], box(-170.0, -60.0, -169.0, -59.0)["coordinates"]],
+    }
+    assert post_points(client, 2021, 8, far)["total"] == 10
+
+
+def test_border_points_belong_to_one_area(client):
+    assert post_points(client, 2023, 3)["total"] == 1  # only the interior point
+    assert post_points(client, 2023, 3, box(11.0, 20.0, 12.0, 21.0))["total"] == 1  # east neighbour
+    assert post_points(client, 2023, 3, box(10.0, 21.0, 11.0, 22.0))["total"] == 1  # north neighbour
+    # the export of AREA sums to the daily value of AREA (grid_daily here is built from these points)
+    rows = list(csv.DictReader(io.StringIO(export(client, "2023-03-01", "2023-03-31").text)))
+    daily = client.post(f"{API}/daily", json={"geometry": AREA, "year": 2023}).json()
+    day = next(d for d in daily["days"] if d["date"] == "2023-03-05")
+    assert len(rows) == 1 and float(rows[0]["harmonized_weight"]) == day["value"] == 1.0
+
+
+def test_export_order_is_total_and_stable(client):
+    a = export(client, "2010-08-01", "2015-12-31")
+    b = export(client, "2010-08-01", "2015-12-31")
+    assert a.status_code == 200 and a.content == b.content
+    rows = list(csv.DictReader(io.StringIO(a.text)))
+    keys = [(r["acq_datetime"], float(r["lat"]), float(r["lon"])) for r in rows]
+    assert keys == sorted(keys)
+
+
+def test_export_failure_after_validation_is_an_error_not_a_cut_file(client, monkeypatch):
+    real = points_service._batches
+
+    def failing(cur, sql, rows):
+        if "ORDER BY" in sql:
+            raise RuntimeError("Out of Memory Error: could not allocate block")
+        return real(cur, sql, rows)
+
+    monkeypatch.setattr(points_service, "_batches", failing)
+    with TestClient(client.app, raise_server_exceptions=False) as c:
+        r = c.post(
+            f"{API}/export/points.csv", json={"geometry": AREA, "start_date": "2010-08-01", "end_date": "2010-08-31"}
+        )
+    assert r.status_code == 500 and r.headers["content-type"].startswith("application/json")
+    assert r.json() == {"error": {"code": "INTERNAL", "message": "Internal server error"}}

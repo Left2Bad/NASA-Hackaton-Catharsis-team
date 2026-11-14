@@ -345,6 +345,51 @@ describe('now panel (F15)', () => {
   });
 });
 
+describe('charts under the calendar (F17, F18)', () => {
+  it('draws the season profile and the yearly totals from the loaded calendar', async () => {
+    const user = userEvent.setup();
+    const bodies = recordCalendarRequests();
+    renderApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+
+    const season = await screen.findByRole('region', { name: 'Season profile' });
+    expect(within(season).getByLabelText('Year over the typical season')).toHaveValue(
+      String(LAST_YEAR),
+    );
+    const yearly = screen.getByRole('region', { name: 'Yearly totals' });
+    expect(within(yearly).getByTestId('yearly-readout')).toHaveTextContent('Total');
+
+    // Choosing another year re-reads the same response: no new request.
+    await user.selectOptions(within(season).getByLabelText('Year over the typical season'), '2010');
+    expect(within(season).getByTestId('season-readout')).toHaveTextContent('2010 4,120.6');
+    expect(bodies).toHaveLength(1);
+  });
+
+  it('follows the chosen period', async () => {
+    const user = userEvent.setup();
+    const { container } = renderApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+    await screen.findByRole('region', { name: 'Yearly totals' });
+
+    const period = screen.getByRole('group', { name: 'Period' });
+    await user.selectOptions(within(period).getByLabelText('From'), '2010');
+    await user.selectOptions(within(period).getByLabelText('to'), '2012');
+    await screen.findByRole('grid', { name: /^Fire detections by month, 2010 to 2012/ });
+
+    expect(container.querySelectorAll('path[data-year]')).toHaveLength(3);
+    const season = screen.getByRole('region', { name: 'Season profile' });
+    expect(
+      within(within(season).getByLabelText('Year over the typical season')).getAllByRole('option'),
+    ).toHaveLength(3);
+    // Three complete years are too few for a trend.
+    expect(
+      screen.getByText('There are too few complete years in this period to fit a trend.'),
+    ).toBeInTheDocument();
+  });
+});
+
 describe('coordinates (F2)', () => {
   it('sets the area from typed bounds and closes the form', async () => {
     const user = userEvent.setup();

@@ -115,6 +115,25 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` 
   An area without fires gets dashes and a sentence that says so.
 - **Wording** of the panel lives in `src/now/describe.ts`, the chart geometry in `src/now/chart.ts`.
 
+## Season profile and yearly totals
+
+- **Season profile (F17)** (`src/components/SeasonProfile.tsx`): the median of every calendar month
+  as a dashed line, the 10th to 90th percentile as a gray band, and one chosen year as a solid line
+  over them. The year is picked from a list in the caption; the newest year is the default. A month
+  that is not over yet is drawn as a ring instead of a dot.
+- **Yearly totals (F18)** (`src/components/YearlyTotals.tsx`): a bar per year and the trend line from
+  `calendar.summary.trend_line`. Incomplete years (the first and the current one) are hatched and
+  take no part in the trend. With too few complete years there is no line, and a note says why.
+- **No new request:** both charts are cut from the calendar response that is already loaded
+  (`src/calendar/series.ts`), so they follow the chosen period and choosing a year is instant.
+- **Reading a value:** every chart has a readout above the plot. It shows one position by default
+  (the busiest month of the year, the latest complete year), the one under the pointer on hover,
+  and the one chosen with the arrow keys on focus (Home and End jump to the ends). A hidden table
+  holds the same numbers for screen readers.
+- **Shared parts:** `src/charts/scale.ts` (round value axis, tick format, line path),
+  `src/charts/useCursor.ts` (pointer and keyboard position) and `src/components/Chart.module.css`
+  are used by all three charts, including the one in the "Now" panel.
+
 ## Area and period controls
 
 - **Coordinates (F2):** the "Enter coordinates" button opens a form with two ways to set the area:

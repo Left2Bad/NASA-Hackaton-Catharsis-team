@@ -34,3 +34,5 @@ The `screenshots/` folder. File names start with the task a screenshot belongs t
 | `b8-now-summary-laptop.jpg` | The summary of four numbers and the "Now" panel: level, level strip, cumulative chart |
 | `b8-now-chart-hover.jpg` | The cumulative chart with a day picked by the pointer |
 | `b8-now-summary-phone.jpg` | The summary and the "Now" panel on a phone |
+| `b9-season-yearly-laptop.jpg` | The season profile with the year 2010 over the typical season, and the yearly totals with the trend line |
+| `b9-season-yearly-phone.jpg` | The same two charts on a phone |

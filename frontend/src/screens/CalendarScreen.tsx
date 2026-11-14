@@ -8,7 +8,9 @@ import { CoordinateForm } from '../components/CoordinateForm';
 import { ErrorNote } from '../components/ErrorNote';
 import { NowPanel } from '../components/NowPanel';
 import { PeriodSelect, type Period } from '../components/PeriodSelect';
+import { SeasonProfile } from '../components/SeasonProfile';
 import { SummaryFacts } from '../components/SummaryFacts';
+import { YearlyTotals } from '../components/YearlyTotals';
 import { boundsOf, formatBounds } from '../geo/geometry';
 import { areaKm2 } from '../geo/shapes';
 import { formatNumber, presetLabel, WARNING_LABELS } from '../labels';
@@ -24,11 +26,7 @@ interface Area {
   presetId: string | null;
 }
 
-const PLANNED = [
-  'Season profile: the monthly median with its 10th to 90th percentile band',
-  'Yearly totals with a trend line',
-  'Downloads: hot spots as CSV, the calendar as CSV, charts as PNG',
-];
+const PLANNED = ['Downloads: hot spots as CSV, the calendar as CSV, charts as PNG'];
 
 /** Shown before any area is chosen: tells the user how to start. */
 function StartPrompt() {
@@ -126,6 +124,20 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
           {current.isError && <ErrorNote error={current.error} />}
           {current.data && <NowPanel current={current.data} />}
         </section>
+      )}
+
+      {calendar.data && (
+        <>
+          <section className={styles.section} aria-labelledby="season-heading">
+            <h2 id="season-heading">Season profile</h2>
+            <SeasonProfile calendar={calendar.data} />
+          </section>
+
+          <section className={styles.section} aria-labelledby="yearly-heading">
+            <h2 id="yearly-heading">Yearly totals</h2>
+            <YearlyTotals calendar={calendar.data} />
+          </section>
+        </>
       )}
 
       <section className={styles.section} aria-labelledby="planned-heading">

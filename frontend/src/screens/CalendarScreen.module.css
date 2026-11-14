@@ -74,6 +74,21 @@
   background: var(--surface);
 }
 
+.start {
+  max-width: 46ch;
+  padding-block: var(--space-5);
+}
+
+.start h1 {
+  font-size: var(--text-xl);
+  letter-spacing: -0.02em;
+}
+
+.start p {
+  margin-top: var(--space-3);
+  color: var(--ink-2);
+}
+
 .areaHeader h1 {
   font-size: var(--text-xl);
   letter-spacing: -0.02em;

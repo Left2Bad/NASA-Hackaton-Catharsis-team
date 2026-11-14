@@ -31,7 +31,7 @@
   position: absolute;
   bottom: var(--space-3);
   left: var(--space-3);
-  max-width: min(34ch, calc(100% - 2 * var(--space-3)));
+  max-width: min(36ch, calc(100% - 2 * var(--space-3)));
   padding: var(--space-2) var(--space-3);
   color: var(--ink-2);
   font-size: var(--text-xs);

@@ -23,6 +23,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 9.7,
         "viirs_snpp": null,
@@ -42,6 +43,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 7.5,
         "viirs_snpp": null,
@@ -61,6 +63,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.5,
         "viirs_snpp": null,
@@ -80,6 +83,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.7,
         "viirs_snpp": null,
@@ -99,6 +103,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 18.8,
         "viirs_snpp": null,
@@ -118,6 +123,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 105.0,
         "viirs_snpp": null,
@@ -137,6 +143,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 139.3,
         "viirs_snpp": null,
@@ -156,6 +163,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 81.9,
         "viirs_snpp": null,
@@ -175,6 +183,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 70.3,
         "viirs_snpp": null,
@@ -194,6 +203,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 242.4,
         "viirs_snpp": null,
@@ -213,6 +223,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 230.3,
         "viirs_snpp": null,
@@ -232,6 +243,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 83.5,
         "viirs_snpp": null,
@@ -251,6 +263,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 16.1,
         "viirs_snpp": null,
@@ -270,6 +283,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.5,
         "viirs_snpp": null,
@@ -289,6 +303,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.2,
         "viirs_snpp": null,
@@ -308,6 +323,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 5.0,
         "viirs_snpp": null,
@@ -327,6 +343,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 18.6,
         "viirs_snpp": null,
@@ -346,6 +363,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 189.7,
         "viirs_snpp": null,
@@ -365,6 +383,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 197.7,
         "viirs_snpp": null,
@@ -384,6 +403,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 112.6,
         "viirs_snpp": null,
@@ -403,6 +423,7 @@
       "source": "MODIS_T",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 177.1,
         "viirs_snpp": null,
@@ -422,6 +443,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 268.6,
         "viirs_snpp": null,
@@ -441,6 +463,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 207.4,
         "viirs_snpp": null,
@@ -460,6 +483,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 126.2,
         "viirs_snpp": null,
@@ -479,6 +503,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 20.8,
         "viirs_snpp": null,
@@ -498,6 +523,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.0,
         "viirs_snpp": null,
@@ -517,6 +543,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.2,
         "viirs_snpp": null,
@@ -536,6 +563,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.1,
         "viirs_snpp": null,
@@ -555,6 +583,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 6.6,
         "viirs_snpp": null,
@@ -574,6 +603,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 67.1,
         "viirs_snpp": null,
@@ -593,6 +623,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 149.3,
         "viirs_snpp": null,
@@ -612,6 +643,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 44.7,
         "viirs_snpp": null,
@@ -631,6 +663,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 29.0,
         "viirs_snpp": null,
@@ -650,6 +683,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 410.3,
         "viirs_snpp": null,
@@ -669,6 +703,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 107.7,
         "viirs_snpp": null,
@@ -688,6 +723,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 39.1,
         "viirs_snpp": null,
@@ -707,6 +743,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 8.9,
         "viirs_snpp": null,
@@ -726,6 +763,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.3,
         "viirs_snpp": null,
@@ -745,6 +783,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.7,
         "viirs_snpp": null,
@@ -764,6 +803,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.3,
         "viirs_snpp": null,
@@ -783,6 +823,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 9.7,
         "viirs_snpp": null,
@@ -802,6 +843,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 103.6,
         "viirs_snpp": null,
@@ -821,6 +863,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 119.9,
         "viirs_snpp": null,
@@ -840,6 +883,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 49.3,
         "viirs_snpp": null,
@@ -859,6 +903,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 52.0,
         "viirs_snpp": null,
@@ -878,6 +923,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 181.2,
         "viirs_snpp": null,
@@ -897,6 +943,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 360.7,
         "viirs_snpp": null,
@@ -916,6 +963,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 41.5,
         "viirs_snpp": null,
@@ -935,6 +983,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 12.6,
         "viirs_snpp": null,
@@ -954,6 +1003,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.8,
         "viirs_snpp": null,
@@ -973,6 +1023,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.4,
         "viirs_snpp": null,
@@ -992,6 +1043,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 3.1,
         "viirs_snpp": null,
@@ -1011,6 +1063,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 9.3,
         "viirs_snpp": null,
@@ -1030,6 +1083,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 94.0,
         "viirs_snpp": null,
@@ -1049,6 +1103,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 112.8,
         "viirs_snpp": null,
@@ -1068,6 +1123,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 70.4,
         "viirs_snpp": null,
@@ -1087,6 +1143,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 49.6,
         "viirs_snpp": null,
@@ -1106,6 +1163,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 212.4,
         "viirs_snpp": null,
@@ -1125,6 +1183,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 179.0,
         "viirs_snpp": null,
@@ -1144,6 +1203,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 88.3,
         "viirs_snpp": null,
@@ -1163,6 +1223,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 12.6,
         "viirs_snpp": null,
@@ -1182,6 +1243,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.0,
         "viirs_snpp": null,
@@ -1201,6 +1263,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.1,
         "viirs_snpp": null,
@@ -1220,6 +1283,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.7,
         "viirs_snpp": null,
@@ -1239,6 +1303,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 12.7,
         "viirs_snpp": null,
@@ -1258,6 +1323,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 67.7,
         "viirs_snpp": null,
@@ -1277,6 +1343,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 241.1,
         "viirs_snpp": null,
@@ -1296,6 +1363,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 47.4,
         "viirs_snpp": null,
@@ -1315,6 +1383,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 50.5,
         "viirs_snpp": null,
@@ -1334,6 +1403,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 226.0,
         "viirs_snpp": null,
@@ -1353,6 +1423,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 210.4,
         "viirs_snpp": null,
@@ -1372,6 +1443,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 73.0,
         "viirs_snpp": null,
@@ -1391,6 +1463,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 8.9,
         "viirs_snpp": null,
@@ -1410,6 +1483,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.2,
         "viirs_snpp": null,
@@ -1429,6 +1503,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 0.7,
         "viirs_snpp": null,
@@ -1448,6 +1523,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.2,
         "viirs_snpp": null,
@@ -1467,6 +1543,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 6.8,
         "viirs_snpp": null,
@@ -1486,6 +1563,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 73.7,
         "viirs_snpp": null,
@@ -1505,6 +1583,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 224.8,
         "viirs_snpp": null,
@@ -1524,6 +1603,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 38.3,
         "viirs_snpp": null,
@@ -1543,6 +1623,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 32.5,
         "viirs_snpp": null,
@@ -1562,6 +1643,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 135.8,
         "viirs_snpp": null,
@@ -1581,6 +1663,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 121.9,
         "viirs_snpp": null,
@@ -1600,6 +1683,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 44.1,
         "viirs_snpp": null,
@@ -1619,6 +1703,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 7.5,
         "viirs_snpp": null,
@@ -1638,6 +1723,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.1,
         "viirs_snpp": null,
@@ -1657,6 +1743,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.5,
         "viirs_snpp": null,
@@ -1676,6 +1763,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 3.4,
         "viirs_snpp": null,
@@ -1695,6 +1783,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 14.8,
         "viirs_snpp": null,
@@ -1714,6 +1803,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 218.6,
         "viirs_snpp": null,
@@ -1733,6 +1823,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 130.1,
         "viirs_snpp": null,
@@ -1752,6 +1843,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 63.3,
         "viirs_snpp": null,
@@ -1771,6 +1863,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 180.7,
         "viirs_snpp": null,
@@ -1790,6 +1883,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 306.3,
         "viirs_snpp": null,
@@ -1809,6 +1903,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 291.0,
         "viirs_snpp": null,
@@ -1828,6 +1923,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 40.8,
         "viirs_snpp": null,
@@ -1847,6 +1943,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 17.4,
         "viirs_snpp": null,
@@ -1866,6 +1963,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.0,
         "viirs_snpp": null,
@@ -1885,6 +1983,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.0,
         "viirs_snpp": null,
@@ -1904,6 +2003,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.7,
         "viirs_snpp": null,
@@ -1923,6 +2023,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 13.2,
         "viirs_snpp": null,
@@ -1942,6 +2043,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 83.7,
         "viirs_snpp": null,
@@ -1961,6 +2063,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 214.6,
         "viirs_snpp": null,
@@ -1980,6 +2083,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 70.7,
         "viirs_snpp": null,
@@ -1999,6 +2103,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 71.0,
         "viirs_snpp": null,
@@ -2018,6 +2123,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 81.2,
         "viirs_snpp": null,
@@ -2037,6 +2143,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 124.4,
         "viirs_snpp": null,
@@ -2056,6 +2163,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 46.7,
         "viirs_snpp": null,
@@ -2075,6 +2183,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 7.4,
         "viirs_snpp": null,
@@ -2094,6 +2203,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.5,
         "viirs_snpp": null,
@@ -2113,6 +2223,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 7.1,
         "viirs_snpp": null,
@@ -2132,6 +2243,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 7.3,
         "viirs_snpp": null,
@@ -2151,6 +2263,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 46.9,
         "viirs_snpp": null,
@@ -2170,6 +2283,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 287.4,
         "viirs_snpp": null,
@@ -2189,6 +2303,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 862.0,
         "viirs_snpp": null,
@@ -2208,6 +2323,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 171.6,
         "viirs_snpp": null,
@@ -2227,6 +2343,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 203.6,
         "viirs_snpp": null,
@@ -2246,6 +2363,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 638.4,
         "viirs_snpp": null,
@@ -2265,6 +2383,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 541.7,
         "viirs_snpp": null,
@@ -2284,6 +2403,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 149.1,
         "viirs_snpp": null,
@@ -2303,6 +2423,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 47.2,
         "viirs_snpp": null,
@@ -2322,6 +2443,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 3.0,
         "viirs_snpp": null,
@@ -2341,6 +2463,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 0.8,
         "viirs_snpp": null,
@@ -2360,6 +2483,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.4,
         "viirs_snpp": null,
@@ -2379,6 +2503,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 6.5,
         "viirs_snpp": null,
@@ -2398,6 +2523,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 114.7,
         "viirs_snpp": null,
@@ -2417,6 +2543,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 108.5,
         "viirs_snpp": null,
@@ -2436,6 +2563,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 22.8,
         "viirs_snpp": null,
@@ -2455,6 +2583,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 40.8,
         "viirs_snpp": null,
@@ -2474,6 +2603,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 77.3,
         "viirs_snpp": null,
@@ -2493,6 +2623,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 153.9,
         "viirs_snpp": null,
@@ -2512,6 +2643,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 20.2,
         "viirs_snpp": null,
@@ -2531,6 +2663,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 4.6,
         "viirs_snpp": null,
@@ -2550,6 +2683,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 0.9,
         "viirs_snpp": null,
@@ -2569,6 +2703,7 @@
       "source": "MODIS_TA",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.3,
         "viirs_snpp": 4.5,
@@ -2588,6 +2723,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.4,
         "viirs_snpp": 5.1,
@@ -2607,6 +2743,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 13.2,
         "viirs_snpp": 64.7,
@@ -2626,6 +2763,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 58.7,
         "viirs_snpp": 302.3,
@@ -2645,6 +2783,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 70.2,
         "viirs_snpp": 352.1,
@@ -2664,6 +2803,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 25.4,
         "viirs_snpp": 101.7,
@@ -2683,6 +2823,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 48.2,
         "viirs_snpp": 226.6,
@@ -2702,6 +2843,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 162.7,
         "viirs_snpp": 659.9,
@@ -2721,6 +2863,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 85.7,
         "viirs_snpp": 424.5,
@@ -2740,6 +2883,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 29.3,
         "viirs_snpp": 146.4,
@@ -2759,6 +2903,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 9.2,
         "viirs_snpp": 33.2,
@@ -2778,6 +2923,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.5,
         "viirs_snpp": 5.5,
@@ -2797,6 +2943,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.8,
         "viirs_snpp": 5.8,
@@ -2816,6 +2963,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.1,
         "viirs_snpp": 3.6,
@@ -2835,6 +2983,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 6.2,
         "viirs_snpp": 26.2,
@@ -2854,6 +3003,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 45.8,
         "viirs_snpp": 193.2,
@@ -2873,6 +3023,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 120.9,
         "viirs_snpp": 619.2,
@@ -2892,6 +3043,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 24.0,
         "viirs_snpp": 96.1,
@@ -2911,6 +3063,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 36.1,
         "viirs_snpp": 125.8,
@@ -2930,6 +3083,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 85.1,
         "viirs_snpp": 289.7,
@@ -2949,6 +3103,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 137.8,
         "viirs_snpp": 570.2,
@@ -2968,6 +3123,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 50.8,
         "viirs_snpp": 210.7,
@@ -2987,6 +3143,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 7.5,
         "viirs_snpp": 26.2,
@@ -3006,6 +3163,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 0.8,
         "viirs_snpp": 2.7,
@@ -3025,6 +3183,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.7,
         "viirs_snpp": 5.7,
@@ -3044,6 +3203,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.2,
         "viirs_snpp": 6.8,
@@ -3063,6 +3223,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 10.6,
         "viirs_snpp": 51.4,
@@ -3082,6 +3243,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 57.7,
         "viirs_snpp": 340.3,
@@ -3101,6 +3263,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 110.9,
         "viirs_snpp": 579.6,
@@ -3120,6 +3283,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 32.4,
         "viirs_snpp": 132.7,
@@ -3139,6 +3303,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 41.3,
         "viirs_snpp": 159.0,
@@ -3158,6 +3323,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 139.0,
         "viirs_snpp": 568.0,
@@ -3177,6 +3343,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 85.9,
         "viirs_snpp": 368.5,
@@ -3196,6 +3363,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 53.9,
         "viirs_snpp": 258.4,
@@ -3215,6 +3383,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 9.7,
         "viirs_snpp": 39.0,
@@ -3234,6 +3403,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.6,
         "viirs_snpp": 9.5,
@@ -3253,6 +3423,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.8,
         "viirs_snpp": 6.4,
@@ -3272,6 +3443,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.7,
         "viirs_snpp": 8.9,
@@ -3291,6 +3463,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 26.9,
         "viirs_snpp": 124.1,
@@ -3310,6 +3483,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 152.8,
         "viirs_snpp": 831.0,
@@ -3329,6 +3503,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 232.2,
         "viirs_snpp": 1104.2,
@@ -3348,6 +3523,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 31.3,
         "viirs_snpp": 134.9,
@@ -3367,6 +3543,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 146.6,
         "viirs_snpp": 575.3,
@@ -3386,6 +3563,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 176.5,
         "viirs_snpp": 643.8,
@@ -3405,6 +3583,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 355.4,
         "viirs_snpp": 1446.5,
@@ -3424,6 +3603,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 94.4,
         "viirs_snpp": 400.7,
@@ -3443,6 +3623,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 9.6,
         "viirs_snpp": 39.7,
@@ -3462,6 +3643,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.3,
         "viirs_snpp": 7.9,
@@ -3481,6 +3663,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.5,
         "viirs_snpp": 5.6,
@@ -3500,6 +3683,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.4,
         "viirs_snpp": 8.2,
@@ -3519,6 +3703,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 16.7,
         "viirs_snpp": 74.0,
@@ -3538,6 +3723,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 113.5,
         "viirs_snpp": 539.3,
@@ -3557,6 +3743,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 128.2,
         "viirs_snpp": 609.9,
@@ -3576,6 +3763,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 87.0,
         "viirs_snpp": 355.9,
@@ -3595,6 +3783,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 80.0,
         "viirs_snpp": 352.6,
@@ -3614,6 +3803,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 251.6,
         "viirs_snpp": 1007.0,
@@ -3633,6 +3823,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 88.1,
         "viirs_snpp": 406.1,
@@ -3652,6 +3843,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 76.8,
         "viirs_snpp": 344.7,
@@ -3671,6 +3863,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 13.8,
         "viirs_snpp": 48.6,
@@ -3690,6 +3883,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.5,
         "viirs_snpp": 4.6,
@@ -3709,6 +3903,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 3.5,
         "viirs_snpp": 12.1,
@@ -3728,6 +3923,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.4,
         "viirs_snpp": 7.7,
@@ -3747,6 +3943,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 12.9,
         "viirs_snpp": 57.4,
@@ -3766,6 +3963,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 119.5,
         "viirs_snpp": 517.2,
@@ -3785,6 +3983,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 263.3,
         "viirs_snpp": 1239.3,
@@ -3804,6 +4003,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 80.8,
         "viirs_snpp": 340.2,
@@ -3823,6 +4023,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 109.0,
         "viirs_snpp": 391.3,
@@ -3842,6 +4043,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 400.6,
         "viirs_snpp": 1590.8,
@@ -3861,6 +4063,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 321.6,
         "viirs_snpp": 1370.3,
@@ -3880,6 +4083,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 31.9,
         "viirs_snpp": 167.0,
@@ -3899,6 +4103,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 16.9,
         "viirs_snpp": 59.8,
@@ -3918,6 +4123,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.5,
         "viirs_snpp": 5.6,
@@ -3937,6 +4143,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.8,
         "viirs_snpp": 10.7,
@@ -3956,6 +4163,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 6.2,
         "viirs_snpp": 20.4,
@@ -3975,6 +4183,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 20.0,
         "viirs_snpp": 83.8,
@@ -3994,6 +4203,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 168.1,
         "viirs_snpp": 872.5,
@@ -4013,6 +4223,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 183.6,
         "viirs_snpp": 759.7,
@@ -4032,6 +4243,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 94.7,
         "viirs_snpp": 370.0,
@@ -4051,6 +4263,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 174.1,
         "viirs_snpp": 673.8,
@@ -4070,6 +4283,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 632.8,
         "viirs_snpp": 2453.1,
@@ -4089,6 +4303,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 267.8,
         "viirs_snpp": 1051.3,
@@ -4108,6 +4323,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 106.5,
         "viirs_snpp": 496.9,
@@ -4127,6 +4343,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 14.5,
         "viirs_snpp": 55.9,
@@ -4146,6 +4363,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 3.2,
         "viirs_snpp": 11.3,
@@ -4165,6 +4383,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 0.9,
         "viirs_snpp": 3.4,
@@ -4184,6 +4403,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.0,
         "viirs_snpp": 6.3,
@@ -4203,6 +4423,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 19.3,
         "viirs_snpp": 92.4,
@@ -4222,6 +4443,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 48.9,
         "viirs_snpp": 241.2,
@@ -4241,6 +4463,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 152.6,
         "viirs_snpp": 821.1,
@@ -4260,6 +4483,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 33.3,
         "viirs_snpp": 135.2,
@@ -4279,6 +4503,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 90.5,
         "viirs_snpp": 317.5,
@@ -4298,6 +4523,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 111.3,
         "viirs_snpp": 502.9,
@@ -4317,6 +4543,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 209.9,
         "viirs_snpp": 763.6,
@@ -4336,6 +4563,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 38.1,
         "viirs_snpp": 164.3,
@@ -4355,6 +4583,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 6.4,
         "viirs_snpp": 21.5,
@@ -4374,6 +4603,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.4,
         "viirs_snpp": 4.2,
@@ -4393,6 +4623,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.8,
         "viirs_snpp": 6.5,
@@ -4412,6 +4643,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 9.4,
         "viirs_snpp": 28.8,
@@ -4431,6 +4663,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 19.3,
         "viirs_snpp": 89.6,
@@ -4450,6 +4683,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 249.7,
         "viirs_snpp": 1371.0,
@@ -4469,6 +4703,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 357.6,
         "viirs_snpp": 1449.7,
@@ -4488,6 +4723,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 98.7,
         "viirs_snpp": 396.1,
@@ -4507,6 +4743,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 139.9,
         "viirs_snpp": 558.8,
@@ -4526,6 +4763,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 300.7,
         "viirs_snpp": 1291.6,
@@ -4545,6 +4783,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 267.2,
         "viirs_snpp": 1162.2,
@@ -4564,6 +4803,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 66.3,
         "viirs_snpp": 249.0,
@@ -4583,6 +4823,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 23.6,
         "viirs_snpp": 83.1,
@@ -4602,6 +4843,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 3.4,
         "viirs_snpp": 11.2,
@@ -4621,6 +4863,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.8,
         "viirs_snpp": 6.1,
@@ -4640,6 +4883,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.8,
         "viirs_snpp": 8.3,
@@ -4659,6 +4903,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 9.7,
         "viirs_snpp": 46.4,
@@ -4678,6 +4923,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 55.0,
         "viirs_snpp": 284.4,
@@ -4697,6 +4943,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 66.6,
         "viirs_snpp": 324.0,
@@ -4716,6 +4963,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 30.7,
         "viirs_snpp": 117.2,
@@ -4735,6 +4983,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 45.6,
         "viirs_snpp": 192.6,
@@ -4754,6 +5003,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 138.0,
         "viirs_snpp": 516.7,
@@ -4773,6 +5023,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 84.9,
         "viirs_snpp": 292.1,
@@ -4792,6 +5043,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 15.9,
         "viirs_snpp": 68.6,
@@ -4811,6 +5063,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 5.4,
         "viirs_snpp": 20.4,
@@ -4830,6 +5083,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.0,
         "viirs_snpp": 3.5,
@@ -4849,6 +5103,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.8,
         "viirs_snpp": 6.3,
@@ -4868,6 +5123,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 5.3,
         "viirs_snpp": 18.5,
@@ -4887,6 +5143,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 21.3,
         "viirs_snpp": 97.9,
@@ -4906,6 +5163,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 122.0,
         "viirs_snpp": 524.4,
@@ -4925,6 +5183,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 317.4,
         "viirs_snpp": 1554.7,
@@ -4944,6 +5203,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 65.0,
         "viirs_snpp": 250.4,
@@ -4954,18 +5214,19 @@
       "year": 2022,
       "month": 7,
       "value": 570.7,
-      "low": 570.7,
-      "high": 570.7,
+      "low": 542.2,
+      "high": 599.2,
       "median": 270.6,
       "anomaly_pct": 110.9,
       "percentile": 84.0,
       "category": "above_normal",
-      "source": "VIIRS_SNPP",
+      "source": "VIIRS_N20",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": true,
       "raw": {
         "modis": 145.0,
-        "viirs_snpp": 581.5,
+        "viirs_snpp": 348.9,
         "viirs_n20": 597.4
       }
     },
@@ -4973,18 +5234,19 @@
       "year": 2022,
       "month": 8,
       "value": 451.6,
-      "low": 451.6,
-      "high": 451.6,
+      "low": 429.0,
+      "high": 474.2,
       "median": 674.0,
       "anomaly_pct": -33.0,
       "percentile": 28.0,
       "category": "normal",
-      "source": "VIIRS_SNPP",
+      "source": "VIIRS_N20",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": true,
       "raw": {
         "modis": 118.2,
-        "viirs_snpp": 441.4,
+        "viirs_snpp": 264.9,
         "viirs_n20": 492.7
       }
     },
@@ -5001,6 +5263,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 281.0,
         "viirs_snpp": 1257.2,
@@ -5020,6 +5283,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 103.5,
         "viirs_snpp": 416.8,
@@ -5039,6 +5303,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 15.4,
         "viirs_snpp": 59.3,
@@ -5058,6 +5323,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 3.1,
         "viirs_snpp": 10.6,
@@ -5077,6 +5343,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.4,
         "viirs_snpp": 5.0,
@@ -5096,6 +5363,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 5.1,
         "viirs_snpp": 18.0,
@@ -5115,6 +5383,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 11.3,
         "viirs_snpp": 57.1,
@@ -5134,6 +5403,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 72.7,
         "viirs_snpp": 356.8,
@@ -5153,6 +5423,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 156.0,
         "viirs_snpp": 666.1,
@@ -5172,6 +5443,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 37.5,
         "viirs_snpp": 156.8,
@@ -5191,6 +5463,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 51.8,
         "viirs_snpp": 189.6,
@@ -5210,6 +5483,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 125.0,
         "viirs_snpp": 436.6,
@@ -5229,6 +5503,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 53.3,
         "viirs_snpp": 225.9,
@@ -5248,6 +5523,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 26.8,
         "viirs_snpp": 124.7,
@@ -5267,6 +5543,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 12.5,
         "viirs_snpp": 35.4,
@@ -5286,6 +5563,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.5,
         "viirs_snpp": 5.1,
@@ -5305,6 +5583,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 0.9,
         "viirs_snpp": 3.2,
@@ -5324,6 +5603,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.0,
         "viirs_snpp": 3.5,
@@ -5343,6 +5623,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 6.2,
         "viirs_snpp": 30.5,
@@ -5362,6 +5643,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 42.9,
         "viirs_snpp": 233.7,
@@ -5381,6 +5663,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 53.7,
         "viirs_snpp": 272.7,
@@ -5400,6 +5683,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 22.9,
         "viirs_snpp": 106.8,
@@ -5410,18 +5694,19 @@
       "year": 2024,
       "month": 7,
       "value": 209.4,
-      "low": 209.4,
-      "high": 209.4,
+      "low": 198.9,
+      "high": 219.9,
       "median": 270.6,
       "anomaly_pct": -22.6,
       "percentile": 44.0,
       "category": "normal",
-      "source": "VIIRS_SNPP",
+      "source": "VIIRS_N20",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": true,
       "raw": {
         "modis": 60.0,
-        "viirs_snpp": 207.5,
+        "viirs_snpp": 124.5,
         "viirs_n20": 206.7
       }
     },
@@ -5438,6 +5723,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 46.8,
         "viirs_snpp": 217.3,
@@ -5457,6 +5743,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 119.1,
         "viirs_snpp": 500.7,
@@ -5476,6 +5763,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 15.8,
         "viirs_snpp": 77.4,
@@ -5486,18 +5774,19 @@
       "year": 2024,
       "month": 11,
       "value": 31.5,
-      "low": 31.5,
-      "high": 31.5,
+      "low": 29.9,
+      "high": 33.1,
       "median": 40.2,
       "anomaly_pct": -21.6,
       "percentile": 32.0,
       "category": "normal",
-      "source": "VIIRS_SNPP",
+      "source": "VIIRS_N20",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": true,
       "raw": {
         "modis": 9.1,
-        "viirs_snpp": 29.7,
+        "viirs_snpp": 17.8,
         "viirs_n20": 33.1
       }
     },
@@ -5514,6 +5803,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 0.6,
         "viirs_snpp": 2.1,
@@ -5533,6 +5823,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 2.0,
         "viirs_snpp": 7.5,
@@ -5552,6 +5843,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 4.4,
         "viirs_snpp": 15.3,
@@ -5571,6 +5863,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 21.4,
         "viirs_snpp": 100.4,
@@ -5590,6 +5883,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 115.1,
         "viirs_snpp": 607.8,
@@ -5609,6 +5903,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 142.6,
         "viirs_snpp": 714.3,
@@ -5628,6 +5923,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 62.3,
         "viirs_snpp": 223.7,
@@ -5647,6 +5943,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 87.8,
         "viirs_snpp": 332.4,
@@ -5666,6 +5963,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 90.4,
         "viirs_snpp": 344.8,
@@ -5685,6 +5983,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 209.2,
         "viirs_snpp": 903.2,
@@ -5704,6 +6003,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 58.6,
         "viirs_snpp": 249.1,
@@ -5723,6 +6023,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 13.0,
         "viirs_snpp": 44.8,
@@ -5742,6 +6043,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 3.5,
         "viirs_snpp": 12.5,
@@ -5761,6 +6063,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 1.5,
         "viirs_snpp": 4.7,
@@ -5780,6 +6083,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 5.2,
         "viirs_snpp": 14.1,
@@ -5799,6 +6103,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 12.4,
         "viirs_snpp": 55.9,
@@ -5818,6 +6123,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 37.3,
         "viirs_snpp": 210.4,
@@ -5837,6 +6143,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 327.7,
         "viirs_snpp": 1307.6,
@@ -5856,6 +6163,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": false,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 38.6,
         "viirs_snpp": 157.0,
@@ -5875,6 +6183,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": true,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 53.5,
         "viirs_snpp": 167.0,
@@ -5894,6 +6203,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": true,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 119.7,
         "viirs_snpp": 529.2,
@@ -5913,6 +6223,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": true,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 193.7,
         "viirs_snpp": 934.4,
@@ -5932,6 +6243,7 @@
       "source": "VIIRS_SNPP",
       "preliminary": true,
       "partial": false,
+      "sensor_gap": false,
       "raw": {
         "modis": 53.9,
         "viirs_snpp": 203.0,
@@ -5951,6 +6263,7 @@
       "source": "VIIRS_N20",
       "preliminary": true,
       "partial": true,
+      "sensor_gap": false,
       "raw": {
         "modis": 10.7,
         "viirs_snpp": null,
@@ -6221,12 +6534,22 @@
     "peak_year": 2010,
     "peak_month": 9,
     "total": 108871.7,
-    "trend_pct_per_decade": -10.0
+    "trend_pct_per_decade": -10.0,
+    "trend_line": {
+      "start_year": 2001,
+      "start_value": 4712.7,
+      "end_year": 2025,
+      "end_value": 3699.1
+    }
   },
   "warnings": [
     {
       "code": "PRELIMINARY_DATA",
       "message": "Месяцы после 2026-06-30 посчитаны по оперативным данным и будут уточнены."
+    },
+    {
+      "code": "SENSOR_GAP",
+      "message": "В 4 месяцах Suomi NPP работал с перерывами: значения посчитаны по NOAA-20."
     }
   ]
 }

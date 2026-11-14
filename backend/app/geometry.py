@@ -196,11 +196,19 @@ def _centre_cells(part: shapely.Geometry) -> tuple[np.ndarray, np.ndarray]:
 
 
 def _touched_cells(geom: shapely.Geometry) -> tuple[np.ndarray, np.ndarray]:
-    """Cells the outline passes through (for areas too thin to contain any cell centre)."""
+    """Cells that overlap the area (for areas too thin to contain any cell centre).
+
+    Candidates are the cells the outline passes through; a cell that only touches the area along a grid line
+    is dropped, so a sliver drawn exactly on a parallel does not pull in the row on the other side.
+    """
     xy = shapely.get_coordinates(shapely.segmentize(geom.boundary, STEP / 4))
     iy = np.clip(np.floor((xy[:, 1] + 90) / STEP).astype(np.int64), 0, NY - 1)
     ix = np.clip(np.floor((xy[:, 0] + 180) / STEP).astype(np.int64), 0, NX - 1)
-    return iy, ix
+    key = np.unique(iy * NX + ix)
+    iy, ix = key // NX, key % NX
+    cells = shapely.box(ix * STEP - 180, iy * STEP - 90, (ix + 1) * STEP - 180, (iy + 1) * STEP - 90)
+    keep = shapely.area(shapely.intersection(cells, geom)) > 0
+    return (iy[keep], ix[keep]) if keep.any() else (iy, ix)
 
 
 def cells_inside(geom: shapely.Geometry) -> tuple[np.ndarray, np.ndarray]:

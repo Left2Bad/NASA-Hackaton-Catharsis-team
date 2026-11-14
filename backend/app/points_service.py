@@ -44,10 +44,17 @@ def _check_period(data: Data, first: dt.date, last: dt.date) -> tuple[dt.date, d
     return max(first, lead.FIRST_DATE), min(last, data.last_date)
 
 
-def _sql(data: Data, files: list[Path], area: geometry.Area, first: dt.date, last: dt.date, cols: set[str]) -> str:
-    """Points in the bounding box and period with contract fields and harmonized_weight."""
+def _scan(files: list[Path], area: geometry.Area, first: dt.date, last: dt.date) -> str:
+    """FROM/WHERE over the point files: the period and the bounding box (lets DuckDB skip row groups)."""
     src = "[" + ", ".join(f"'{f.as_posix()}'" for f in files) + "]"
     west, south, east, north = area.bounds
+    return f"""FROM read_parquet({src}, union_by_name = true)
+        WHERE acq_date BETWEEN DATE '{first}' AND DATE '{last}'
+          AND lat BETWEEN {south} AND {north} AND lon BETWEEN {west} AND {east}"""
+
+
+def _sql(data: Data, files: list[Path], area: geometry.Area, first: dt.date, last: dt.date, cols: set[str]) -> str:
+    """Points in the bounding box and period with contract fields and harmonized_weight."""
     g_t, g_ta, g_n20 = data.global_coef[1], data.global_coef[0], data.global_coef[2]
     pixel = "pixel_km2" if "pixel_km2" in cols else "round(scan * track, 2)"  # full data/points has scan, track
     quality = "coalesce(quality, 'SP')" if "quality" in cols else "'SP'"
@@ -57,9 +64,7 @@ def _sql(data: Data, files: list[Path], area: geometry.Area, first: dt.date, las
         SELECT lat, lon, acq_date, acq_time, sensor, source, conf_class, frp, daynight, type,
                CASE satellite WHEN 'Terra' THEN 'T' WHEN 'Aqua' THEN 'A' ELSE satellite END AS satellite,
                {pixel} AS pixel_km2, {quality} AS quality
-        FROM read_parquet({src}, union_by_name = true)
-        WHERE acq_date BETWEEN DATE '{first}' AND DATE '{last}'
-          AND lat BETWEEN {south} AND {north} AND lon BETWEEN {west} AND {east}
+        {_scan(files, area, first, last)}
       ), j AS (
         SELECT p.*, {source} AS lead, w.w_count_t, w.w_count_ta, w.w_count_n20
         FROM p LEFT JOIN coef w
@@ -154,6 +159,26 @@ def points(data: Data, geojson: dict, year: int, month: int) -> dict:
     return {"type": "FeatureCollection", "features": features, "total": total, "truncated": truncated}
 
 
+def grid_lower_bound(cur, data: Data, area: geometry.Area, first: dt.date, last: dt.date) -> int:
+    """Filtered detections (grid_daily) in 0.1-degree cells lying wholly inside the area.
+
+    Every such detection is also a point of the export, so this is a lower bound of the row count; it rejects
+    long periods quickly, without scanning years of points.
+    """
+    st = geometry.STEP
+    iy, ix = area.iy.astype(float), area.ix.astype(float)
+    cells = shapely.box(ix * st - 180, iy * st - 90, (ix + 1) * st - 180, (iy + 1) * st - 90)
+    whole = shapely.covers(area.geom, cells)
+    if not whole.any():
+        return 0
+    cur.register("cells", data.cells_frame(area.iy[whole], area.ix[whole]))
+    return cur.execute(f"""
+      SELECT coalesce(sum(n_t + n_a + n_snpp + n_n20), 0)::BIGINT
+      FROM grid_daily g JOIN cells c ON g.iy = c.iy AND g.ix = c.ix
+      WHERE g.iy BETWEEN {int(area.iy.min())} AND {int(area.iy.max())}
+        AND g.date BETWEEN DATE '{first}' AND DATE '{last}'""").fetchall()[0][0]
+
+
 class Export:
     """A validated export: count checked up front, rows streamed in batches by rows()."""
 
@@ -179,15 +204,26 @@ class Export:
             )
 
     def _count(self, cur) -> int:
-        """Rows inside the polygon; stops early once the export limit is exceeded."""
+        """Rows inside the polygon (grid lower bound first, then year by year); stops once over the export limit."""
         limit = self.data.settings.max_export_rows
-        n_box = cur.execute(f"SELECT count(*) FROM ({self.sql})").fetchall()[0][0]
-        if n_box <= limit or self.area.geom.equals(shapely.box(*self.area.bounds)):
-            return n_box
-        reader = _batches(cur, f"SELECT lon, lat FROM ({self.sql})", BATCH_ROWS * 4)
+        n = grid_lower_bound(cur, self.data, self.area, self.first, self.last)
+        if n > limit:
+            return n
+        rect = self.area.geom.equals(shapely.box(*self.area.bounds))
         n = 0
-        for batch in reader:
-            n += int(_inside(self.area, batch.column(0).to_numpy(), batch.column(1).to_numpy()).sum())
+        for y in range(self.first.year, self.last.year + 1):
+            files = [f for f in self.files if f.stem.endswith(f"_{y}")]
+            if not files:
+                continue
+            scan = _scan(files, self.area, max(self.first, dt.date(y, 1, 1)), min(self.last, dt.date(y, 12, 31)))
+            n_box = cur.execute(f"SELECT count(*) {scan}").fetchall()[0][0]
+            if rect or n_box == 0:
+                n += n_box
+            else:
+                for batch in _batches(cur, f"SELECT lon, lat {scan}", BATCH_ROWS * 4):
+                    n += int(_inside(self.area, batch.column(0).to_numpy(), batch.column(1).to_numpy()).sum())
+                    if n > limit:
+                        break
             if n > limit:
                 break
         return n

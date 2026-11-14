@@ -1,13 +1,15 @@
 """POST /points and POST /export/points.csv on tiny synthetic points (data/points_serve layout)."""
 
 import csv
+import datetime as dt
 import io
 
 import duckdb
 import pytest
-from conftest import assert_schema, box, make_data
+from conftest import LAST, assert_schema, box, make_data
 from fastapi.testclient import TestClient
 
+from app import geometry, points_service
 from app.main import create_app
 from app.settings import Settings
 
@@ -56,6 +58,16 @@ def client(tmp_path_factory):
         con.execute(f"CREATE OR REPLACE TABLE t ({SCHEMA})")
         con.executemany(f"INSERT INTO t VALUES ({', '.join('?' * 13)})", rows)
         con.execute(f"COPY (SELECT * FROM t ORDER BY acq_date, lat) TO '{(serve / name).as_posix()}.parquet'")
+    # grid_daily consistent with these points (pipeline/grid.py filters), plus an empty row that keeps last_date
+    con.execute(f"""COPY (
+        SELECT floor((lat + 90) / 0.1)::SMALLINT AS iy, floor((lon + 180) / 0.1)::SMALLINT AS ix, acq_date AS date,
+               count(*) FILTER (WHERE satellite = 'T')::INT AS n_t, count(*) FILTER (WHERE satellite = 'A')::INT AS n_a,
+               count(*) FILTER (WHERE source = 'viirs-snpp')::INT AS n_snpp,
+               count(*) FILTER (WHERE source = 'viirs-jpss1')::INT AS n_n20,
+               0::FLOAT AS f_t, 0::FLOAT AS f_a, 0::FLOAT AS f_snpp, 0::FLOAT AS f_n20
+        FROM read_parquet('{serve.as_posix()}/*.parquet') WHERE type = 0 AND conf_class <> 'l' GROUP BY ALL
+        UNION ALL SELECT 0, 0, DATE '{LAST}', 0, 0, 0, 0, 0, 0, 0, 0
+        ORDER BY iy, ix, date) TO '{(data / "grid_daily.parquet").as_posix()}'""")
     settings = Settings(data_dir=data, max_points=5, max_export_rows=8)
     with TestClient(create_app(settings)) as c:
         yield c
@@ -164,10 +176,11 @@ def test_export_csv(client):
 
 def test_export_errors(client):
     error(export(client, "2021-08-01", "2021-08-31"), 413, "EXPORT_TOO_LARGE")  # 10 points > limit 8
-    tri = {"type": "Polygon", "coordinates": [[[10.0, 20.0], [10.9, 20.0], [10.0, 21.0], [10.0, 20.0]]]}
-    r = export(client, "2021-08-01", "2021-08-31", tri)  # bounding box holds 10 points, the polygon 7 (lat < 20.44)
+    # bounding box holds all 10 points (lon 10.5), the polygon 5 (lat <= 20.325); no grid cell lies wholly inside
+    tri = {"type": "Polygon", "coordinates": [[[10.4, 20.0], [10.6, 20.0], [10.4, 20.65], [10.4, 20.0]]]}
+    r = export(client, "2021-08-01", "2021-08-31", tri)
     assert r.status_code == 200, r.text
-    assert len(r.text.strip().splitlines()) == 1 + 7
+    assert len(r.text.strip().splitlines()) == 1 + 5
     error(export(client, "2010-08-31", "2010-08-01"), 400, "INVALID_REQUEST")
     error(export(client, "2026-01-01", "2026-02-01"), 404, "NO_DATA")
     error(
@@ -175,3 +188,15 @@ def test_export_errors(client):
         400,
         "INVALID_REQUEST",
     )
+
+
+def test_grid_lower_bound(client):
+    data = client.app.state.data
+    aug = (dt.date(2021, 8, 1), dt.date(2021, 8, 31))
+    cur = data.cursor()
+    area = geometry.parse(AREA, data.settings.max_area_km2)  # holds every cell of the 10 points
+    assert points_service.grid_lower_bound(cur, data, area, *aug) == 10
+    tri = {"type": "Polygon", "coordinates": [[[10.4, 20.0], [10.6, 20.0], [10.4, 20.65], [10.4, 20.0]]]}
+    area = geometry.parse(tri, data.settings.max_area_km2)  # no cell lies wholly inside
+    assert points_service.grid_lower_bound(cur, data, area, *aug) == 0
+    cur.close()

@@ -97,12 +97,35 @@ describe('original sensors (F19)', () => {
 });
 
 describe('hot spots of a month on the map (F13)', () => {
+  it('shows the latest complete month with fire as soon as the area opens', async () => {
+    const user = userEvent.setup();
+    const bodies = record('/points', pointsExample);
+    const { container } = renderScreen();
+    await openArea(user);
+
+    // The example calendar ends with a partial November 2026; October is the latest complete month.
+    expect(
+      await screen.findByText(
+        `October 2026: ${pointsExample.total} hot spots on the map, all sensors.`,
+      ),
+    ).toBeInTheDocument();
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0]).toMatchObject({ year: 2026, month: 10 });
+    expect(screen.getByTestId('map')).toHaveAttribute(
+      'data-points',
+      String(pointsExample.features.length),
+    );
+    expect(container.querySelector('[data-month="2026-10"]')).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+  });
+
   it('asks for the clicked month, hands the points to the map and says how many there are', async () => {
     const user = userEvent.setup();
     const bodies = record('/points', pointsExample);
     const { container } = renderScreen();
     await openArea(user);
-    expect(screen.getByTestId('map')).toHaveAttribute('data-points', 'none');
 
     const cell = container.querySelector<HTMLElement>('[data-month="2020-08"]');
     await user.click(cell as HTMLElement);
@@ -112,9 +135,8 @@ describe('hot spots of a month on the map (F13)', () => {
         `August 2020: ${pointsExample.total} hot spots on the map, all sensors.`,
       ),
     ).toBeInTheDocument();
-    expect(bodies).toHaveLength(1);
-    expect(bodies[0]).toMatchObject({ year: 2020, month: 8 });
-    expect(bodies[0]).toHaveProperty('geometry.type', 'Polygon');
+    expect(bodies.at(-1)).toMatchObject({ year: 2020, month: 8 });
+    expect(bodies.at(-1)).toHaveProperty('geometry.type', 'Polygon');
     expect(screen.getByTestId('map')).toHaveAttribute(
       'data-points',
       String(pointsExample.features.length),
@@ -142,6 +164,12 @@ describe('hot spots of a month on the map (F13)', () => {
     const cell = () => container.querySelector('[data-month="2020-08"]') as HTMLElement;
     const drawn = () => screen.getByTestId('map').getAttribute('data-points');
 
+    // Hiding the default month keeps the map clear for this area.
+    await waitFor(() => expect(drawn()).not.toBe('none'));
+    await user.click(screen.getByRole('button', { name: 'Hide hot spots' }));
+    expect(drawn()).toBe('none');
+    expect(screen.queryByRole('button', { name: 'Hide hot spots' })).toBeNull();
+
     await user.click(cell());
     await waitFor(() => expect(drawn()).not.toBe('none'));
     await user.click(screen.getByRole('button', { name: 'Hide hot spots' }));
@@ -155,9 +183,10 @@ describe('hot spots of a month on the map (F13)', () => {
 
     await user.click(cell());
     await waitFor(() => expect(drawn()).not.toBe('none'));
+    // Another area drops the picked month and opens with its own latest month.
     await user.click(screen.getByRole('button', { name: 'Southern Amazon' }));
-    await waitFor(() => expect(drawn()).toBe('none'));
-    expect(screen.queryByRole('button', { name: 'Hide hot spots' })).toBeNull();
+    expect(await screen.findByText(/^October 2026: /)).toBeInTheDocument();
+    expect(cell()).toHaveAttribute('aria-selected', 'false');
   });
 
   it('picks a month from the keyboard', async () => {
@@ -170,7 +199,7 @@ describe('hot spots of a month on the map (F13)', () => {
     await user.keyboard('{Enter}');
 
     await screen.findByText(/^July 2019: /);
-    expect(bodies[0]).toMatchObject({ year: 2019, month: 7 });
+    expect(bodies.at(-1)).toMatchObject({ year: 2019, month: 7 });
   });
 
   it('keeps the calendar when the points cannot be loaded', async () => {

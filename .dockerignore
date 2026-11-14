@@ -1,0 +1,17 @@
+# Build context is the repository root; the images need backend/, contract/, docs/, frontend/, deploy/ and pipeline/lead.py.
+.git
+data
+pipeline/*
+!pipeline/lead.py
+**/node_modules
+**/__pycache__
+**/*.egg-info
+**/.pytest_cache
+**/.ruff_cache
+frontend/dist
+frontend/dist-*
+frontend/coverage
+frontend/playwright-report
+frontend/test-results
+.env
+.env.*

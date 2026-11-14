@@ -1,4 +1,4 @@
-"""Validation report for the "Method" page: data/validation/report.json in the shape of ValidationResponse
+"""Step 6: validation report for the "Method" page: data/validation/report.json in the shape of ValidationResponse
 (contract/openapi.yaml).
 
  * Regions: three presets (same boxes as backend/app/schemas.py PRESETS), 60 test months 2021-2025.

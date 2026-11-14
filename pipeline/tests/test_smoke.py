@@ -86,3 +86,19 @@ def test_modules_import_without_data_or_key():
     import harmonize  # noqa: F401
 
     assert len(download_archives.FILES) == 48
+
+
+def test_glob_patterns_are_expanded_by_the_script(tmp_path, monkeypatch):
+    """PowerShell passes `data/raw/*.zip` unexpanded; to_parquet.py expands it itself (R23, R38)."""
+    for name in ("modis_2001_all_countries.zip", "viirs-snpp_2013_all_countries.zip"):
+        (tmp_path / name).write_bytes(b"")
+    monkeypatch.chdir(tmp_path)
+    assert [p.name for p in to_parquet.expand(["*.zip"])] == [
+        "modis_2001_all_countries.zip",
+        "viirs-snpp_2013_all_countries.zip",
+    ]
+    with pytest.raises(SystemExit, match="no files match"):
+        to_parquet.expand(["missing*.zip"])
+    (tmp_path / "notes.zip").write_bytes(b"")
+    with pytest.raises(SystemExit, match="not a FIRMS yearly archive"):
+        to_parquet.expand(["*.zip"])

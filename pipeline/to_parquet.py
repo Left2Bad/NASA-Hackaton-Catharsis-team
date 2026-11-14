@@ -6,9 +6,16 @@ Unified columns:
   bright (MODIS brightness / VIIRS bright_ti4), bright2 (T31 / ti5), frp, scan, track,
   daynight, type, country
 MODIS numeric confidence -> class: <30 l, 30..79 n, >=80 h (FIRMS convention).
-Usage: python 01_to_parquet.py <zip> [<zip>...]
+
+Usage: python pipeline/to_parquet.py [<zip or glob pattern> ...]
+Without arguments all archives data/raw/*_all_countries.zip are converted. Glob patterns are expanded by the script
+itself, so `data/raw/*.zip` works in PowerShell and cmd as well as in bash. Existing outputs are skipped.
+Run one process at a time: large VIIRS years need ~9 GB of memory.
 """
 
+import argparse
+import glob
+import re
 import shutil
 import sys
 import tempfile
@@ -18,7 +25,9 @@ from pathlib import Path
 import duckdb
 
 ROOT = Path(__file__).resolve().parents[1]
+RAW = ROOT / "data" / "raw"
 OUT = ROOT / "data" / "points"
+NAME = re.compile(r"^(modis|viirs-snpp|viirs-jpss1)_(\d{4})_")
 TMP = ROOT / "data" / "_tmp"
 
 
@@ -68,7 +77,31 @@ def convert(zp: Path):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-if __name__ == "__main__":
+def expand(patterns: list[str]) -> list[Path]:
+    """Archive paths from file names and glob patterns; every pattern must match something."""
+    out = []
+    for p in patterns:
+        hits = sorted(glob.glob(p)) if glob.has_magic(p) else [p]
+        if not hits:
+            raise SystemExit(f"no files match {p}")
+        out += [Path(h) for h in hits]
+    bad = [f.name for f in out if not NAME.match(f.name)]
+    if bad:
+        raise SystemExit(f"not a FIRMS yearly archive name (<sensor>_<year>_...zip): {', '.join(bad)}")
+    return out
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="Convert FIRMS yearly archives into data/points/<sensor>_<year>.parquet.")
+    ap.add_argument("zips", nargs="*", help="archives or glob patterns (default: data/raw/*_all_countries.zip)")
+    a = ap.parse_args(argv)
+    files = expand(a.zips) if a.zips else sorted(RAW.glob("*_all_countries.zip"))
+    if not files:
+        raise SystemExit(f"no archives in {RAW}: run pipeline/download_archives.py first")
     OUT.mkdir(parents=True, exist_ok=True)
-    for p in sys.argv[1:]:
-        convert(Path(p))
+    for f in files:
+        convert(f)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

@@ -109,7 +109,7 @@ def build(data: Data, q: AreaQuery) -> dict:
         warnings.append(
             {
                 "code": "AREA_SMALL",
-                "message": f"The area contains {area.cells} grid cells. For such a small area the series is noisy.",
+                "message": geometry.small_area_message(area),
             }
         )
     if any(mm["preliminary"] for mm in months):

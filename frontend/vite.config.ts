@@ -17,6 +17,8 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     plugins: [react()],
+    // Relative addresses of the built files: the site works from any folder of a static host.
+    base: './',
     envDir: repoRoot,
     define: {
       __API_MOCKS__: JSON.stringify(useMocks),

@@ -1,0 +1,8 @@
+# Сгенерированное и собранное
+dist
+coverage
+public/mockServiceWorker.js
+src/api/schema.d.ts
+
+# Документы с широкими таблицами правим руками
+*.md

@@ -686,7 +686,7 @@ describe('downloads (F22 to F24)', () => {
     // The image of the current month joins the list when its own request has answered.
     await within(downloads).findByRole('button', { name: 'Current month (PNG)' });
     expect(
-      within(downloads)
+      within(within(downloads).getByRole('group', { name: 'Files to download' }))
         .getAllByRole('button')
         .map((button) => button.textContent),
     ).toEqual([
@@ -697,10 +697,11 @@ describe('downloads (F22 to F24)', () => {
       'Yearly totals (PNG)',
       'Current month (PNG)',
     ]);
-    // The dates of the hot spot file follow the period and the record of the dataset.
+    // The hot spot file starts with the latest complete month: the whole record of a large
+    // area is above the row limit.
     const dates = within(downloads).getByRole('group', { name: 'Dates of the hot spot file' });
-    expect(within(dates).getByLabelText('From')).toHaveValue(metaExample.first_date);
-    expect(within(dates).getByLabelText('to')).toHaveValue(metaExample.last_date);
+    expect(within(dates).getByLabelText('From')).toHaveValue('2026-10-01');
+    expect(within(dates).getByLabelText('to')).toHaveValue('2026-10-31');
   });
 
   it('has nothing to download before an area is chosen', async () => {

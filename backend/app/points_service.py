@@ -8,14 +8,16 @@ sort; the exact polygon test then runs on that small remainder (shapely, vectori
 Arrow batches, so Python memory does not grow with the number of points in the area.
 
 harmonized_weight is the contribution of a point to the harmonized count series: the 1-degree cell coefficient of
-the lead source on that date (1 for S-NPP), 0 for points of other sensors, non-vegetation fires (type <> 0) and
-low-confidence detections — the same filters as the grids (pipeline/grid.py).
+the lead source on that date (1 for S-NPP), 0 for points of other sensors, non-vegetation fires (type <> 0),
+low-confidence detections and points in a cell of the static-source mask (volcanoes, gas flares, industrial sites) —
+the same filters as the grids (pipeline/grid.py), so the weights of a month add up to its calendar value.
 """
 
 import calendar as cal
 import csv
 import datetime as dt
 import io
+import math
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -69,6 +71,18 @@ def _register_cover(cur, area: geometry.Area) -> None:
         cur.register("area_cover", pd.DataFrame({"k": area.cover_keys()}))
 
 
+def _mask_sql(area: geometry.Area) -> str:
+    """Cells of the static-source mask (table static_mask, see Data) near the area's bounding box.
+
+    A point's cell is (round(lat * 100), round(lon * 100)), the same expressions as pipeline/grid.py (mask_key).
+    """
+    w, s, e, n = area.bounds
+    return (
+        f"SELECT ky, kx FROM static_mask WHERE ky BETWEEN {math.floor(s * 100) - 1} AND {math.ceil(n * 100) + 1}"
+        f" AND kx BETWEEN {math.floor(w * 100) - 1} AND {math.ceil(e * 100) + 1}"
+    )
+
+
 def _sql(data: Data, files: list[Path], area: geometry.Area, first: dt.date, last: dt.date, cols: set[str]) -> str:
     """Points in the bounding box and period with contract fields and harmonized_weight."""
     g_t, g_ta, g_n20 = data.global_coef[1], data.global_coef[0], data.global_coef[2]
@@ -82,12 +96,14 @@ def _sql(data: Data, files: list[Path], area: geometry.Area, first: dt.date, las
                {pixel} AS pixel_km2, {quality} AS quality
         {_scan(files, area, first, last)}
       ), j AS (
-        SELECT p.*, {source} AS lead, w.w_count_t, w.w_count_ta, w.w_count_n20
+        SELECT p.*, {source} AS lead, w.w_count_t, w.w_count_ta, w.w_count_n20, m.ky IS NOT NULL AS masked
         FROM p LEFT JOIN coef w
           ON w.cy = floor((p.lat + 90) / {geometry.STEP})::INT // 10 AND w.cx = floor((p.lon + 180) / {geometry.STEP})::INT // 10
+        LEFT JOIN ({_mask_sql(area)}) m
+          ON m.ky = round(p.lat * 100)::INTEGER AND m.kx = round(p.lon * 100)::INTEGER
       ), k AS (
         SELECT j.*, CASE
-                 WHEN type <> 0 OR conf_class = 'l' THEN 0
+                 WHEN type <> 0 OR conf_class = 'l' OR masked THEN 0
                  WHEN lead = 'MODIS_T' AND source = 'modis' AND satellite = 'T' THEN coalesce(w_count_t, {g_t})
                  WHEN lead = 'MODIS_TA' AND source = 'modis' THEN coalesce(w_count_ta, {g_ta})
                  WHEN lead = 'VIIRS_SNPP' AND source = 'viirs-snpp' THEN 1

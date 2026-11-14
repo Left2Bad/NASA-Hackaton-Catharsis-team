@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import calendarJson from '../../../contract/examples/calendar.response.json';
 import currentJson from '../../../contract/examples/current.response.json';
 import metaJson from '../../../contract/examples/meta.json';
-import type { CalendarResponse, CurrentResponse, Meta } from '../api/types';
+import type { CalendarResponse, CurrentResponse, Meta, MonthValue } from '../api/types';
 import * as files from '../export/files';
 import * as png from '../export/png';
 import { server } from '../mocks/server';
@@ -90,8 +90,8 @@ describe('Downloads', () => {
     expect(await saved[0].blob.text()).toBe('year,month,value\n2010,1,26.8\n');
   });
 
-  it('asks for the hot spots of whole years as dates (F22)', async () => {
-    const user = userEvent.setup();
+  /** Records the bodies of hot spot exports and answers each with a small file. */
+  function recordExports() {
     const bodies: unknown[] = [];
     server.use(
       http.post('*/api/v1/export/points.csv', async ({ request }) => {
@@ -99,8 +99,41 @@ describe('Downloads', () => {
         return new HttpResponse('lat,lon\n53,67\n', { headers: { 'Content-Type': 'text/csv' } });
       }),
     );
+    return bodies;
+  }
+
+  const dates = () => screen.getByRole('group', { name: 'Dates of the hot spot file' });
+
+  it('asks for the hot spots of the latest complete month by default (F22)', async () => {
+    const user = userEvent.setup();
+    const bodies = recordExports();
     renderDownloads();
 
+    expect(within(dates()).getByLabelText('From')).toHaveValue('2012-12-01');
+    expect(within(dates()).getByLabelText('to')).toHaveValue('2012-12-31');
+    await user.click(button('Hot spots (CSV)'));
+
+    await waitFor(() => expect(saved).toHaveLength(1));
+    expect(bodies).toEqual([
+      { geometry: preset.geometry, start_date: '2012-12-01', end_date: '2012-12-31' },
+    ]);
+    expect(saved[0].name).toBe('firms-hotspots_kz-steppe_2012-12.csv');
+  });
+
+  it('leaves the partial current month out of the default dates', () => {
+    renderDownloads({ scope: { ...scope, startYear: 2025, endYear: 2026 } });
+
+    expect(within(dates()).getByLabelText('From')).toHaveValue('2026-10-01');
+    expect(within(dates()).getByLabelText('to')).toHaveValue('2026-10-31');
+  });
+
+  it('asks for the hot spots of whole years as dates (F22)', async () => {
+    const user = userEvent.setup();
+    const bodies = recordExports();
+    renderDownloads();
+
+    await user.click(within(dates()).getByRole('button', { name: 'Whole period' }));
+    expect(within(dates()).queryByRole('button', { name: 'Whole period' })).toBeNull();
     await user.click(button('Hot spots (CSV)'));
 
     await waitFor(() => expect(saved).toHaveLength(1));
@@ -108,6 +141,11 @@ describe('Downloads', () => {
       { geometry: preset.geometry, start_date: '2010-01-01', end_date: '2012-12-31' },
     ]);
     expect(saved[0].name).toBe('firms-hotspots_kz-steppe_2010-2012.csv');
+
+    // One click returns to the latest month.
+    await user.click(within(dates()).getByRole('button', { name: 'Latest month' }));
+    expect(within(dates()).getByLabelText('From')).toHaveValue('2012-12-01');
+    expect(within(dates()).queryByRole('button', { name: 'Latest month' })).toBeNull();
   });
 
   it('says so when the export has more rows than the limit (F22)', async () => {
@@ -134,20 +172,51 @@ describe('Downloads', () => {
     expect(button('Hot spots (CSV)')).toBeEnabled();
   });
 
-  it('warns beforehand when the period likely exceeds the row limit', () => {
+  it('does not offer dates that likely exceed the row limit', async () => {
+    const user = userEvent.setup();
     const small = { ...meta, limits: { ...meta.limits, max_export_rows: 1000 } };
     renderDownloads({ meta: small });
 
+    // The latest month fits.
+    expect(screen.queryByText(/These dates likely have more/)).toBeNull();
+    expect(button('Hot spots (CSV)')).toBeEnabled();
+
+    await user.click(within(dates()).getByRole('button', { name: 'Whole period' }));
+
     expect(
-      screen.getByText('This period likely has more: choose fewer years or a smaller area.'),
+      screen.getByText('These dates likely have more: shorten them or reduce the area.'),
     ).toBeInTheDocument();
     expect(screen.getByText(/up to 1,000 rows/)).toBeInTheDocument();
+    expect(button('Hot spots (CSV)')).toBeDisabled();
+    expect(button('Monthly table (CSV)')).toBeEnabled();
   });
 
-  it('does not warn when the period fits', () => {
-    renderDownloads();
+  /** A calendar of one month (September of this year) with this value and lead source. */
+  function oneMonth(year: number, value: number, source: MonthValue['source']): CalendarResponse {
+    const month = { ...calendar.months[0], year, month: 9, value, source, partial: false };
+    return { ...calendar, months: [month], summary: { ...calendar.summary, total: value } };
+  }
 
-    expect(screen.queryByText(/This period likely has more/)).toBeNull();
+  it('counts the rows of every sensor in the estimate', () => {
+    // 200,000 S-NPP detections, with MODIS and NOAA-20 beside them: well over 500,000 rows.
+    renderDownloads({
+      scope: { ...scope, startYear: 2020, endYear: 2020 },
+      calendar: oneMonth(2020, 200_000, 'VIIRS_SNPP'),
+    });
+
+    expect(screen.getByText(/These dates likely have more/)).toBeInTheDocument();
+    expect(button('Hot spots (CSV)')).toBeDisabled();
+  });
+
+  it('counts fewer rows than detections in a MODIS month', () => {
+    // A MODIS detection weighs more than one in the record: 600,000 there are fewer rows.
+    renderDownloads({
+      scope: { ...scope, startYear: 2005, endYear: 2005 },
+      calendar: oneMonth(2005, 600_000, 'MODIS_TA'),
+    });
+
+    expect(screen.queryByText(/These dates likely have more/)).toBeNull();
+    expect(button('Hot spots (CSV)')).toBeEnabled();
   });
 
   it('saves the calendar as an image with a caption (F24)', async () => {

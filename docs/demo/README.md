@@ -31,3 +31,6 @@ The `screenshots/` folder. File names start with the task a screenshot belongs t
 | `b6-calendar-laptop.jpg` | The burn calendar with yearly totals and the marks of preliminary months |
 | `b6-calendar-tooltip-phone.jpg` | The cell tooltip on a phone |
 | `b7-anomaly-mode.jpg` | The calendar in the anomaly mode: blue below the median, orange above |
+| `b8-now-summary-laptop.jpg` | The summary of four numbers and the "Now" panel: level, level strip, cumulative chart |
+| `b8-now-chart-hover.jpg` | The cumulative chart with a day picked by the pointer |
+| `b8-now-summary-phone.jpg` | The summary and the "Now" panel on a phone |

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw/http';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import calendarExample from '../../contract/examples/calendar.response.json';
+import currentExample from '../../contract/examples/current.response.json';
 import metaExample from '../../contract/examples/meta.json';
 import App from './App';
 import { server } from './mocks/server';
@@ -266,6 +267,81 @@ describe('area size (F5)', () => {
     expect(
       await screen.findByText('The area covers only a few grid cells, so the series is noisy.'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('now panel (F15)', () => {
+  /** Records the bodies of /current requests while answering them with the example. */
+  function recordCurrentRequests(): Record<string, unknown>[] {
+    const bodies: Record<string, unknown>[] = [];
+    server.use(
+      http.post('*/api/v1/current', async ({ request }) => {
+        bodies.push((await request.json()) as Record<string, unknown>);
+        return HttpResponse.json(currentExample);
+      }),
+    );
+    return bodies;
+  }
+
+  it('shows the current month for the chosen area', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+
+    const now = await screen.findByRole('region', { name: 'Now' });
+    expect(await within(now).findByText('November 1 to 13, 2026')).toBeInTheDocument();
+    expect(within(now).getByText('Above normal', { selector: 'strong' })).toBeInTheDocument();
+  });
+
+  it('asks for the geometry alone and not again when the period changes', async () => {
+    const user = userEvent.setup();
+    const bodies = recordCurrentRequests();
+    renderApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Draw test area' }));
+    const now = await screen.findByRole('region', { name: 'Now' });
+    await within(now).findByText('November 1 to 13, 2026');
+    expect(bodies).toHaveLength(1);
+    expect(Object.keys(bodies[0])).toEqual(['geometry']);
+
+    const period = screen.getByRole('group', { name: 'Period' });
+    await user.selectOptions(within(period).getByLabelText('From'), '2010');
+    await screen.findByRole('grid', { name: /^Fire detections by month, 2010 to/ });
+    expect(bodies).toHaveLength(1);
+  });
+
+  it('keeps the calendar when the current month cannot be loaded', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post('*/api/v1/current', () =>
+        HttpResponse.json(
+          { error: { code: 'NO_DATA', message: 'Outside the coverage.' } },
+          { status: 404 },
+        ),
+      ),
+    );
+    renderApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+
+    const now = await screen.findByRole('region', { name: 'Now' });
+    expect(await within(now).findByRole('alert')).toHaveAttribute('data-code', 'NO_DATA');
+    expect(
+      await screen.findByRole('grid', { name: /^Fire detections by month/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('is not requested for an area above the size limit', async () => {
+    const user = userEvent.setup();
+    const bodies = recordCurrentRequests();
+    renderApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Draw huge area' }));
+
+    await screen.findByRole('alert');
+    expect(screen.queryByRole('region', { name: 'Now' })).toBeNull();
+    expect(bodies).toHaveLength(0);
   });
 });
 

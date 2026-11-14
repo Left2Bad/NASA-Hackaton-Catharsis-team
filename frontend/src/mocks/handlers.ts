@@ -55,8 +55,11 @@ const routes = {
     );
   }),
 
-  '/current': http.post(url('/current'), async () => {
+  '/current': http.post(url('/current'), async ({ request }) => {
+    const query = (await request.json()) as AreaQuery;
     await delay();
+    const tooLarge = areaTooLarge(query, metaExample);
+    if (tooLarge) return HttpResponse.json(tooLarge, { status: 413 });
     return HttpResponse.json(current);
   }),
 

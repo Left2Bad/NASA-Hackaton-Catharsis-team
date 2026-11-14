@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { USE_MOCKS } from '../api/config';
 import { useCalendar, useCurrent, useMeta } from '../api/queries';
 import type { Geometry, Meta } from '../api/types';
@@ -16,6 +16,7 @@ import { YearlyTotals } from '../components/YearlyTotals';
 import { boundsOf, formatBounds } from '../geo/geometry';
 import { areaKm2 } from '../geo/shapes';
 import { formatNumber, monthName, presetLabel, WARNING_LABELS } from '../labels';
+import { buildSearch, currentSearch, parseSearch, writeSearch } from '../state/link';
 import { roundSignificant } from '../theme/scales';
 import styles from './CalendarScreen.module.css';
 
@@ -61,6 +62,36 @@ function EmptyResult({ period }: { period: Period }) {
         period, or one of the example areas above the map.
       </p>
     </section>
+  );
+}
+
+/**
+ * Copies the address of the page, which holds the area, the period and the mode (F26).
+ * Where the browser does not let a page write to the clipboard, the button says how
+ * to copy the address by hand.
+ */
+function CopyLink() {
+  const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setStatus('copied');
+    } catch {
+      setStatus('failed');
+    }
+  };
+
+  return (
+    <p className={styles.share}>
+      <button type="button" onClick={() => void copy()}>
+        Copy link to this view
+      </button>
+      <span role="status">
+        {status === 'copied' && 'Link copied.'}
+        {status === 'failed' && 'Copy the address from the address bar of the browser.'}
+      </span>
+    </p>
   );
 }
 
@@ -110,6 +141,7 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
             {updating && <span role="status"> · updating for the new period…</span>}
           </p>
         )}
+        <CopyLink />
       </header>
 
       {tooLarge && (
@@ -213,17 +245,31 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
 }
 
 function Workspace({ meta }: { meta: Meta }) {
-  const [area, setArea] = useState<Area | null>(null);
-  const [coordinatesOpen, setCoordinatesOpen] = useState(false);
-
   // The whole record is the default period (F4).
   const range: Period = {
     startYear: Number(meta.first_date.slice(0, 4)),
     endYear: Number(meta.last_date.slice(0, 4)),
   };
-  const [period, setPeriod] = useState<Period>(range);
+  // The screen starts from what the address asks for (F26): a shared link reopens the
+  // same area, period and mode. Without a state in the address these are the defaults.
+  const [linked] = useState(() => parseSearch(currentSearch(), meta, range));
+  const [area, setArea] = useState<Area | null>(linked.area);
+  const [coordinatesOpen, setCoordinatesOpen] = useState(false);
+  const [period, setPeriod] = useState<Period>({
+    startYear: linked.startYear,
+    endYear: linked.endYear,
+  });
   // The calendar mode is kept here, so it survives a change of area or period.
-  const [mode, setMode] = useState<CalendarMode>('count');
+  const [mode, setMode] = useState<CalendarMode>(linked.mode);
+
+  // Every change goes back into the address, so the address always describes the screen.
+  const search = buildSearch(
+    { area, startYear: period.startYear, endYear: period.endYear, mode },
+    range,
+  );
+  useEffect(() => {
+    writeSearch(search);
+  }, [search]);
 
   return (
     <main className={styles.screen}>

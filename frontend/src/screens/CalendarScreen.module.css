@@ -123,6 +123,30 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* The link button with its answer ("Link copied.") on one line. */
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  align-items: center;
+  margin-top: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.share button {
+  padding: 4px 10px;
+  font-size: var(--text-sm);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.share button:hover {
+  border-color: var(--ink);
+}
+
 .warnings {
   margin: var(--space-3) 0 0;
   padding: var(--space-2) var(--space-3) var(--space-2) var(--space-5);

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 
 /**
  * The current width of an element in pixels, so a chart can be drawn at its real size
@@ -10,6 +10,13 @@ export function useElementWidth<T extends HTMLElement>(
 ): [RefObject<T | null>, number] {
   const ref = useRef<T>(null);
   const [width, setWidth] = useState(fallback);
+
+  // Measured once before the first paint, so a chart on a phone is never drawn at the
+  // fallback width first and then redrawn narrower.
+  useLayoutEffect(() => {
+    const measured = Math.round(ref.current?.getBoundingClientRect().width ?? 0);
+    if (measured > 0) setWidth(measured);
+  }, []);
 
   useEffect(() => {
     const element = ref.current;

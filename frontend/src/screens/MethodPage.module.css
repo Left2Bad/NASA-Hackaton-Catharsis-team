@@ -5,8 +5,10 @@
   overflow-y: auto;
 }
 
-/* A reading page: one white column of comfortable width. */
+/* A reading page: one white column of comfortable width. Long addresses and file paths
+   break inside words rather than push the page wider than a phone screen. */
 .page {
+  overflow-wrap: anywhere;
   width: 100%;
   max-width: 760px;
   margin: 0 auto;

@@ -1,19 +1,64 @@
 # frontend/ — зона разработчика B
 
-Веб-приложение: React, TypeScript, Vite, MapLibre GL JS, графики на ECharts или D3.
+Веб-приложение: React, TypeScript, Vite. Карта (MapLibre GL JS) и графики появятся в задачах B3–B9.
 
-Задачи из ТЗ: B2–B16.
+Задачи из ТЗ: B2–B16. Из каких полей контракта рисуется экран: [docs/contract-coverage.md](docs/contract-coverage.md).
 
-Как работать до готовности бэкенда:
+## Быстрый старт
 
-- Типы TypeScript генерируются из `contract/openapi.yaml` (например, пакетом `openapi-typescript`).
-- Моки строятся на файлах из `contract/examples/` (например, через Mock Service Worker).
-  Эти же файлы потом становятся запасным режимом демо.
-- Адрес настоящего API задаётся переменной `VITE_API_URL` (см. `.env.example` в корне).
+Нужен Node 22 или новее. Версия закреплена в `.nvmrc`, CI берёт её из этого же файла. С nvm: `nvm use`.
 
-Версия Node закреплена в `.nvmrc` (сейчас 22). CI берёт её из этого же файла,
-поэтому локальная и серверная сборки идут на одной версии. С nvm: `nvm use` в этой папке.
+```bash
+cd frontend
+```
 
-Здесь свой `package.json`. CI: `.github/workflows/frontend.yml`.
-Файлы в `pipeline/`, `backend/` и `contract/` из этой зоны не правятся
+```bash
+npm install
+```
+
+```bash
+npm run dev
+```
+
+Страница откроется на http://localhost:5173 и работает на моках: бэкенд запускать не нужно.
+
+## Команды
+
+| Команда | Что делает |
+| --- | --- |
+| `npm run dev` | Dev-сервер на моках из `contract/examples/` |
+| `npm run dev:api` | Dev-сервер с настоящим API по адресу из `VITE_API_URL` |
+| `npm run build` | Проверка типов и сборка в `dist/` |
+| `npm run lint` | ESLint и проверка форматирования Prettier |
+| `npm run format` | Форматирование Prettier |
+| `npm test` | Тесты Vitest (страница рендерится на тех же моках) |
+| `npm run gen:api` | Типы TypeScript из `contract/openapi.yaml` |
+
+CI (`.github/workflows/frontend.yml`) выполняет `npm ci`, `npm run lint`, `npm test` и `npm run build`.
+
+## Как связаны контракт, типы и моки
+
+- **Типы.** `src/api/schema.d.ts` генерируется из `contract/openapi.yaml` пакетом `openapi-typescript`.
+  Файл в git не хранится: он создаётся при `npm install`, `npm run dev` и `npm run build`.
+  Поменялся контракт — достаточно перезапустить dev-сервер или выполнить `npm run gen:api`.
+- **Клиент.** `src/api/client.ts` — `openapi-fetch`: пути, тела запросов и ответы проверяются по этим типам.
+- **Моки.** `src/mocks/handlers.ts` — Mock Service Worker отвечает файлами из `contract/examples/`.
+  Обработчик обязателен для каждого пути контракта: без него не пройдёт проверка типов.
+  Числа в примерах синтетические и одинаковы для любой области.
+- **Тесты** используют те же обработчики, что и браузер.
+
+## Переменные окружения
+
+Vite читает файл `.env` из корня репозитория (см. `.env.example`).
+
+| Переменная | Назначение |
+| --- | --- |
+| `VITE_API_URL` | Адрес настоящего API. По умолчанию `http://localhost:8000/api/v1` |
+| `VITE_API_MOCKS` | `true` или `false` — принудительно включить или выключить моки |
+
+Без `VITE_API_MOCKS` моки включены в `npm run dev` и в тестах, выключены в `npm run dev:api` и в сборке.
+
+## Границы зоны
+
+Здесь свой `package.json`. Файлы в `pipeline/`, `backend/` и `contract/` из этой зоны не правятся
 (контракт меняется отдельным PR, см. `contract/README.md`).

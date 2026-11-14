@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import styles from './AppShell.module.css';
+import { SnapshotBanner } from './SnapshotBanner';
 
 const SECTIONS = [
   { route: '/', label: 'Calendar' },
@@ -28,6 +29,7 @@ export function AppShell({ route, children }: { route: string; children: ReactNo
           ))}
         </nav>
       </header>
+      <SnapshotBanner />
       {children}
     </div>
   );

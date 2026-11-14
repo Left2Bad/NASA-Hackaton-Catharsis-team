@@ -1,7 +1,8 @@
 """Exact numbers on data that end mid-month in the NOAA-20 period (R36). See n20_data.py for how they are built.
 
-A month of a baseline year y is 8B with B = y - 2000 (25 years: 8, 16, ..., 200), so for every calendar month:
-median 104, p10 27.2, p25 56, p75 152, p90 180.8, max 200, and the mid-rank percentile of year y is 4B - 2.
+A month of a baseline year y is 8B with B = y - 2000 (25 years: 8, 16, ..., 200), so for every calendar month but
+November: median 104, p10 27.2, p25 56, p75 152, p90 180.8, max 200, and the mid-rank percentile of year y is 4B - 2.
+November is 12B (median 156); its days 1..14 are 8B again.
 """
 
 import csv
@@ -50,19 +51,20 @@ def test_calendar_summary(calendar):
     c = calendar["_"]
     assert c["data_through"] == "2026-11-14" and c["cells"] == 100
     assert c["baseline"] == {"start_year": 2001, "end_year": 2025}
-    assert all({k: b[k] for k in BASELINE} == BASELINE for b in c["monthly_baseline"])
+    assert all({k: b[k] for k in BASELINE} == BASELINE for b in c["monthly_baseline"] if b["month"] != 11)
+    assert c["monthly_baseline"][10]["median"] == 156.0 and c["monthly_baseline"][10]["max"] == 300.0
     years = {y["year"]: y for y in c["yearly"]}
-    assert years[2010] == {"year": 2010, "total": 960.0, "complete": True}  # 12 x 8 x 10
+    assert years[2010] == {"year": 2010, "total": 1000.0, "complete": True}  # (12 x 8 + 4) x 10
     assert years[2026] == {"year": 2026, "total": 2190.0, "complete": False}  # 10 x 208 + 110
-    # yearly totals 96B over 2001..2025: slope 96 per year, mean 1248 -> 96 x 10 / 1248 = 76.9 % per decade
+    # yearly totals 100B over 2001..2025: slope 100 per year, mean 1300 -> 100 x 10 / 1300 = 76.9 % per decade
     assert c["summary"]["trend_pct_per_decade"] == 76.9
     assert c["summary"]["trend_line"] == {
         "start_year": 2001,
-        "start_value": 96.0,
+        "start_value": 100.0,
         "end_year": 2025,
-        "end_value": 2400.0,
+        "end_value": 2500.0,
     }
-    assert c["summary"]["peak_year"] == 2025 and c["summary"]["peak_month"] == 1
+    assert c["summary"]["peak_year"] == 2025 and c["summary"]["peak_month"] == 11
     assert [w["code"] for w in c["warnings"]] == ["PRELIMINARY_DATA"]
 
 
@@ -177,7 +179,7 @@ def test_export_calendar_csv(n20):
     rows = {(x["year"], x["month"]): x for x in csv.DictReader(io.StringIO(r.text))}
     assert len(rows) == 11
     assert rows[("2026", "11")] | {} == {
-        "year": "2026", "month": "11", "value": "110.0", "low": "99.0", "high": "121.0", "median": "104.0",
+        "year": "2026", "month": "11", "value": "110.0", "low": "99.0", "high": "121.0", "median": "156.0",
         "anomaly_pct": "", "percentile": "", "category": "", "source": "VIIRS_N20", "preliminary": "true",
         "partial": "true",
     }  # fmt: skip

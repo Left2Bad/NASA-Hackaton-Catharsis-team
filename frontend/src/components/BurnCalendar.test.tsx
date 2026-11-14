@@ -255,6 +255,18 @@ describe('anomaly mode (F10)', () => {
     expect(screen.getByRole('tooltip', { hidden: true })).toHaveTextContent('+273 % vs. median');
   });
 
+  it('draws seams only where the lead sensor changes for good', () => {
+    const { cell } = renderCalendar();
+
+    // NOAA-20 fills these months during outages of Suomi NPP.
+    expect(monthOf(2022, 7).source).toBe('VIIRS_N20');
+    for (const id of ['2022-07', '2022-09', '2023-07', '2024-07', '2024-08', '2024-12']) {
+      expect(cell(id)).not.toHaveAttribute('data-seam');
+    }
+    // NOAA-20 leads the record from November 2026.
+    expect(cell('2026-11').getAttribute('data-seam')).toContain('left');
+  });
+
   it('switches back to detections', async () => {
     const user = userEvent.setup();
     const { cell } = renderCalendar();

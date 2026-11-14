@@ -110,13 +110,13 @@ export function BurnCalendar({
   // harmonized record, so a paler cell there means fewer detections were recorded.
   const cellOf = useMemo(
     () =>
-      buildCells(months, (month) => {
+      buildCells(months, sources, (month) => {
         if (view === 'anomaly') return anomalyColor(month.anomaly_pct);
         if (view === 'count') return countColor(month.value, breaks);
         const lead = rawLead(month);
         return lead === null ? null : countColor(lead, breaks);
       }),
-    [months, breaks, view],
+    [months, sources, breaks, view],
   );
   const rawTotals = useMemo(() => rawYearTotals(months), [months]);
   const describe = view === 'raw' ? describeRawMonth : describeMonth;

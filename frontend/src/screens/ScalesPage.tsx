@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useCalendar, useMeta } from '../api/queries';
-import type { MonthValue } from '../api/types';
+import type { MonthValue, SourceInfo } from '../api/types';
 import { buildCells } from '../calendar/cells';
 import { HeatGrid } from '../components/HeatGrid';
 import { ScaleLegend } from '../components/ScaleLegend';
@@ -43,16 +43,24 @@ function closestBranches(vision: Vision): number {
 interface ScaleCheckProps {
   ramp: readonly string[];
   months: readonly MonthValue[];
+  sources: readonly SourceInfo[];
   colorOf: (month: MonthValue) => string | null;
   sampleLabel: string;
   branches?: boolean;
 }
 
-function ScaleCheck({ ramp, months, colorOf, sampleLabel, branches = false }: ScaleCheckProps) {
+function ScaleCheck({
+  ramp,
+  months,
+  sources,
+  colorOf,
+  sampleLabel,
+  branches = false,
+}: ScaleCheckProps) {
   return (
     <div className={styles.checks}>
       {VISIONS.map((vision) => {
-        const cell = buildCells(months, (month) => {
+        const cell = buildCells(months, sources, (month) => {
           const color = colorOf(month);
           return color === null ? null : simulate(color, vision.id);
         });
@@ -100,6 +108,7 @@ export function ScalesPage() {
   const calendar = useCalendar(preset ? { geometry: preset.geometry } : null);
 
   const months = useMemo(() => calendar.data?.months ?? [], [calendar.data]);
+  const sources = meta.data?.sources ?? [];
   const breaks = useMemo(
     () => quantileBreaks(months.filter((m) => !m.partial).map((m) => m.value)),
     [months],
@@ -132,6 +141,7 @@ export function ScalesPage() {
         <ScaleCheck
           ramp={COUNT_RAMP}
           months={months}
+          sources={sources}
           colorOf={(month) => countColor(month.value, breaks)}
           sampleLabel="Detections, 2008 to 2013"
         />
@@ -153,6 +163,7 @@ export function ScalesPage() {
         <ScaleCheck
           ramp={ANOMALY_RAMP}
           months={months}
+          sources={sources}
           colorOf={(month) => anomalyColor(month.anomaly_pct)}
           sampleLabel="Anomalies, 2008 to 2013"
           branches

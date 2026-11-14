@@ -29,6 +29,9 @@ LAST_DATE = date(2026, 11, 13)          # последний день с дан�
 LAST_STANDARD_DATE = date(2026, 6, 30)  # позже — оперативные (предварительные) данные
 BASELINE = (2001, 2025)
 
+# Месяцы сбоев Suomi NPP: как в пайплайне, ряд в них ведёт NOAA-20, а месяц помечен sensor_gap.
+SNPP_OUTAGES = {(2022, 7), (2022, 8), (2024, 7), (2024, 11)}
+
 # Область из примера запроса: степная зона, две волны горения — весной и в конце лета.
 AREA = {"west": 61.0, "south": 51.0, "east": 71.0, "north": 55.0}
 SEASON = [5, 8, 60, 520, 780, 210, 260, 640, 720, 240, 40, 6]  # типичный месяц, VIIRS-эквивалент
@@ -46,7 +49,7 @@ def source_for(year: int, month: int) -> str:
         return "MODIS_T"
     if ym <= (2012, 1):
         return "MODIS_TA"
-    if ym <= (2026, 10):
+    if ym <= (2026, 10) and ym not in SNPP_OUTAGES:
         return "VIIRS_SNPP"
     return "VIIRS_N20"
 
@@ -127,7 +130,8 @@ def build_baseline(values: dict) -> list[dict]:
 def raw_values(rng: random.Random, year: int, month: int, value: float) -> dict:
     ym = (year, month)
     modis = round(value / K_MODIS[month - 1] * math.exp(rng.gauss(0.0, 0.08)), 1)
-    snpp = round(value * math.exp(rng.gauss(0.0, 0.03)), 1) if (2012, 1) <= ym <= (2026, 10) else None
+    outage = 0.6 if ym in SNPP_OUTAGES else 1.0  # в месяц сбоя Suomi NPP видит заметно меньше точек
+    snpp = round(value * outage * math.exp(rng.gauss(0.0, 0.03)), 1) if (2012, 1) <= ym <= (2026, 10) else None
     n20 = round(value * 1.03 * math.exp(rng.gauss(0.0, 0.03)), 1) if ym >= (2018, 4) else None
     return {"modis": modis, "viirs_snpp": snpp, "viirs_n20": n20}
 
@@ -153,6 +157,7 @@ def build_calendar(values: dict, baseline: list[dict], series: str, rng: random.
             "source": source,
             "preliminary": date(year, month, 1) > LAST_STANDARD_DATE,
             "partial": partial,
+            "sensor_gap": (year, month) in SNPP_OUTAGES,
         }
         if partial:
             item["anomaly_pct"] = None  # неполный месяц нельзя сравнивать с полной медианой
@@ -170,6 +175,12 @@ def build_calendar(values: dict, baseline: list[dict], series: str, rng: random.
     ys = [y["total"] for y in complete]
     mean_x, mean_y = sum(xs) / len(xs), sum(ys) / len(ys)
     slope = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys)) / sum((x - mean_x) ** 2 for x in xs)
+    trend_line = {
+        "start_year": xs[0],
+        "start_value": round(mean_y + slope * (xs[0] - mean_x), 1),
+        "end_year": xs[-1],
+        "end_value": round(mean_y + slope * (xs[-1] - mean_x), 1),
+    }
 
     lat_mid = math.radians((AREA["south"] + AREA["north"]) / 2)
     width_km = (AREA["east"] - AREA["west"]) * 111.32 * math.cos(lat_mid)
@@ -192,12 +203,17 @@ def build_calendar(values: dict, baseline: list[dict], series: str, rng: random.
             "peak_month": max(baseline, key=lambda b: b["median"])["month"],
             "total": round(sum(values.values()), 1),
             "trend_pct_per_decade": round(slope * 10 / mean_y * 100, 1),
+            "trend_line": trend_line,
         },
         "warnings": [
             {
                 "code": "PRELIMINARY_DATA",
                 "message": "Месяцы после 2026-06-30 посчитаны по оперативным данным и будут уточнены.",
-            }
+            },
+            {
+                "code": "SENSOR_GAP",
+                "message": "В 4 месяцах Suomi NPP работал с перерывами: значения посчитаны по NOAA-20.",
+            },
         ],
     }
 

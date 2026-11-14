@@ -93,7 +93,11 @@ export function YearlyTotals({ calendar }: { calendar: CalendarResponse }) {
   };
 
   return (
-    <figure className={styles.chart}>
+    <figure
+      className={styles.chart}
+      data-figure="yearly-totals"
+      data-figure-title="Fire detections per year"
+    >
       <figcaption className={styles.caption}>Detections per year</figcaption>
 
       <p className={styles.readout} data-testid="yearly-readout">
@@ -185,6 +189,7 @@ export function YearlyTotals({ calendar }: { calendar: CalendarResponse }) {
           {activeTrend !== null && cursor.isPicked && (
             <circle
               className={styles.trendDot}
+              data-export-skip=""
               cx={center(cursor.active)}
               cy={y(activeTrend)}
               r={4}
@@ -193,6 +198,7 @@ export function YearlyTotals({ calendar }: { calendar: CalendarResponse }) {
 
           <rect
             className={styles.hitArea}
+            data-export-skip=""
             x={MARGIN.left}
             y={0}
             width={plotWidth}

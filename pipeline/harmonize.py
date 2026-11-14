@@ -28,6 +28,7 @@ from pathlib import Path
 import duckdb
 
 import lead
+from grid import SUMS
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -54,6 +55,7 @@ GAP_RATIO = {"modis": 0.25, "viirs": 0.5}
 # ratio is the test because Terra-only ratios also carry a real diurnal signal (afternoon burning in Central Africa
 # gives Terra-only ratios 10-35 times the world value with a normal Terra + Aqua ratio).
 COEF_BAND = 4.0
+GAP_MONTH_ROWS = "grid_daily_gap_months.parquet"  # daily rows of months with substituted days, for the backend
 
 # pair id -> (basis, metric, target column, source column, source count column, first month of overlap)
 PAIRS = {
@@ -351,6 +353,32 @@ def coefficient_stats(con, coef_path):
     return out
 
 
+def write_gap_month_rows(con, daily_path, subs, out):
+    """Grid rows of the months that have substituted gap days, for the backend (same columns as grid_daily).
+
+    In such a month the days are grouped by the source they use (lead.substitutions); each cell gets one row per
+    group, summed over the group's days and dated with the group's first day, so that the day rule (lead.lead_sql)
+    gives every row its source. The backend reads these few rows instead of all of grid_daily.
+    """
+    rep = []  # (day, representative day of its group)
+    for m in sorted({lead.month_start(d) for d in subs}):
+        days = [m + dt.timedelta(days=i) for i in range(31) if (m + dt.timedelta(days=i)).month == m.month]
+        groups: dict[str, list[dt.date]] = {}
+        for d in days:
+            groups.setdefault(subs.get(d, ""), []).append(d)
+        rep += [(d, min(g)) for g in groups.values() for d in g]
+    con.execute("CREATE OR REPLACE TABLE rep (date DATE, rep DATE)")
+    if rep:
+        con.executemany("INSERT INTO rep VALUES (?, ?)", rep)
+    part = out.with_suffix(".part")
+    con.execute(f"""
+    COPY (SELECT iy, ix, rep.rep AS date, {SUMS}
+          FROM read_parquet('{Path(daily_path).as_posix()}') JOIN rep USING (date)
+          GROUP BY iy, ix, rep.rep ORDER BY iy, ix, date)
+    TO '{part.as_posix()}' (FORMAT parquet, COMPRESSION zstd, ROW_GROUP_SIZE 100000)""")
+    part.replace(out)
+
+
 def write_csv(path, header, rows):
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(header + "\n")
@@ -389,6 +417,7 @@ def main(argv=(), data=DATA):
         f"gap days {counts}; {len(subs)} days filled from another sensor; sensor_gap months: {len(flagged)}", flush=True
     )
     if daily:
+        write_gap_month_rows(con, daily, subs, data / GAP_MONTH_ROWS)
         load_grid(con, None, daily)  # fits and checks without gap days
 
     con.execute("DROP TABLE IF EXISTS vp")

@@ -58,7 +58,7 @@ def _sql(data: Data, files: list[Path], area: geometry.Area, first: dt.date, las
     g_t, g_ta, g_n20 = data.global_coef[1], data.global_coef[0], data.global_coef[2]
     pixel = "pixel_km2" if "pixel_km2" in cols else "round(scan * track, 2)"  # full data/points has scan, track
     quality = "coalesce(quality, 'SP')" if "quality" in cols else "'SP'"
-    source = lead.lead_sql("p.acq_date", data.outages)
+    source = lead.lead_sql("p.acq_date", data.outages, data.gap_days)
     return f"""
       WITH p AS (
         SELECT lat, lon, acq_date, acq_time, sensor, source, conf_class, frp, daynight, type,

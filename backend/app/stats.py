@@ -29,23 +29,35 @@ def baseline_stats(sample: list[float]) -> dict:
 
 
 def percentile_of(sample: list[float], value: float) -> float | None:
-    """Share of baseline years with a value <= this one, 0-100."""
+    """Mid-rank percentile of the value among the baseline years, 0-100 (contract: MonthValue.percentile).
+
+    Years below the value count fully, years equal to it count half, so ties (typically many fire-free years)
+    put the value in the middle of the tie instead of at its top: a month without fires among years without
+    fires is the 50th percentile, not the 100th. Values are compared after rounding to 0.1, as published.
+    """
     if not sample:
         return None
-    return float(round(100 * sum(1 for v in sample if v <= value + 1e-9) / len(sample)))
+    v = r1(value)
+    below = sum(1 for s in sample if r1(s) < v)
+    equal = sum(1 for s in sample if r1(s) == v)
+    return r1(100 * (below + 0.5 * equal) / len(sample))
 
 
-def category(value: float, base: dict, in_baseline: bool) -> str | None:
-    """below_normal < p25 <= normal <= p75 < above_normal <= p90 < high; record = above the baseline maximum."""
-    if base["n_years"] == 0:
+def category(percentile: float | None, value: float, base: dict, in_baseline: bool) -> str | None:
+    """Contract Category from the published percentile, so the two fields always agree.
+
+    below 25 -> below_normal, 25-75 -> normal, above 75 up to 90 -> above_normal, above 90 -> high;
+    record = a year outside the baseline whose rounded value is above the baseline maximum.
+    """
+    if percentile is None or base["n_years"] == 0:
         return None
-    if not in_baseline and value > base["max"] and value > 0:
+    if not in_baseline and r1(value) > base["max"] and value > 0:
         return "record"
-    if value < base["p25"]:
+    if percentile < 25:
         return "below_normal"
-    if value <= base["p75"]:
+    if percentile <= 75:
         return "normal"
-    if value <= base["p90"]:
+    if percentile <= 90:
         return "above_normal"
     return "high"
 

@@ -5,18 +5,21 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+# years must fit a date; anything above the data is answered with NO_DATA or clamped by the services
+MAX_YEAR = 9999
+
 
 class YearRange(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    start_year: int = Field(ge=2000)
-    end_year: int = Field(ge=2000)
+    start_year: int = Field(ge=2000, le=MAX_YEAR)
+    end_year: int = Field(ge=2000, le=MAX_YEAR)
 
 
 class AreaQuery(BaseModel):
     model_config = ConfigDict(extra="forbid")
     geometry: dict
-    start_year: int | None = Field(default=None, ge=2000)
-    end_year: int | None = Field(default=None, ge=2000)
+    start_year: int | None = Field(default=None, ge=2000, le=MAX_YEAR)
+    end_year: int | None = Field(default=None, ge=2000, le=MAX_YEAR)
     baseline: YearRange | None = None
     metric: Literal["count", "frp"] = "count"
     series: Literal["harmonized", "raw"] = "harmonized"
@@ -25,14 +28,14 @@ class AreaQuery(BaseModel):
 class DailyQuery(BaseModel):
     model_config = ConfigDict(extra="forbid")
     geometry: dict
-    year: int = Field(ge=2000)
+    year: int = Field(ge=2000, le=MAX_YEAR)
     metric: Literal["count", "frp"] = "count"
 
 
 class PointsQuery(BaseModel):
     model_config = ConfigDict(extra="forbid")
     geometry: dict
-    year: int = Field(ge=2000)
+    year: int = Field(ge=2000, le=MAX_YEAR)
     month: int = Field(ge=1, le=12)
 
 

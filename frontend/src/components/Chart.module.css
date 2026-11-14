@@ -1,0 +1,246 @@
+.chart {
+  /* The series in focus wears the calendar's warm hue; the median is a quiet gray reference. */
+  --series-main: #c85d02;
+  --series-strong: #9d3d07;
+  --series-median: var(--muted);
+  --series-light: #f9d1a8;
+  /* The usual range: a wash of the reference gray, never a solid block. */
+  --band: rgb(93 105 117 / 0.16);
+
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.caption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+/* A control that belongs to one chart sits in its caption. */
+.select {
+  padding: 3px 6px;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+/* The readout doubles as the legend: a line key, the series name, the value of the active day. */
+.readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  align-items: center;
+  /* Room for two lines, so the plot does not jump when a longer value wraps the row. */
+  min-height: 2.9em;
+  align-content: start;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.position {
+  min-width: 7.5em;
+  color: var(--muted);
+}
+
+.key {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.key strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.lineKey {
+  display: inline-block;
+  width: 16px;
+  height: 0;
+  border-top: 2px solid var(--series-main);
+}
+
+.lineKey[data-series='median'] {
+  border-top-color: var(--series-median);
+  border-top-style: dashed;
+}
+
+.lineKey[data-series='trend'] {
+  border-top-color: var(--ink);
+}
+
+/* Filled marks (bars, bands) are keyed with a box, lines with a stroke. */
+.boxKey {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: var(--series-main);
+  border-radius: 2px;
+}
+
+.boxKey[data-series='band'] {
+  background: var(--band);
+}
+
+.boxKey[data-series='hatched'] {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--series-main) 0 1.5px,
+    var(--series-light) 1.5px 4px
+  );
+}
+
+/* A remark next to a value, such as "incomplete year". */
+.aside {
+  color: var(--muted);
+}
+
+.plot {
+  min-width: 0;
+  border-radius: var(--radius);
+  touch-action: pan-y;
+}
+
+.plot svg {
+  display: block;
+  overflow: visible;
+}
+
+.gridline,
+.baseline {
+  stroke: var(--line);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.baseline {
+  stroke: var(--line-strong);
+}
+
+.tick,
+.xTick {
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  fill: var(--muted);
+}
+
+.tick {
+  text-anchor: end;
+}
+
+.xTick {
+  text-anchor: middle;
+}
+
+.crosshair {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.seriesLine,
+.medianLine {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.seriesLine {
+  stroke: var(--series-main);
+}
+
+/* Dashes are the second cue besides color, so the two lines differ for every kind of vision. */
+.medianLine {
+  stroke: var(--series-median);
+  stroke-dasharray: 5 4;
+}
+
+.seriesDot,
+.medianDot {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.seriesDot {
+  fill: var(--series-main);
+}
+
+.medianDot {
+  fill: var(--series-median);
+}
+
+/* The usual range behind the lines. */
+.band {
+  fill: var(--band);
+}
+
+/* A value that is not final, such as a month that is not over: a ring instead of a dot. */
+.hollowDot {
+  fill: var(--surface);
+  stroke: var(--series-main);
+  stroke-width: 2;
+}
+
+.bar {
+  fill: var(--series-main);
+}
+
+.bar[data-active] {
+  fill: var(--series-strong);
+}
+
+.hatchGround {
+  fill: var(--series-light);
+}
+
+.hatchInk {
+  stroke: var(--series-main);
+  stroke-width: 2.5;
+}
+
+/* The trend runs over the bars, so it is drawn in the text color with a surface-colored edge. */
+.trendLine {
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+  paint-order: stroke;
+}
+
+.trendDot {
+  fill: var(--ink);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+/* Catches the pointer over the whole plot, so the reader aims at a day, not at a thin line. */
+.hitArea {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.note {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}

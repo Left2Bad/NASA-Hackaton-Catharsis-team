@@ -98,7 +98,7 @@ describe('the answer first', () => {
     const headline = nowHeadline({ ...current, category: null, anomaly_pct: null, value: 0 });
     expect(headline.level).toBeNull();
     expect(headline.color).toBeNull();
-    expect(headline.detail).toBe('0 detections, No detections, the same as the median');
+    expect(headline.detail).toBe('0 detections, the same as the median, which is zero');
   });
 
   it('shows one error, not two, when the server cannot answer for the area', async () => {

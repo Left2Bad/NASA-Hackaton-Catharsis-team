@@ -36,15 +36,24 @@ export function periodLabel(current: CurrentResponse): string {
   return `${monthName(month)} ${range}, ${year}`;
 }
 
-/** How the value compares with the median of the same days. */
+/** A count of detections: "1 detection", "25.7 detections". */
+export function detections(value: number): string {
+  const count = formatNumber(value);
+  return count === '1' ? '1 detection' : `${count} detections`;
+}
+
+/**
+ * How the value compares with the median of the same days. It never repeats the count,
+ * so it reads after a count as well as on its own: "25.7 detections, +48.6 % against...".
+ */
 export function comparison(current: CurrentResponse): string {
   if (current.anomaly_pct !== null) {
     return `${formatSignedPercent(current.anomaly_pct)} against the median of the same days`;
   }
-  // The median is zero, so a percentage has no meaning: say how many detections there were.
+  // The median is zero, so a percentage has no meaning.
   return current.value > 0
-    ? `${formatNumber(current.value)} above a median of zero`
-    : 'No detections, the same as the median';
+    ? 'above the median, which is zero'
+    : 'the same as the median, which is zero';
 }
 
 /**
@@ -66,7 +75,7 @@ export function nowHeadline(current: CurrentResponse): {
     label: `Now, ${periodLabel(current)}`,
     level: current.category === null ? null : CATEGORY_LABELS[current.category],
     color: current.category === null ? null : CATEGORY_COLORS[current.category],
-    detail: `${formatNumber(current.value)} detections, ${comparison(current)}`,
+    detail: `${detections(current.value)}, ${comparison(current)}`,
   };
 }
 
@@ -88,10 +97,14 @@ export function levelBands(baseline: Baseline): LevelBand[] {
   ];
 }
 
-/** The range of a level in words: "below 9.5", "9.5 to 25.1", "above 58.8". */
+/**
+ * The range of a level in words: "below 9.5", "9.5 to 25.1", "above 58.8". A level whose
+ * percentiles coincide is one value, for example "0" where most baseline years had no fires.
+ */
 export function bandRange(band: LevelBand): string {
   if (band.to === null) return `above ${formatNumber(band.from)}`;
-  if (band.from === 0) return `below ${formatNumber(band.to)}`;
+  if (band.to === band.from) return formatNumber(band.to);
+  if (band.category === 'below_normal') return `below ${formatNumber(band.to)}`;
   return `${formatNumber(band.from)} to ${formatNumber(band.to)}`;
 }
 

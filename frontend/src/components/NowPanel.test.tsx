@@ -86,7 +86,7 @@ describe('NowPanel (F15)', () => {
       />,
     );
 
-    expect(screen.getByText('No detections, the same as the median')).toBeInTheDocument();
+    expect(screen.getByText('the same as the median, which is zero')).toBeInTheDocument();
     expect(screen.getByText('Percentile', { selector: 'dt' }).nextElementSibling).toHaveTextContent(
       '—',
     );
@@ -121,6 +121,51 @@ describe('NowPanel (F15)', () => {
       'Below normalbelow 112',
       'Normal112 to 224',
       'Recordabove 224',
+    ]);
+  });
+});
+
+describe('Now panel when the median is zero', () => {
+  // What the API returns for a box in the Sahara: the month is normal, at the 50th percentile.
+  const desert = withFields({
+    value: 0,
+    anomaly_pct: null,
+    percentile: 50,
+    category: 'normal',
+    baseline_same_days: { median: 0, p25: 0, p75: 0, p90: 0, max: 0, n_years: 25 },
+    cumulative: current.cumulative.map((day) => ({ day: day.day, value: 0, median: 0 })),
+  });
+
+  it('does not claim a month without fires is above any year', () => {
+    render(<NowPanel current={desert} />);
+
+    expect(screen.getByText('Normal', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.getByText('the same as the median, which is zero')).toBeInTheDocument();
+    const percentile = screen.getByText('Percentile', { selector: 'dt' }).parentElement;
+    expect(percentile).toHaveTextContent('50');
+    expect(percentile).not.toHaveTextContent(/above/);
+  });
+
+  it('names a level that collapses to zero by its value', () => {
+    // Most baseline years had no fires on these days, so the normal level is just zero.
+    render(
+      <NowPanel
+        current={withFields({
+          ...desert,
+          percentile: 40,
+          baseline_same_days: { median: 0, p25: 0, p75: 0, p90: 4, max: 10, n_years: 25 },
+        })}
+      />,
+    );
+
+    const levels = within(
+      screen.getByRole('list', { name: 'Levels for these days of the month' }),
+    ).getAllByRole('listitem');
+    expect(levels.map((item) => item.textContent)).toEqual([
+      'Normal0',
+      'Above normal0 to 4',
+      'High4 to 10',
+      'Recordabove 10',
     ]);
   });
 });

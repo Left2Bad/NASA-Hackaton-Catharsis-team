@@ -1,7 +1,7 @@
 """Read-only access to pipeline outputs in DATA_DIR (see data/README.md).
 
 Files used: grid_daily.parquet, grid_monthly.parquet, coefficients.parquet, uncertainty.parquet,
-outage_months.csv, harmonized/summary.json. Small tables are loaded into memory once; the grids stay
+outage_months.csv, harmonized/summary.json, validation/report.json. Small tables are loaded into memory once; the grids stay
 on disk and are scanned per request (sorted by iy, so a latitude band reads only its row groups).
 """
 
@@ -47,6 +47,7 @@ class Data:
         self.settings = settings
         self.dir: Path = settings.data_dir
         self._lock = threading.Lock()
+        self._validation: bytes | None = None
         self.con = duckdb.connect()
         self.con.execute(f"SET memory_limit='{settings.duckdb_memory_limit}'; SET threads={settings.duckdb_threads}")
         spill = self.dir / "_tmp" / "spill_api"
@@ -100,6 +101,15 @@ class Data:
                 ).fetchone()[0]
                 return d or self.last_date
         return self.last_date  # yearly archives are all standard processing
+
+    def validation_report(self) -> bytes | None:
+        """validation/report.json (pipeline/validation.py) as raw bytes, read once; None while the file is missing."""
+        with self._lock:
+            if self._validation is None:
+                path = self.dir / "validation" / "report.json"
+                if path.exists():
+                    self._validation = path.read_bytes()
+            return self._validation
 
     @cached_property
     def data_version(self) -> str:

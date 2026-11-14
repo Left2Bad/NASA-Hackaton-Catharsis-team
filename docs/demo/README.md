@@ -28,3 +28,5 @@ The `screenshots/` folder. File names start with the task a screenshot belongs t
 | `b5-coordinate-form.jpg` | The form for setting the area by bounds or by a point with a radius |
 | `b5-point-and-radius.jpg` | An area set as a point with a 150 km radius |
 | `b5-area-limit.jpg` | The message for an area above the size limit |
+| `b6-calendar-laptop.jpg` | The burn calendar with yearly totals and the marks of preliminary months |
+| `b6-calendar-tooltip-phone.jpg` | The cell tooltip on a phone |

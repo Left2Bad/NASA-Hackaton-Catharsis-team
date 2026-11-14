@@ -86,7 +86,7 @@ describe('main screen on mocks', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Choose an area to see its fire calendar' }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole('img', { name: /^Fire detections by month/ })).toBeNull();
+    expect(screen.queryByRole('grid', { name: /^Fire detections by month/ })).toBeNull();
   });
 
   it('loads the calendar for an example area', async () => {
@@ -98,7 +98,7 @@ describe('main screen on mocks', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Northern Kazakhstan' }),
     ).toBeInTheDocument();
-    await screen.findByRole('img', { name: /^Fire detections by month/ });
+    await screen.findByRole('grid', { name: /^Fire detections by month/ });
     expect(container.querySelectorAll('[data-month]')).toHaveLength(calendarExample.months.length);
 
     const summary = screen.getByRole('region', { name: 'Summary' });
@@ -112,7 +112,7 @@ describe('main screen on mocks', () => {
     const { container } = renderApp();
 
     await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
-    await screen.findByRole('img', { name: /^Fire detections by month/ });
+    await screen.findByRole('grid', { name: /^Fire detections by month/ });
     const seam = (month: string) =>
       container.querySelector(`[data-month="${month}"]`)?.getAttribute('data-seam') ?? '';
 
@@ -134,7 +134,7 @@ describe('main screen on mocks', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Custom area' }),
     ).toBeInTheDocument();
-    await screen.findByRole('img', { name: /^Fire detections by month/ });
+    await screen.findByRole('grid', { name: /^Fire detections by month/ });
     expect(bodies).toEqual([
       {
         geometry: {
@@ -210,13 +210,13 @@ describe('period (F4)', () => {
     const { container } = renderApp();
 
     await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
-    await screen.findByRole('img', { name: /^Fire detections by month/ });
+    await screen.findByRole('grid', { name: /^Fire detections by month/ });
 
     const period = screen.getByRole('group', { name: 'Period' });
     await user.selectOptions(within(period).getByLabelText('From'), '2010');
     await user.selectOptions(within(period).getByLabelText('to'), '2012');
 
-    await screen.findByRole('img', {
+    await screen.findByRole('grid', {
       name: 'Fire detections by month, 2010 to 2012. Darker cells mean more detections.',
     });
     expect(container.querySelectorAll('[data-month]')).toHaveLength(36);
@@ -290,7 +290,7 @@ describe('coordinates (F2)', () => {
       await screen.findByRole('heading', { level: 1, name: 'Custom area' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('form', { name: 'Area by coordinates' })).toBeNull();
-    await screen.findByRole('img', { name: /^Fire detections by month/ });
+    await screen.findByRole('grid', { name: /^Fire detections by month/ });
     expect(bodies[0].geometry).toEqual({
       type: 'Polygon',
       coordinates: [

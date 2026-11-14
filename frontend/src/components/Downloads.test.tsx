@@ -3,17 +3,20 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw/http';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import calendarJson from '../../../contract/examples/calendar.response.json';
+import currentJson from '../../../contract/examples/current.response.json';
 import metaJson from '../../../contract/examples/meta.json';
-import type { CalendarResponse, Meta } from '../api/types';
+import type { CalendarResponse, CurrentResponse, Meta } from '../api/types';
 import * as files from '../export/files';
 import * as png from '../export/png';
 import { server } from '../mocks/server';
+import { CumulativeChart } from './CumulativeChart';
 import { Downloads } from './Downloads';
 import { SeasonProfile } from './SeasonProfile';
 import { YearlyTotals } from './YearlyTotals';
 
 const calendar = calendarJson as unknown as CalendarResponse;
 const meta = metaJson as unknown as Meta;
+const current = currentJson as unknown as CurrentResponse;
 const preset = meta.presets[0];
 
 const scope: files.ExportScope = {
@@ -27,6 +30,7 @@ const scope: files.ExportScope = {
 function renderDownloads(overrides: Partial<Parameters<typeof Downloads>[0]> = {}) {
   return render(
     <>
+      <CumulativeChart days={current.cumulative} year={current.year} month={current.month} />
       <SeasonProfile calendar={calendar} />
       <YearlyTotals calendar={calendar} />
       <Downloads
@@ -221,6 +225,38 @@ describe('Downloads', () => {
       'Yearly total',
       'Incomplete year',
     ]);
+  });
+
+  it('offers the image of the current month only once it has loaded', () => {
+    renderDownloads();
+    expect(
+      within(screen.getByRole('group', { name: 'Files to download' })).queryByRole('button', {
+        name: 'Current month (PNG)',
+      }),
+    ).toBeNull();
+  });
+
+  it('saves the current month with its own caption (F24)', async () => {
+    const user = userEvent.setup();
+    renderDownloads({ current });
+
+    await user.click(button('Current month (PNG)'));
+
+    await waitFor(() => expect(saved).toHaveLength(1));
+    // The month takes the place of the years in the file name.
+    expect(saved[0].name).toBe('firms-current-month_kz-steppe_2026-11.png');
+    expect(rendered[0].title).toBe('Fire detections since November 1, 2026');
+    expect(rendered[0].legend?.map((item) => item.label)).toEqual([
+      'This month',
+      'Median of the same days in the baseline years',
+    ]);
+    expect(rendered[0].caption).toEqual([
+      expect.stringMatching(/^Northern Kazakhstan: 61°E to 71°E, 51°N to 55°N, /),
+      'November 1 to 13, 2026: 25.7 detections, above normal, +48.6 % against the median of the same days.',
+      `Data through 2026-11-13, version ${meta.data_version}. Preliminary, to be revised.`,
+      expect.stringContaining('NASA FIRMS'),
+    ]);
+    expect(rendered[0].figure.markup).not.toContain('data-export-skip');
   });
 
   it('names the data source next to the buttons', () => {

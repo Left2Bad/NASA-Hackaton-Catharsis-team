@@ -38,6 +38,15 @@ export function exportFileName(kind: string, scope: ExportScope, extension: stri
   return `firms-${kind}_${areaSlug(scope)}_${yearsSlug(scope)}.${extension}`;
 }
 
+/** The file name of the current-month image: the month takes the place of the years. */
+export function nowFileName(
+  scope: Pick<ExportScope, 'geometry' | 'presetId'>,
+  year: number,
+  month: number,
+): string {
+  return `firms-current-month_${areaSlug(scope)}_${year}-${String(month).padStart(2, '0')}.png`;
+}
+
 /**
  * The dates of a hot spot export for a period given in years: January 1 of the first year
  * to December 31 of the last one, but never outside the record of the dataset.

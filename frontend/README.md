@@ -160,13 +160,17 @@ The "Downloads" section of the panel (`src/components/Downloads.tsx`, helpers in
   and the app says to shorten the period; when the calendar total already exceeds the limit, the
   note under the buttons warns before the click.
 - **Images, PNG (F24):** the calendar (in the mode that is on screen), the season profile (with the
-  chosen year) and the yearly totals. Every image has a title, a legend and a caption of three lines:
-  the area with its bounds and size, the period with the data date and version, and the data source.
+  chosen year), the yearly totals and the current month. Every image has a title, a legend and a
+  caption: the area with its bounds and size, the period with the data date and version, and the
+  data source. The current-month image names the days it covers and how they compare instead of
+  the years, and appears in the list once the "Now" request has answered.
 - **How an image is made:** the charts are SVG already, so a copy with its styles written inline
   (`chartSvg.ts`) is painted on a canvas. The calendar is an HTML grid on the page, so the export
   redraws it as SVG from the same data and colors (`calendarSvg.ts`). `png.ts` adds the title, the
   legend and the caption and saves at double resolution. No library is involved.
-- **Fonts:** an image cannot load the web font of the page, so exports use the system font.
+- **Fonts:** images use Geologica, like the page. The canvas takes the font from the page; an SVG
+  painted as an image is a separate document, so the Latin subset of the font (25 KB) is put inside
+  it as a data URI (`font.ts`). If the font cannot be loaded, the image falls back to the system font.
 - **File names** say what, where and when, and carry the data source:
   `firms-hotspots_kz-steppe_2010-2012.csv`, `firms-calendar_61E-71E_51N-55N_2025.png`.
 - **Data source in a CSV:** a comment line at the top would break opening the file in a spreadsheet,

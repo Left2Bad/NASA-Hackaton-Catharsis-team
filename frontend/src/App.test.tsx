@@ -573,6 +573,8 @@ describe('downloads (F22 to F24)', () => {
     await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
 
     const downloads = await screen.findByRole('region', { name: 'Downloads' });
+    // The image of the current month joins the list when its own request has answered.
+    await within(downloads).findByRole('button', { name: 'Current month (PNG)' });
     expect(
       within(downloads)
         .getAllByRole('button')
@@ -583,6 +585,7 @@ describe('downloads (F22 to F24)', () => {
       'Calendar (PNG)',
       'Season profile (PNG)',
       'Yearly totals (PNG)',
+      'Current month (PNG)',
     ]);
     // The dates of the hot spot file follow the period and the record of the dataset.
     expect(

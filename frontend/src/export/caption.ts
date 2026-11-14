@@ -1,6 +1,7 @@
-import type { CalendarResponse, Meta } from '../api/types';
+import type { CalendarResponse, CurrentResponse, Meta } from '../api/types';
 import { boundsOf, formatBounds } from '../geo/geometry';
-import { formatNumber } from '../labels';
+import { CATEGORY_LABELS, formatNumber } from '../labels';
+import { comparison, periodLabel } from '../now/describe';
 import type { ExportScope } from './files';
 
 // The caption printed under every exported image (requirement F24): the area, the period
@@ -25,6 +26,28 @@ export function captionLines(
   return [
     `${areaName}: ${bounds}, ${formatNumber(Math.round(calendar.area_km2))} km²`,
     `Period: ${years}. Data through ${calendar.data_through}, version ${meta.data_version}.`,
+    SOURCE_LINE,
+  ];
+}
+
+/**
+ * The caption of the current-month image. The years of the calendar do not apply to "now",
+ * so the second line gives the days that are counted and how they compare instead.
+ */
+export function nowCaptionLines(
+  scope: ExportScope,
+  areaName: string,
+  calendar: Pick<CalendarResponse, 'area_km2'>,
+  meta: Pick<Meta, 'data_version'>,
+  current: CurrentResponse,
+): string[] {
+  const bounds = formatBounds(boundsOf(scope.geometry));
+  const level =
+    current.category === null ? '' : `${CATEGORY_LABELS[current.category].toLowerCase()}, `;
+  return [
+    `${areaName}: ${bounds}, ${formatNumber(Math.round(calendar.area_km2))} km²`,
+    `${periodLabel(current)}: ${formatNumber(current.value)} detections, ${level}${comparison(current)}.`,
+    `Data through ${current.as_of}, version ${meta.data_version}.${current.preliminary ? ' Preliminary, to be revised.' : ''}`,
     SOURCE_LINE,
   ];
 }

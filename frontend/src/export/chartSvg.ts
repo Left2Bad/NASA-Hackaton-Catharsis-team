@@ -1,4 +1,5 @@
-import { EXPORT_FONT, type SvgFigure } from './calendarSvg';
+import type { SvgFigure } from './calendarSvg';
+import { EXPORT_FONT } from './font';
 
 // Turns a chart that is on the page into a standalone SVG for the PNG export (F24).
 // On the page the chart is styled by the stylesheet; a standalone image has no stylesheet,

@@ -204,6 +204,7 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
             calendar={data}
             meta={meta}
             mode={mode}
+            current={current.data}
           />
         </section>
       )}

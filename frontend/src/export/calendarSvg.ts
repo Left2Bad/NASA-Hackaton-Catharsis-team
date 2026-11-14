@@ -11,6 +11,7 @@ import {
   quantileBreaks,
   ZERO_COLOR,
 } from '../theme/scales';
+import { EXPORT_FONT } from './font';
 
 // The burn calendar redrawn as a standalone SVG for the PNG export (requirement F24).
 // On the page the calendar is an HTML grid, which cannot be turned into an image directly,
@@ -23,13 +24,12 @@ export interface SvgFigure {
   height: number;
 }
 
-/** Fonts every system has: an image cannot load the web font of the page. */
-export const EXPORT_FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
 export const INK = '#16212b';
 export const MUTED = '#5d6975';
 const LINE = '#aab4be';
 
-const YEAR_WIDTH = 40;
+/** Room for the year and for the word "Median" in the page typeface. */
+const YEAR_WIDTH = 50;
 const CELL_WIDTH = 26;
 const CELL_HEIGHT = 16;
 const GAP = 2;

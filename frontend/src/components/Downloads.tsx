@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { fetchCalendarCsv, fetchPointsCsv } from '../api/queries';
-import type { CalendarResponse, Meta } from '../api/types';
+import type { CalendarResponse, CurrentResponse, Meta } from '../api/types';
 import { calendarSvg } from '../export/calendarSvg';
-import { captionLines, SOURCE_LINE } from '../export/caption';
+import { captionLines, nowCaptionLines, SOURCE_LINE } from '../export/caption';
 import { chartSvg } from '../export/chartSvg';
-import { exportDates, exportFileName, saveBlob, type ExportScope } from '../export/files';
+import {
+  exportDates,
+  exportFileName,
+  nowFileName,
+  saveBlob,
+  type ExportScope,
+} from '../export/files';
 import { renderPng, type LegendItem, type PngSpec } from '../export/png';
 import { formatNumber } from '../labels';
 import type { CalendarMode } from './BurnCalendar';
@@ -19,6 +25,8 @@ interface DownloadsProps {
   meta: Meta;
   /** The calendar image is saved in the mode that is on screen. */
   mode: CalendarMode;
+  /** The current month, once it has loaded: its chart can be saved as well. */
+  current?: CurrentResponse;
 }
 
 /** A chart of the panel that can be saved as an image, found by its `data-figure` mark. */
@@ -38,7 +46,7 @@ const chartColor = (figure: HTMLElement, name: string, fallback: string) =>
  * CSV, the calendar and the charts as PNG with a caption that names the area, the period
  * and the data source.
  */
-export function Downloads({ scope, areaName, calendar, meta, mode }: DownloadsProps) {
+export function Downloads({ scope, areaName, calendar, meta, mode, current }: DownloadsProps) {
   // Which download is under way, and what the last failed one said.
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<{ id: string; error: Error } | null>(null);
@@ -151,6 +159,37 @@ export function Downloads({ scope, areaName, calendar, meta, mode }: DownloadsPr
         },
       },
     ];
+
+  // The current month is a separate request: its image is offered once it is there.
+  if (current) {
+    actions.push({
+      id: 'now-png',
+      label: 'Current month (PNG)',
+      run: async () => {
+        const { figure, svg } = chartFigure('current-month');
+        return {
+          blob: await renderPng({
+            title: figure.dataset.figureTitle ?? 'Current month',
+            legend: [
+              {
+                kind: 'line',
+                color: chartColor(figure, '--series-main', '#c85d02'),
+                label: 'This month',
+              },
+              {
+                kind: 'dash',
+                color: chartColor(figure, '--series-median', '#5d6975'),
+                label: 'Median of the same days in the baseline years',
+              },
+            ],
+            figure: chartSvg(svg),
+            caption: nowCaptionLines(scope, areaName, calendar, meta, current),
+          }),
+          name: nowFileName(scope, current.year, current.month),
+        };
+      },
+    });
+  }
 
   return (
     <div className={styles.downloads}>

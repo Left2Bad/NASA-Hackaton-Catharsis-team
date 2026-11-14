@@ -5,7 +5,15 @@ import type { CalendarResponse, Geometry, Meta } from '../api/types';
 import { calendarSvg } from './calendarSvg';
 import { captionLines, SOURCE_LINE } from './caption';
 import { chartSvg } from './chartSvg';
-import { areaSlug, exportDates, exportFileName, yearsSlug, type ExportScope } from './files';
+import { EXPORT_FONT, PAGE_FONT, withStyle } from './font';
+import {
+  areaSlug,
+  exportDates,
+  exportFileName,
+  nowFileName,
+  yearsSlug,
+  type ExportScope,
+} from './files';
 import { layoutPng, type PngSpec } from './png';
 
 const calendar = calendarJson as unknown as CalendarResponse;
@@ -47,6 +55,32 @@ describe('file names', () => {
     expect(exportFileName('hotspots', { ...scope, startYear: 2015, endYear: 2015 }, 'csv')).toBe(
       'firms-hotspots_kz-steppe_2015.csv',
     );
+  });
+});
+
+describe('the page font in exported images', () => {
+  it('asks for the typeface of the page first, with system fonts behind it', () => {
+    expect(EXPORT_FONT.startsWith(`'${PAGE_FONT}'`)).toBe(true);
+    expect(EXPORT_FONT).toContain('system-ui');
+    expect(calendarSvg(calendar, 'count').markup).toContain(`font-family="${EXPORT_FONT}"`);
+  });
+
+  it('puts the font rule inside the drawing, right after its opening tag', () => {
+    const css =
+      "@font-face{font-family:'Geologica Variable';src:url(data:font/woff2;base64,AAAA);}";
+    expect(withStyle('<svg width="10" height="10"><rect/></svg>', css)).toBe(
+      `<svg width="10" height="10"><style>${css}</style><rect/></svg>`,
+    );
+  });
+
+  it('leaves the drawing alone when the font could not be loaded', () => {
+    expect(withStyle('<svg><rect/></svg>', '')).toBe('<svg><rect/></svg>');
+  });
+});
+
+describe('nowFileName', () => {
+  it('puts the month where other files have the years', () => {
+    expect(nowFileName(scope, 2026, 3)).toBe('firms-current-month_kz-steppe_2026-03.png');
   });
 });
 
@@ -143,7 +177,7 @@ describe('calendarSvg (F24)', () => {
       ),
     );
     // About 6 px per character at this size: the longest line must stay inside the width.
-    expect(40 + longest * 6).toBeLessThanOrEqual(figure.width);
+    expect(50 + longest * 6).toBeLessThanOrEqual(figure.width);
   });
 });
 
@@ -168,7 +202,7 @@ describe('chartSvg (F24)', () => {
     expect(copy.querySelector('text')?.textContent).toBe('100');
     expect(copy.querySelectorAll('[class]')).toHaveLength(0);
     expect(copy.hasAttribute('aria-hidden')).toBe(false);
-    expect(copy.getAttribute('font-family')).toContain('system-ui');
+    expect(copy.getAttribute('font-family')).toBe(EXPORT_FONT);
     // The chart on the page is left as it was.
     expect(svg.querySelector('circle')).not.toBeNull();
     document.body.innerHTML = '';

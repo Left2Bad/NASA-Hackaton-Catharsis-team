@@ -1,4 +1,5 @@
-import { EXPORT_FONT, INK, MUTED, type SvgFigure } from './calendarSvg';
+import { INK, MUTED, type SvgFigure } from './calendarSvg';
+import { embeddedFontFace, EXPORT_FONT, pageFontReady, withStyle } from './font';
 
 // Composes an exported image (requirement F24): a title, a legend, the drawing and the
 // caption with the area, the period and the data source, on a white background.
@@ -77,10 +78,11 @@ export function layoutPng(
   };
 }
 
-/** Loads an SVG drawing as an image the canvas can paint. */
+/** Loads an SVG drawing as an image the canvas can paint, with the page font inside it. */
 async function loadSvg(figure: SvgFigure): Promise<HTMLImageElement> {
+  const markup = withStyle(figure.markup, await embeddedFontFace());
   const image = new Image(figure.width, figure.height);
-  image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(figure.markup)}`;
+  image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
   await image.decode();
   return image;
 }
@@ -127,6 +129,8 @@ export async function renderPng(spec: PngSpec, scale = 2): Promise<Blob> {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   if (!context) throw new Error('This browser cannot draw the image.');
+  // The text is measured and drawn in the page font, so it has to be loaded first.
+  await pageFontReady();
 
   const layout = layoutPng(spec, (text, textFont) => {
     context.font = textFont;

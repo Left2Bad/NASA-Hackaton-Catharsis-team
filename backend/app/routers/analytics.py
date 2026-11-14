@@ -1,10 +1,12 @@
 """POST /calendar and POST /export/calendar.csv."""
 
+import asyncio
 import json
 from collections import OrderedDict
 from threading import Lock
 
 from fastapi import APIRouter, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import Response, StreamingResponse
 
 from .. import calendar_service, daily_service, points_service
@@ -47,9 +49,29 @@ def post_daily(q: DailyQuery, request: Request) -> dict:
     return daily_service.daily(request.app.state.data, q)
 
 
+# At most this many /points queries run at once; the rest wait their turn without holding a worker thread.
+# A month of points is a heavy DuckDB query (up to a few hundred MB while it runs). The map once sent hundreds
+# of them in a second while a slider was dragged, and running them all at once exhausted the server's memory.
+POINTS_SLOTS = 2
+CLIENT_GONE = 499  # nginx's code for "the client closed the request"; nobody reads this response
+
+
+def _points_slots(request: Request) -> asyncio.Semaphore:
+    """One semaphore per app, made on first use inside its event loop."""
+    state = request.app.state
+    slots = getattr(state, "points_slots", None)
+    if slots is None:
+        slots = state.points_slots = asyncio.Semaphore(POINTS_SLOTS)
+    return slots
+
+
 @router.post("/points", tags=["analytics"])
-def post_points(q: PointsQuery, request: Request) -> dict:
-    return points_service.points(request.app.state.data, q.geometry, q.year, q.month)
+async def post_points(q: PointsQuery, request: Request):
+    async with _points_slots(request):
+        # A request that waited may have been dropped by the browser meanwhile (the user moved on): skip its query.
+        if await request.is_disconnected():
+            return Response(status_code=CLIENT_GONE)
+        return await run_in_threadpool(points_service.points, request.app.state.data, q.geometry, q.year, q.month)
 
 
 @router.post("/export/points.csv", tags=["export"])

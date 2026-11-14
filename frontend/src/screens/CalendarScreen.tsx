@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { USE_MOCKS } from '../api/config';
 import { FALLBACK_MODE } from '../api/snapshot';
 import { useCalendar, useCurrent, useMeta, usePointsSpan } from '../api/queries';
@@ -26,6 +26,9 @@ import { buildSearch, currentSearch, parseSearch, writeSearch } from '../state/l
 import { defaultSpotsMonth } from '../state/spots';
 import { roundSignificant } from '../theme/scales';
 import styles from './CalendarScreen.module.css';
+
+/** How long the months slider must rest before its months are asked for, ms. */
+const SPAN_SETTLE_MS = 400;
 
 // The main screen: the map with area selection on the left, the panel with the
 // calendar, the analytics and the downloads on the right.
@@ -390,7 +393,25 @@ function Workspace({ meta }: { meta: Meta }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [shownSpots?.first, shownSpots?.last],
   );
-  const points = usePointsSpan(shownSpots && !tooLarge ? shownSpots.geometry : null, spanOfSpots);
+  // The months asked for while the slider moves: the span it last rested at. Dragging passes
+  // many spans in a second, and every month is a heavy query on the server; a burst of them
+  // once exhausted its memory. Clicks on the calendar are asked for at once.
+  const [settledSpan, setSettledSpan] = useState<{ first: number; last: number } | null>(null);
+  const settleTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(settleTimer.current), []);
+  const requestedSpan = useMemo(
+    () =>
+      pickedSpots && settledSpan ? spanMonths(settledSpan.first, settledSpan.last) : spanOfSpots,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pickedSpots !== null, settledSpan?.first, settledSpan?.last, spanOfSpots],
+  );
+  const points = usePointsSpan(shownSpots && !tooLarge ? shownSpots.geometry : null, requestedSpan);
+  // While the slider has not rested, the map keeps the dots it has and the strip says the
+  // months it shows are still loading.
+  const spanSettled =
+    !pickedSpots ||
+    !settledSpan ||
+    (settledSpan.first === pickedSpots.first && settledSpan.last === pickedSpots.last);
   // Several months become one collection; above the limit the strongest fires are kept.
   const drawn = useMemo(
     () => (points.data ? mergePoints(points.data, meta.limits.max_points) : undefined),
@@ -419,6 +440,8 @@ function Workspace({ meta }: { meta: Meta }) {
   /** Shows other months: the threshold of fire power belonged to the previous ones. */
   const showSpan = (span: { first: number; last: number }) => {
     if (!area) return;
+    window.clearTimeout(settleTimer.current);
+    setSettledSpan(span);
     setSpots({ geometry: area.geometry, ...span });
     setHiddenFor(null);
     setMinFrp(0);
@@ -428,6 +451,18 @@ function Workspace({ meta }: { meta: Meta }) {
     const index = monthIndex(month.year, month.month);
     if (shownSpots?.first === index && shownSpots.last === index) hideSpots();
     else showSpan({ first: index, last: index });
+  };
+  /** The slider and its arrows: the span shows at once, its months are asked for once it rests. */
+  const slideSpan = (span: { first: number; last: number }) => {
+    if (!area) return;
+    const before = shownSpots ? { first: shownSpots.first, last: shownSpots.last } : span;
+    window.clearTimeout(settleTimer.current);
+    // Until it rests, the months already on the map stay the ones asked for.
+    if (!pickedSpots) setSettledSpan(before);
+    settleTimer.current = window.setTimeout(() => setSettledSpan(span), SPAN_SETTLE_MS);
+    setSpots({ geometry: area.geometry, ...span });
+    setHiddenFor(null);
+    setMinFrp(0);
   };
   function hideSpots() {
     setSpots(null);
@@ -497,13 +532,13 @@ function Workspace({ meta }: { meta: Meta }) {
             span={{ first: shownSpots.first, last: shownSpots.last }}
             record={record}
             meta={meta}
-            points={drawn}
+            points={spanSettled ? drawn : undefined}
             breaks={pointStyle.breaks}
             minFrp={minFrp}
             error={points.isError ? points.error : null}
             onRetry={points.refetch}
             retrying={points.isFetching}
-            onSpanChange={showSpan}
+            onSpanChange={slideSpan}
             onMinFrpChange={setMinFrp}
             onHide={hideSpots}
           />

@@ -1,0 +1,12 @@
+# Netlify: set the base directory of the site to "frontend" (this file lives there).
+# The build needs ../contract and ../docs, which Netlify has because it clones the whole repository.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # "only": the site runs on the saved answers of public/snapshot and asks no server.
+  # When the API is deployed, set VITE_API_URL to its address and this variable to "auto".
+  VITE_API_FALLBACK = "only"

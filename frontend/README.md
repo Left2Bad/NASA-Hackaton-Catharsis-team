@@ -33,6 +33,7 @@ The page opens at http://localhost:5173 and runs on mocks, so the backend does n
 | `npm run format` | Format with Prettier |
 | `npm test` | Vitest tests (the page renders on the same mocks) |
 | `npm run gen:api` | TypeScript types from `contract/openapi.yaml` |
+| `npm run snapshot` | Save answers of the running API into `public/snapshot/` for the fallback mode |
 
 CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` and `npm run build`.
 
@@ -149,6 +150,57 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` 
 - **Mocks** honor the period and the size of the area (`src/mocks/tailor.ts`), so these controls can
   be tried without the backend. The fire numbers stay synthetic.
 
+## "Method" page
+
+The page at `/#/method` (`src/screens/MethodPage.tsx`, requirement F25).
+
+- **What harmonization changes:** yearly sums of the sensors as they recorded next to the harmonized
+  record, for an example area chosen from a list. The data is `POST /calendar` with `series=raw`
+  (`yearlySensors` in `src/method/series.ts`); a sensor is drawn for a year only when it has all
+  twelve months.
+- **How it was checked:** from `GET /method/validation`. For every region: correlation, bias, median
+  monthly error, months compared, and a chart of the forecast from MODIS against what VIIRS really
+  recorded on the test years. Then the table of the seams: the ratio after and before the seam in the
+  harmonized record and with a naive splice.
+- **Which sensor leads the record:** `meta.sources`.
+- **Limitations:** `validation.limitations`, the server text as it is.
+- **The method in detail:** `docs/methodology.md`, written by the developer of the method, is shown
+  as it is (`src/method/markdown.ts`, the `marked` library). The page and the document cannot drift
+  apart: the document is the single source. Only the note for the team above the first section is
+  left out. The HTML is trusted because the file belongs to this repository.
+- **Acknowledgment** of NASA FIRMS with the data products that are used.
+- **Loaded on demand:** the page, the method text and the Markdown renderer are a separate chunk, so
+  the calendar starts without them.
+- **Charts** use the shared `LineChart` component: several series over the same positions, gaps
+  where a sensor has no data, and three colors checked for color-vision deficiency.
+
+## Downloads
+
+The "Downloads" section of the panel (`src/components/Downloads.tsx`, helpers in `src/export/`).
+
+- **Monthly table, CSV (F23):** `POST /export/calendar.csv` for the area and the chosen years.
+- **Hot spots, CSV (F22):** `POST /export/points.csv`. The years of the period become dates, January 1
+  to December 31, cut to the record of the dataset (`exportDates`). Every row has its sensor and its
+  weight in the harmonized record. Above `limits.max_export_rows` the server answers `EXPORT_TOO_LARGE`
+  and the app says to shorten the period; when the calendar total already exceeds the limit, the
+  note under the buttons warns before the click.
+- **Images, PNG (F24):** the calendar (in the mode that is on screen), the season profile (with the
+  chosen year), the yearly totals and the current month. Every image has a title, a legend and a
+  caption: the area with its bounds and size, the period with the data date and version, and the
+  data source. The current-month image names the days it covers and how they compare instead of
+  the years, and appears in the list once the "Now" request has answered.
+- **How an image is made:** the charts are SVG already, so a copy with its styles written inline
+  (`chartSvg.ts`) is painted on a canvas. The calendar is an HTML grid on the page, so the export
+  redraws it as SVG from the same data and colors (`calendarSvg.ts`). `png.ts` adds the title, the
+  legend and the caption and saves at double resolution. No library is involved.
+- **Fonts:** images use Geologica, like the page. The canvas takes the font from the page; an SVG
+  painted as an image is a separate document, so the Latin subset of the font (25 KB) is put inside
+  it as a data URI (`font.ts`). If the font cannot be loaded, the image falls back to the system font.
+- **File names** say what, where and when, and carry the data source:
+  `firms-hotspots_kz-steppe_2010-2012.csv`, `firms-calendar_61E-71E_51N-55N_2025.png`.
+- **Data source in a CSV:** a comment line at the top would break opening the file in a spreadsheet,
+  so NASA FIRMS is named in the file name and in the text next to the buttons.
+
 ## Connecting to the real API
 
 1. Start the backend (see `backend/README.md`). It needs the data files in `data/` and, for a browser
@@ -181,6 +233,47 @@ How the app behaves while it talks to a server (`src/api/request.ts`, `src/api/q
 Checked against the backend running on the real FIRMS record (2000 to 2025, all countries): the three
 example areas, a change of period, a small area, an area without fires and an area above the limit.
 
+## Fallback mode: saved answers
+
+A demo must survive a server that is down. Answers of the real API are saved as static files in
+`public/snapshot/` and shipped with the app (`src/api/snapshot.ts`).
+
+- **What is saved:** `/meta`, `/method/validation`, and for every example area `/calendar` (the whole
+  record, with `series=raw`) and `/current`. About 290 KB in nine files. The numbers are real: the
+  snapshot script refuses an API whose data version looks synthetic.
+- **When it is used:** every request asks the server first. If the server cannot be reached (no
+  connection, timeout, a gateway error), the saved answer is shown instead and a strip under the
+  header says so, with the date of the snapshot and a "Try the server again" button. An error the
+  server returned on purpose (area too large, no data) is never replaced. After a failure the server
+  is not asked again for a minute, so a hanging server does not slow every click.
+- **What works without the server:** the three example areas with any period, the "Now" panel, both
+  charts, the "Method" page, all PNG downloads and the monthly table as CSV. A change of period is
+  computed on the client exactly as the API does it (months, yearly totals, the most active year, the
+  total, the trend); this was compared with the live API for three areas and three periods.
+- **What does not:** a drawn or typed area, and the hot spot CSV. They get a message that the saved
+  data covers the example areas only.
+- **Refreshing the snapshot:** start the backend on the real record and run `npm run snapshot`
+  (or `npm run snapshot -- https://host/api/v1`). Commit the changed files.
+
+`VITE_API_FALLBACK` chooses the mode: `auto` (default outside the mocks), `only` (never ask a server:
+a static site without a backend), `off`.
+
+## Deployment
+
+The build is a static site: `npm run build` writes it to `dist/`. Addresses inside it are relative,
+so it works from the root of a domain or from any folder. Routing uses the part of the address after
+`#`, so the host needs no rewrite rules.
+
+- **Without a backend:** build with `VITE_API_FALLBACK=only`. The site runs on the saved answers.
+- **With a backend:** set `VITE_API_URL` to the address of the API and `VITE_API_FALLBACK=auto`; add
+  the address of the site to `CORS_ORIGINS` of the backend.
+- **Netlify:** base directory `frontend`; `netlify.toml` there holds the command, the folder and the
+  variables. **Vercel:** root directory `frontend`, `vercel.json` there; set the variables in the
+  project settings. **Cloudflare Pages:** root `frontend`, command `npm run build`, output `dist`,
+  variables `NODE_VERSION=22` and `VITE_API_FALLBACK=only`.
+- **Without connecting the repository:** build locally and upload the `dist` folder (Netlify Drop,
+  Cloudflare Pages direct upload, `vercel deploy`).
+
 ## Environment variables
 
 Vite reads the `.env` file from the repository root (see `.env.example`).
@@ -189,6 +282,7 @@ Vite reads the `.env` file from the repository root (see `.env.example`).
 | --- | --- |
 | `VITE_API_URL` | Address of the real API. Defaults to `http://localhost:8000/api/v1` |
 | `VITE_API_MOCKS` | `true` or `false`: force the mocks on or off |
+| `VITE_API_FALLBACK` | `auto`, `only` or `off`: when to show the saved answers of `public/snapshot/` |
 
 Without `VITE_API_MOCKS`, the mocks are on in `npm run dev` and in tests, and off in `npm run dev:api` and in the build.
 

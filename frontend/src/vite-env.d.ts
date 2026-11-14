@@ -8,6 +8,8 @@ interface ImportMetaEnv {
   readonly VITE_API_URL?: string;
   /** true | false: force the mocks on or off */
   readonly VITE_API_MOCKS?: string;
+  /** auto | only | off: when to show the saved answers of public/snapshot instead of the server */
+  readonly VITE_API_FALLBACK?: string;
 }
 
 interface ImportMeta {

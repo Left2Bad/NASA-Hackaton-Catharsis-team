@@ -1,21 +1,17 @@
 import { useState } from 'react';
 import { USE_MOCKS } from '../api/config';
-import { useCalendar, useMeta } from '../api/queries';
-import type { CalendarResponse, Geometry, Meta } from '../api/types';
+import { useCalendar, useCurrent, useMeta } from '../api/queries';
+import type { Geometry, Meta } from '../api/types';
 import { AreaMap } from '../components/AreaMap';
 import { BurnCalendar, type CalendarMode } from '../components/BurnCalendar';
 import { CoordinateForm } from '../components/CoordinateForm';
 import { ErrorNote } from '../components/ErrorNote';
+import { NowPanel } from '../components/NowPanel';
 import { PeriodSelect, type Period } from '../components/PeriodSelect';
+import { SummaryFacts } from '../components/SummaryFacts';
 import { boundsOf, formatBounds } from '../geo/geometry';
 import { areaKm2 } from '../geo/shapes';
-import {
-  formatNumber,
-  formatSignedPercent,
-  monthName,
-  presetLabel,
-  WARNING_LABELS,
-} from '../labels';
+import { formatNumber, presetLabel, WARNING_LABELS } from '../labels';
 import { roundSignificant } from '../theme/scales';
 import styles from './CalendarScreen.module.css';
 
@@ -29,39 +25,10 @@ interface Area {
 }
 
 const PLANNED = [
-  'Now: the current month so far against the same days of past years',
   'Season profile: the monthly median with its 10th to 90th percentile band',
   'Yearly totals with a trend line',
   'Downloads: hot spots as CSV, the calendar as CSV, charts as PNG',
 ];
-
-function Summary({ calendar }: { calendar: CalendarResponse }) {
-  const { summary } = calendar;
-  return (
-    <dl className={styles.facts}>
-      <div>
-        <dt>Most active year</dt>
-        <dd>{summary.peak_year ?? '—'}</dd>
-      </div>
-      <div>
-        <dt>Peak month</dt>
-        <dd>{summary.peak_month === null ? '—' : monthName(summary.peak_month)}</dd>
-      </div>
-      <div>
-        <dt>Detections in period</dt>
-        <dd>{formatNumber(Math.round(summary.total))}</dd>
-      </div>
-      <div>
-        <dt>Trend per decade</dt>
-        <dd>
-          {summary.trend_pct_per_decade === null
-            ? '—'
-            : formatSignedPercent(summary.trend_pct_per_decade)}
-        </dd>
-      </div>
-    </dl>
-  );
-}
 
 /** Shown before any area is chosen: tells the user how to start. */
 function StartPrompt() {
@@ -96,6 +63,10 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
       ? null
       : { geometry: area.geometry, start_year: period.startYear, end_year: period.endYear },
   );
+
+  // "Now" does not depend on the chosen period, so it is asked for the geometry alone
+  // and is not asked again when the period changes.
+  const current = useCurrent(tooLarge ? null : area.geometry);
 
   const preset = meta.presets.find((item) => item.id === area.presetId);
   const label = preset ? presetLabel(preset) : { name: 'Custom area', description: '' };
@@ -143,9 +114,18 @@ function AreaPanel({ area, meta, period, mode, onModeChange }: AreaPanelProps) {
 
           <section className={styles.section} aria-labelledby="summary-heading">
             <h2 id="summary-heading">Summary</h2>
-            <Summary calendar={calendar.data} />
+            <SummaryFacts calendar={calendar.data} />
           </section>
         </>
+      )}
+
+      {!tooLarge && (
+        <section className={styles.section} aria-labelledby="now-heading">
+          <h2 id="now-heading">Now</h2>
+          {current.isPending && <p role="status">Loading the current month…</p>}
+          {current.isError && <ErrorNote error={current.error} />}
+          {current.data && <NowPanel current={current.data} />}
+        </section>
       )}
 
       <section className={styles.section} aria-labelledby="planned-heading">

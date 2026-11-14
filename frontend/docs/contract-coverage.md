@@ -39,8 +39,8 @@ How to read the tables: `meta`, `calendar`, `current`, `points`, `daily`, `valid
 
 | ID | Requirement | Where it comes from | Notes |
 | --- | --- | --- | --- |
-| F15 | "Now" panel | `current`: `as_of`, `year`, `month`, `days_elapsed`, `value`, `baseline_same_days.median`, `anomaly_pct`, `percentile`, `category`, `source`, `preliminary`. Chart: `current.cumulative[]`: `day`, `value`, `median` | The status "normal / above / extreme" comes from `category` (5 values). See question 7 |
-| F16 | Summary of 4 numbers | `calendar.summary`: `peak_year`, `peak_month`, `total`, `trend_pct_per_decade` | The trend direction is the sign of the number. `null` means "not enough data" |
+| F15 | "Now" panel | `current`: `as_of`, `year`, `month`, `days_elapsed`, `value`, `baseline_same_days.median`, `anomaly_pct`, `percentile`, `category`, `source`, `preliminary`. Chart: `current.cumulative[]`: `day`, `value`, `median` | The status "normal / above / extreme" comes from `category` (5 values). The level strip is drawn from `baseline_same_days`: `p25`, `p75`, `p90`, `max`; the note under the chart uses `n_years`. The client sends only `geometry`. See question 7 |
+| F16 | Summary of 4 numbers | `calendar.summary`: `peak_year`, `peak_month`, `total`, `trend_pct_per_decade` | The trend direction is the sign of the number. `null` means "not enough data". Detail lines: the total of the peak year from `calendar.yearly[]`, the median of the peak month from `calendar.monthly_baseline[]` |
 | F17 | Season profile | `calendar.monthly_baseline[]`: `median`, `p10`, `p90`. The line of a year: `calendar.months[]` with that `year` | No new request: the year is picked from the response already loaded |
 | F18 | Yearly totals with a trend | `calendar.yearly[]`: `year`, `total`, `complete`. Trend line: `calendar.summary.trend_line` | The line is drawn through two points: `start_year`, `start_value` and `end_year`, `end_value` |
 | F19 | "Harmonized record / original sensors" | Request: `series` = `raw`. Response: `calendar.months[].raw`: `modis`, `viirs_snpp`, `viirs_n20` | `value` stays the harmonized value, so both series are drawn from one response |

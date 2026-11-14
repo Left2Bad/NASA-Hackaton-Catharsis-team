@@ -63,6 +63,9 @@ export function useSnapshotActive(): boolean {
 
 /** A failure of the connection, as opposed to an answer the server gave on purpose. */
 export function isUnreachable(error: unknown): boolean {
+  // A request the app cancelled itself (the user chose another area) says nothing about
+  // the server: it must not switch the app to the saved answers.
+  if ((error as { name?: unknown } | null)?.name === 'AbortError') return false;
   if (!(error instanceof ApiError)) return true;
   if (error.code === 'NETWORK' || error.code === 'TIMEOUT') return true;
   // A gateway in front of a stopped server answers 502 to 504 with its own page.

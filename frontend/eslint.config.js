@@ -7,7 +7,15 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig([
   // Generated files are not linted: the contract types and the MSW worker script.
-  globalIgnores(['dist', 'coverage', 'public/mockServiceWorker.js', 'src/api/schema.d.ts']),
+  globalIgnores([
+    'dist',
+    'dist-e2e',
+    'playwright-report',
+    'test-results',
+    'coverage',
+    'public/mockServiceWorker.js',
+    'src/api/schema.d.ts',
+  ]),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

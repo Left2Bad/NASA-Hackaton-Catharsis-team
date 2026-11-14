@@ -46,6 +46,10 @@ describe('isUnreachable', () => {
     expect(isUnreachable(new ApiError('INTERNAL', '', 500))).toBe(false);
     expect(isUnreachable(new ApiError('UNKNOWN', '', 404))).toBe(false);
   });
+
+  it('is false for a request the app cancelled itself', () => {
+    expect(isUnreachable(new DOMException('The request was cancelled', 'AbortError'))).toBe(false);
+  });
 });
 
 describe('withFallback', () => {
@@ -81,6 +85,17 @@ describe('withFallback', () => {
     retryServer();
     await expect(withFallback(counted, savedAnswer, 'auto')).resolves.toBe('live');
     expect(asked).toBe(2);
+  });
+
+  it('keeps asking the server after a cancelled request', async () => {
+    const cancelled = new DOMException('The request was cancelled', 'AbortError');
+    await expect(withFallback(() => Promise.reject(cancelled), savedAnswer, 'auto')).rejects.toBe(
+      cancelled,
+    );
+    // The next request goes to the server, not to the snapshot.
+    await expect(withFallback(() => Promise.resolve('live'), savedAnswer, 'auto')).resolves.toBe(
+      'live',
+    );
   });
 
   it('never hides an error the server returned on purpose', async () => {

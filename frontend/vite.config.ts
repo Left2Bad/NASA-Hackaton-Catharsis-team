@@ -29,6 +29,8 @@ export default defineConfig(({ command, mode }) => {
     },
     test: {
       environment: 'jsdom',
+      // Unit tests live next to the code; e2e/ belongs to Playwright (`npm run e2e`).
+      include: ['src/**/*.test.{ts,tsx}'],
       setupFiles: ['./src/test/setup.ts'],
       css: true,
     },

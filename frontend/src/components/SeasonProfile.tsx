@@ -206,29 +206,31 @@ export function SeasonProfile({ calendar }: { calendar: CalendarResponse }) {
         </svg>
       </div>
 
-      <table className={styles.srOnly}>
-        <caption>Season profile by month: {year} against the median and the usual range</caption>
-        <thead>
-          <tr>
-            <th scope="col">Month</th>
-            <th scope="col">{year}</th>
-            <th scope="col">Median</th>
-            <th scope="col">10th percentile</th>
-            <th scope="col">90th percentile</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.month}>
-              <th scope="row">{monthName(row.month)}</th>
-              <td>{yearValue(row)}</td>
-              <td>{formatNumber(row.median)}</td>
-              <td>{formatNumber(row.p10)}</td>
-              <td>{formatNumber(row.p90)}</td>
+      <div className={styles.srOnly}>
+        <table>
+          <caption>Season profile by month: {year} against the median and the usual range</caption>
+          <thead>
+            <tr>
+              <th scope="col">Month</th>
+              <th scope="col">{year}</th>
+              <th scope="col">Median</th>
+              <th scope="col">10th percentile</th>
+              <th scope="col">90th percentile</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.month}>
+                <th scope="row">{monthName(row.month)}</th>
+                <td>{yearValue(row)}</td>
+                <td>{formatNumber(row.median)}</td>
+                <td>{formatNumber(row.p10)}</td>
+                <td>{formatNumber(row.p90)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <p className={styles.note}>
         The usual range holds 8 years out of 10 of the baseline, {calendar.baseline.start_year} to{' '}

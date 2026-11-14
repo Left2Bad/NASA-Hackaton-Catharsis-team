@@ -71,6 +71,10 @@ def check_calendar(name: str, payload: dict) -> list[str]:
         if not m["low"] <= m["value"] <= m["high"]:
             problems.append(f"{name}: {m['year']}-{m['month']:02d} нарушает low <= value <= high")
             break
+    for m in payload["months"]:
+        if m.get("sensor_gap") and m["source"] != "VIIRS_N20":
+            problems.append(f"{name}: {m['year']}-{m['month']:02d} sensor_gap=true, но source не VIIRS_N20")
+            break
     if payload["series"] == "raw" and any("raw" not in m for m in payload["months"]):
         problems.append(f"{name}: при series=raw у каждого месяца должно быть поле raw")
     return problems
@@ -108,6 +112,9 @@ def main() -> int:
             problems.append(f"{name} [{schema_name}] {where}: {error.message[:200]}")
         if schema_name == "CalendarResponse":
             problems.extend(check_calendar(name, payload))
+        if schema_name == "ValidationResponse" and "limitation_codes" in payload:
+            if len(payload["limitation_codes"]) != len(payload["limitations"]):
+                problems.append(f"{name}: limitation_codes и limitations разной длины")
 
     for name, header in CSV_EXAMPLES.items():
         path = EXAMPLES / name

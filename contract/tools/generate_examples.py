@@ -33,6 +33,8 @@ BASELINE = (2001, 2025)
 AREA = {"west": 61.0, "south": 51.0, "east": 71.0, "north": 55.0}
 SEASON = [5, 8, 60, 520, 780, 210, 260, 640, 720, 240, 40, 6]  # типичный месяц, VIIRS-эквивалент
 K_MODIS = [3.4, 3.4, 4.6, 5.2, 4.8, 4.0, 3.8, 3.9, 4.1, 4.4, 3.6, 3.4]  # точек VIIRS на точку MODIS
+# Месяцы перерывов Suomi NPP (их находит пайплайн, data/outage_months.csv): ряд ведёт NOAA-20.
+SENSOR_GAP_MONTHS = {(2022, 7), (2022, 8), (2024, 7), (2024, 11)}
 
 
 def bbox_polygon(west: float, south: float, east: float, north: float) -> dict:
@@ -46,6 +48,8 @@ def source_for(year: int, month: int) -> str:
         return "MODIS_T"
     if ym <= (2012, 1):
         return "MODIS_TA"
+    if ym in SENSOR_GAP_MONTHS:
+        return "VIIRS_N20"
     if ym <= (2026, 10):
         return "VIIRS_SNPP"
     return "VIIRS_N20"
@@ -153,6 +157,7 @@ def build_calendar(values: dict, baseline: list[dict], series: str, rng: random.
             "source": source,
             "preliminary": date(year, month, 1) > LAST_STANDARD_DATE,
             "partial": partial,
+            "sensor_gap": (year, month) in SENSOR_GAP_MONTHS,
         }
         if partial:
             item["anomaly_pct"] = None  # неполный месяц нельзя сравнивать с полной медианой
@@ -192,6 +197,12 @@ def build_calendar(values: dict, baseline: list[dict], series: str, rng: random.
             "peak_month": max(baseline, key=lambda b: b["median"])["month"],
             "total": round(sum(values.values()), 1),
             "trend_pct_per_decade": round(slope * 10 / mean_y * 100, 1),
+            "trend": {
+                "slope_per_year": round(slope, 1),
+                "intercept": round(mean_y - slope * (mean_x - xs[0]), 1),
+                "start_year": xs[0],
+                "end_year": xs[-1],
+            },
         },
         "warnings": [
             {
@@ -351,6 +362,7 @@ def build_validation(rng: random.Random) -> dict:
             "Для областей меньше нескольких ячеек сетки ряд шумный.",
             "Перерывы в работе спутников выглядят как периоды низкой активности.",
         ],
+        "limitation_codes": ["MODIS_MISSED_FIRES", "SMALL_AREA_NOISE", "SENSOR_GAPS"],
     }
 
 

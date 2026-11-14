@@ -644,6 +644,12 @@ components:
         partial:
           description: true — месяц неполный (первый или текущий месяц ряда)
           type: boolean
+        sensor_gap:
+          description: |
+            true — в этом месяце эталонный сенсор (Suomi NPP) работал с перерывом
+            и значение взято с резервного (NOAA-20, `source` = `VIIRS_N20`).
+            Список таких месяцев находит пайплайн. Поле необязательное; нет поля — то же, что false.
+          type: boolean
         raw:
           description: Заполняется только при `series` = `raw`
           $ref: "#/components/schemas/RawValues"
@@ -701,8 +707,36 @@ components:
           description: Сумма значений за выбранный период
           type: number
         trend_pct_per_decade:
-          description: Тренд годовых сумм, % за 10 лет; `null`, если лет слишком мало
+          description: |
+            Тренд годовых сумм, % за 10 лет; `null`, если полных лет меньше 10 или их среднее равно 0.
+            Метод: линейная регрессия (МНК) годовых сумм полных лет на год;
+            наклон / среднее годовых сумм × 10 × 100.
           type: [number, "null"]
+        trend:
+          description: |
+            Линия тренда для графика годовых сумм: total(год) = intercept + slope_per_year × (год − start_year).
+            Необязательное поле; `null` в тех же случаях, что и `trend_pct_per_decade`.
+          oneOf:
+            - $ref: "#/components/schemas/TrendLine"
+            - type: "null"
+
+    TrendLine:
+      type: object
+      additionalProperties: false
+      required: [slope_per_year, intercept, start_year, end_year]
+      properties:
+        slope_per_year:
+          description: Изменение годовой суммы за год, в единицах ряда
+          type: number
+        intercept:
+          description: Значение линии тренда в `start_year`
+          type: number
+        start_year:
+          description: Первый полный год, вошедший в расчёт
+          type: integer
+        end_year:
+          description: Последний полный год, вошедший в расчёт
+          type: integer
 
     CalendarResponse:
       type: object
@@ -1064,3 +1098,11 @@ components:
           type: array
           items:
             type: string
+        limitation_codes:
+          description: |
+            Коды ограничений в том же порядке, что `limitations`, — чтобы клиент мог показать свой перевод.
+            Необязательное поле.
+          type: array
+          items:
+            type: string
+            enum: [MODIS_MISSED_FIRES, SMALL_AREA_NOISE, SENSOR_GAPS, MODIS_ORBIT_DRIFT, PRELIMINARY_DATA]

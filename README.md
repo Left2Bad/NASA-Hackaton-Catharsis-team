@@ -55,7 +55,71 @@ report. Every response is checked against the contract in tests.
 burn calendar, anomaly view, the "Now" panel, season profile and yearly totals with a trend. The API contract between
 the two sides is [contract/openapi.yaml](contract/openapi.yaml), with examples in [contract/examples/](contract/examples/).
 
-## Quick start (local)
+## Quick start with sample data (≈5 min)
+
+See the app working without the 20 GB data rebuild. The sample dataset (`burn-calendar-sample-data.zip`, 53 MB) holds
+the real harmonized data for the three example regions of the app: **Northern Kazakhstan, Southern Amazon and Northern
+California**, every month from November 2000 to the last fetched day of 2026, plus the hotspot points of these regions
+for 2021–2026. You need Python 3.12 or newer, Node 22 or newer and git. Measured from a clean clone on Windows:
+about 2 minutes, plus the download.
+
+<!-- TODO(user): the link goes live once the GitHub release "data-2026-11-13" is published -->
+Sample data: https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/download/data-2026-11-13/burn-calendar-sample-data.zip
+
+**Windows PowerShell**, from the folder where the repository should go:
+
+```powershell
+git clone https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team.git
+cd NASA-Hackaton-Catharsis-team
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -c constraints.txt -e backend
+Invoke-WebRequest https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/download/data-2026-11-13/burn-calendar-sample-data.zip -OutFile sample.zip
+python -m zipfile -e sample.zip .
+$env:DATA_DIR = "sample_data"; $env:CORS_ORIGINS = "http://localhost:5173"
+uvicorn app.main:app --app-dir backend --port 8000
+```
+
+In a second PowerShell window, from the repository root:
+
+```powershell
+cd frontend
+npm ci
+$env:VITE_API_FALLBACK = "off"; npm run dev:api
+```
+
+**bash** (Linux, macOS, Git Bash; use `python3` if `python` is not Python 3, and `source .venv/Scripts/activate` in Git Bash):
+
+```bash
+git clone https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team.git
+cd NASA-Hackaton-Catharsis-team
+python -m venv .venv
+source .venv/bin/activate
+pip install -c constraints.txt -e backend
+curl -L -o sample.zip https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/download/data-2026-11-13/burn-calendar-sample-data.zip
+python -m zipfile -e sample.zip .
+DATA_DIR=sample_data CORS_ORIGINS=http://localhost:5173 uvicorn app.main:app --app-dir backend --port 8000
+```
+
+In a second terminal, from the repository root:
+
+```bash
+cd frontend
+npm ci
+VITE_API_FALLBACK=off npm run dev:api
+```
+
+Open http://localhost:5173 and click one of the three example regions; API docs are at http://localhost:8000/api/v1/docs.
+`VITE_API_FALLBACK=off` makes the page always ask the local API instead of its saved snapshot of the example regions.
+
+**What the sample covers.** Calendar, "Now", the daily series and the CSV exports work for any area that lies inside
+one of the three regions (with a 0.5° margin): Northern Kazakhstan 61–71°E, 51–55°N; Southern Amazon 62–52°W, 13–7°S;
+Northern California 124–120°W, 38.5–42°N. For an area outside them the API answers `NO_DATA` ("This server runs on the
+sample dataset…"), and the map points and the points CSV answer `NO_DATA` for 2000–2020. The coefficients, the
+uncertainty intervals and the "Method" page are the full-data ones. The sample was cut from the full data by
+`python pipeline/make_sample.py` (see its `--help`); [data/README.md](data/README.md) has the details.
+
+## Quick start (local), with the full data
 
 You need Python 3.13 (3.11 or newer works; CI uses 3.12), Node 22 or newer (pinned in `frontend/.nvmrc`) and git.
 Every command below runs from the repository root, one per line, in Windows PowerShell and in bash alike
@@ -77,8 +141,8 @@ python -m venv .venv
 pip install -e "pipeline[dev]" -e "backend[dev]"
 ```
 
-**2. Data.** Follow [data/README.md](data/README.md): either unpack the team's ready-made archive (about 5 minutes) or
-rebuild everything from the FIRMS archives (about 1.5 hours, 20 GB of disk, 12 GB of RAM):
+**2. Data.** Follow [data/README.md](data/README.md): either unpack the team's ready-made archive
+`FIRMS_data_2026-11-13.zip` (1 GB, about 5 minutes) or rebuild everything from the FIRMS archives (about 1.5 hours, 20 GB of disk, 12 GB of RAM):
 
 ```bash
 python pipeline/download_archives.py

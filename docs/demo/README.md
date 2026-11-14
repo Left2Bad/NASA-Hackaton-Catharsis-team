@@ -10,10 +10,10 @@ The pitch for the Space Apps submission is **one of two**: a video of at most 30
 | Script and storyboard of the 30-second video | this file, below |
 | Deck, 7 slides: title, problem, solution (two slides), NASA data, plans, team | [slides/burn-calendar-pitch.pdf](slides/burn-calendar-pitch.pdf), source [slides/slides.html](slides/slides.html) |
 | Frames of the demo | `screenshots/demo-NN-*.jpg`, 1920 × 1200 |
-| Link to the video | TODO(team): add after the video is uploaded |
+| Video | not recorded: the pitch is submitted as the deck |
 
-The wording of the voice-over and of the slides is a draft. The team says it in its own words before recording,
-and names the AI tools it used in the "Data & Resources Usage" field of the submission
+If a video is recorded later, the team says the voice-over in its own words and names every AI tool it used (voice,
+music) in the "Data & Resources Usage" field of the submission
 (see [../submission/resources.md](../submission/resources.md)).
 
 Slide 7 carries the names of the team and the address of the site. Before the deck is submitted, upload the PDF

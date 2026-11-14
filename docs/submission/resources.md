@@ -10,7 +10,7 @@ and ESDIS: https://www.earthdata.nasa.gov/data/tools/firms
 
 | What we used | Product | How we got it | Link |
 | --- | --- | --- | --- |
-| MODIS Collection 6.1 active fires, Terra + Aqua, November 2000 – 2025 (standard processing) | MCD14ML (monthly standard-quality locations, served by FIRMS) | FIRMS yearly country summaries ("Download yearly summary by country") on the Archive Download page | https://firms.modaps.eosdis.nasa.gov/download/ |
+| MODIS Collection 6.1 active fires, Terra + Aqua, November 2000 – 2025 (standard processing) | MCD14ML (monthly standard-quality locations, served by FIRMS) | FIRMS yearly country summaries ("Download yearly summary by country") on the Archive Download page | https://firms.modaps.eosdis.nasa.gov/download/, files at https://firms.modaps.eosdis.nasa.gov/country/ |
 | VIIRS 375 m active fires, Suomi NPP, January 2012 – 2025 (standard processing) | VNP14IMGTML (standard-quality locations, served by FIRMS) | FIRMS yearly country summaries | https://firms.modaps.eosdis.nasa.gov/download/ |
 | VIIRS 375 m active fires, NOAA-20 (JPSS-1), April 2018 – 2025 (standard processing) | VJ114IMGTML (standard-quality locations, served by FIRMS) | FIRMS yearly country summaries | https://firms.modaps.eosdis.nasa.gov/download/ |
 | 2026: MODIS, VIIRS Suomi NPP and VIIRS NOAA-20, standard (SP) and near-real-time (NRT) | sources `MODIS_SP`, `MODIS_NRT`, `VIIRS_SNPP_SP`, `VIIRS_SNPP_NRT`, `VIIRS_NOAA20_SP`, `VIIRS_NOAA20_NRT` | FIRMS Area API with a free MAP_KEY | https://firms.modaps.eosdis.nasa.gov/api/area/ |
@@ -60,8 +60,10 @@ No commercial or proprietary data was used. The project code is released under t
 
 ## Use of AI
 
-The archived FIRMS data were collected, and the fresh 2026 data were downloaded step by step, by hand. The project
-architecture was designed by the team on its own; we then built a prototype, which was developed further with the help
+The archived FIRMS data were collected, and the fresh 2026 data were downloaded step by step: the team ran each step
+of the download scripts (`pipeline/download_archives.py`, `pipeline/fetch_api.py`) and checked its result by hand. The
+project architecture was designed by the team on its own and written down as the API contract (`contract/openapi.yaml`)
+and the repository skeleton with Claude Code (Claude Fable 5.2); we then built a prototype, which was developed further with the help
 of AI: **Claude Code** (Anthropic, https://www.anthropic.com/claude-code), mainly with the Claude Opus 5.5 model
 (Claude Fable 5.2 and Claude Sonnet 5.5 were also used for some tasks). Because of the amount of work (from 11:00 on the
 first day of the hackathon to 14:00 on the second), many parts of the code were written with AI and then checked and
@@ -69,14 +71,21 @@ tested by hand to avoid problems. Errors in the AI's output were fixed with the 
 
 The web application (`frontend/`) was built the same way. The teammate responsible for it set the tasks one by one
 and decided what the interface must do; the code, its tests and its documentation were written with **Claude Code**
-(Claude Fable 5.2). Every change came as a pull request, which was read and then checked by hand in the browser
+(Claude Fable 5.2); the last fixes of the interface (pull requests #42, #44 and #45) were made by the other teammate
+with Claude Opus 5.5. Every change came as a pull request, which was read and then checked by hand in the browser
 before it was merged.
 
-The texts were localized into English with **Google Gemini** (Hydrogene, Google, https://gemini.google.com/). Claude Code
-also translated parts of the documentation, the code comments and the API messages from Russian and edited them;
-the Russian original of the method is kept as `docs/methodology.ru.md`.
+The English localization was made with **Google Gemini Hydrogene** (Google, https://gemini.google.com/). The
+documentation, the code comments, the API contract and the API messages were also translated from Russian and edited
+with Claude Code (Claude Opus 5.5 and Claude Fable 5.2); the Russian original of the method is kept as
+`docs/methodology.ru.md`.
 
 The pitch deck (`docs/demo/slides/`) and the storyboard of the video (`docs/demo/README.md`) were drafted with
-Claude Code. The pictures in the deck are real screenshots of the running application on real FIRMS data, taken by a
-script (`frontend/scripts/demo-shots.mjs`); no picture of the interface and no data are generated. The deck has no
-generated illustrations, music or voice-over.
+Claude Code (Claude Fable 5.2; slides 6 and 7 were finished with Claude Opus 5.5). The pictures in the deck are real
+screenshots of the running application on real FIRMS data, taken by a script (`frontend/scripts/demo-shots.mjs`). None
+of the screenshots or numbers is AI-generated, and the deck has no generated illustrations, music or voice-over. The
+pitch is submitted as this 7-slide deck; no video was recorded.
+
+Synthetic numbers exist only in `contract/examples/` (made by `contract/tools/generate_examples.py`), in the
+development mocks of the frontend and in the backend test fixtures, and they are marked as synthetic. The live site,
+the deck and every result in this repository use only real FIRMS data.

@@ -75,6 +75,7 @@ before it was merged.
 The pitch deck (`docs/demo/slides/`) and the storyboard of the video (`docs/demo/README.md`) were drafted with
 Claude Code. The pictures in them are real screenshots of the running application on real FIRMS data, taken by a
 script (`frontend/scripts/demo-shots.mjs`); no picture of the interface is generated. The video is a screen recording
-of the application made by hand. Its voice-over is generated with an AI voice tool
-(TODO(team): name the tool and give its link). The pitch also uses illustrations made with AI
-(TODO(team): name the tool and say where they appear); they do not stand in for the interface.
+of the application made by hand. Its voice-over is generated with **ElevenLabs** (https://elevenlabs.io). The
+illustrations of the pitch are made with **Claude** (Anthropic, https://claude.ai); they do not stand in for the
+interface. The background music of the video is free of copyright
+(TODO(team): name the track and its source once it is chosen).

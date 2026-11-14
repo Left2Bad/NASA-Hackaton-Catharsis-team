@@ -10,7 +10,7 @@ interface ScaleLegendProps {
   /** Labels under the ends of the scale, for example "below median" and "above median". */
   ends?: readonly [string, string];
   /** Separate keys outside the scale, for example "No fires". */
-  extras?: readonly { color: string | null; label: string }[];
+  extras?: readonly { color: string | null; label: string; hatched?: boolean }[];
 }
 
 /**
@@ -51,7 +51,11 @@ export function ScaleLegend({ title, colors, boundaries, ends, extras = [] }: Sc
             {extras.map((extra) => (
               <li key={extra.label}>
                 <span
-                  className={extra.color ? styles.key : `${styles.key} ${styles.keyEmpty}`}
+                  className={
+                    extra.color
+                      ? styles.key
+                      : `${styles.key} ${extra.hatched ? styles.keyHatched : styles.keyEmpty}`
+                  }
                   style={{ background: extra.color ?? undefined }}
                   aria-hidden="true"
                 />

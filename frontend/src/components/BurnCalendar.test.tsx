@@ -1,11 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import calendarJson from '../../../contract/examples/calendar.response.json';
 import metaJson from '../../../contract/examples/meta.json';
 import type { CalendarResponse, Meta, MonthValue } from '../api/types';
 import { describeBaseline, describeMonth, monthSentence } from '../calendar/describe';
-import { BurnCalendar } from './BurnCalendar';
+import { BurnCalendar, type CalendarMode } from './BurnCalendar';
 
 const calendar = calendarJson as unknown as CalendarResponse;
 const meta = metaJson as unknown as Meta;
@@ -13,8 +14,16 @@ const meta = metaJson as unknown as Meta;
 const monthOf = (year: number, month: number) =>
   calendar.months.find((m) => m.year === year && m.month === month) as MonthValue;
 
+/** Holds the mode the way the screen does, so the switch can be exercised. */
+function Harness() {
+  const [mode, setMode] = useState<CalendarMode>('count');
+  return (
+    <BurnCalendar calendar={calendar} sources={meta.sources} mode={mode} onModeChange={setMode} />
+  );
+}
+
 function renderCalendar() {
-  const view = render(<BurnCalendar calendar={calendar} sources={meta.sources} />);
+  const view = render(<Harness />);
   const cell = (id: string) => view.container.querySelector(`[data-month="${id}"]`) as HTMLElement;
   return { ...view, cell };
 }
@@ -148,6 +157,86 @@ describe('BurnCalendar', () => {
 
     expect(cell('2026-07')).toHaveAttribute('data-preliminary', 'true');
     expect(cell('2026-06')).not.toHaveAttribute('data-preliminary');
+  });
+});
+
+describe('anomaly mode (F10)', () => {
+  it('starts in the detections mode', () => {
+    renderCalendar();
+
+    expect(screen.getByRole('button', { name: 'Detections' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'Anomaly' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    expect(screen.getByText('Fire detections per month, VIIRS-equivalent')).toBeInTheDocument();
+  });
+
+  it('recolors the cells by their difference from the median', async () => {
+    const user = userEvent.setup();
+    const { cell } = renderCalendar();
+    expect(cell('2010-08')).not.toHaveAttribute('data-level');
+
+    await user.click(screen.getByRole('button', { name: 'Anomaly' }));
+
+    expect(screen.getByRole('grid', { name: /^Fire anomalies by month/ })).toBeInTheDocument();
+    // August 2010 is +272.9 %: the strongest "above" class. July 2026 is −36.1 %: "below".
+    expect(cell('2010-08')).toHaveAttribute('data-level', '6');
+    expect(cell('2026-07')).toHaveAttribute('data-level', '1');
+    // November 2000 is −1.2 %: inside the neutral middle class.
+    expect(cell('2000-11')).toHaveAttribute('data-level', '3');
+  });
+
+  it('shows the anomaly legend with signed percentages', async () => {
+    const user = userEvent.setup();
+    renderCalendar();
+
+    await user.click(screen.getByRole('button', { name: 'Anomaly' }));
+
+    expect(
+      screen.getByText('Difference from the median of the same calendar month'),
+    ).toBeInTheDocument();
+    for (const boundary of ['−60 %', '−33 %', '−10 %', '+10 %', '+50 %', '+150 %']) {
+      expect(screen.getByText(boundary)).toBeInTheDocument();
+    }
+    expect(screen.getByText('Not compared')).toBeInTheDocument();
+  });
+
+  it('hatches a month that cannot be compared instead of coloring it', async () => {
+    const user = userEvent.setup();
+    const { cell } = renderCalendar();
+
+    await user.click(screen.getByRole('button', { name: 'Anomaly' }));
+
+    // The current month is partial, so it has no anomaly.
+    expect(cell('2026-11')).toHaveAttribute('data-uncompared', 'true');
+    expect(cell('2026-11')).not.toHaveAttribute('data-level');
+    expect(cell('2010-08')).not.toHaveAttribute('data-uncompared');
+  });
+
+  it('keeps the tooltip and the seams in both modes', async () => {
+    const user = userEvent.setup();
+    const { cell } = renderCalendar();
+
+    await user.click(screen.getByRole('button', { name: 'Anomaly' }));
+
+    expect(cell('2012-02').getAttribute('data-seam')).toContain('left');
+    fireEvent.focus(cell('2010-08'));
+    expect(screen.getByRole('tooltip', { hidden: true })).toHaveTextContent('+272.9 % vs. median');
+  });
+
+  it('switches back to detections', async () => {
+    const user = userEvent.setup();
+    const { cell } = renderCalendar();
+
+    await user.click(screen.getByRole('button', { name: 'Anomaly' }));
+    await user.click(screen.getByRole('button', { name: 'Detections' }));
+
+    expect(screen.getByRole('grid', { name: /^Fire detections by month/ })).toBeInTheDocument();
+    expect(cell('2010-08')).not.toHaveAttribute('data-level');
   });
 });
 

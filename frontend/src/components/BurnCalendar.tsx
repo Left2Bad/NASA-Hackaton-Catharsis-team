@@ -7,14 +7,40 @@ import {
   monthSentence,
   type CellDescription,
 } from '../calendar/describe';
-import { formatCompact, formatNumber, MONTH_INITIALS, monthName } from '../labels';
-import { COUNT_RAMP, countColor, quantileBreaks, ZERO_COLOR } from '../theme/scales';
+import {
+  formatCompact,
+  formatNumber,
+  formatSignedPercent,
+  MONTH_INITIALS,
+  monthName,
+} from '../labels';
+import {
+  ANOMALY_BREAKS,
+  ANOMALY_MIDPOINT,
+  ANOMALY_RAMP,
+  anomalyColor,
+  classOf,
+  COUNT_RAMP,
+  countColor,
+  quantileBreaks,
+  ZERO_COLOR,
+} from '../theme/scales';
 import styles from './BurnCalendar.module.css';
 import { ScaleLegend } from './ScaleLegend';
+
+/** What the cell color shows: how many detections, or how far the month is from its median. */
+export type CalendarMode = 'count' | 'anomaly';
+
+const MODES: readonly { mode: CalendarMode; label: string }[] = [
+  { mode: 'count', label: 'Detections' },
+  { mode: 'anomaly', label: 'Anomaly' },
+];
 
 interface BurnCalendarProps {
   calendar: CalendarResponse;
   sources: readonly SourceInfo[];
+  mode: CalendarMode;
+  onModeChange: (mode: CalendarMode) => void;
 }
 
 /** What the tooltip shows and where it sits, in pixels inside the calendar. */
@@ -37,8 +63,9 @@ const cellId = (year: number, month: number) => `${year}-${String(month).padStar
  * The burn calendar: a year-by-month heat grid with yearly totals on the right and
  * the long-term median of each month at the bottom (F7, F8). Hovering or focusing a
  * cell opens a tooltip with the exact numbers (F9). Arrow keys move between cells.
+ * The mode switch recolors the same data by its difference from the median (F10).
  */
-export function BurnCalendar({ calendar, sources }: BurnCalendarProps) {
+export function BurnCalendar({ calendar, sources, mode, onModeChange }: BurnCalendarProps) {
   const { months, yearly, monthly_baseline: baselines } = calendar;
   const wrapRef = useRef<HTMLDivElement>(null);
   const [tip, setTip] = useState<Tip | null>(null);
@@ -52,9 +79,13 @@ export function BurnCalendar({ calendar, sources }: BurnCalendarProps) {
     () => quantileBreaks(months.filter((m) => !m.partial).map((m) => m.value)),
     [months],
   );
+  // Switching the mode only changes colors: both modes are drawn from the same response.
   const cellOf = useMemo(
-    () => buildCells(months, (month) => countColor(month.value, breaks)),
-    [months, breaks],
+    () =>
+      buildCells(months, (month) =>
+        mode === 'count' ? countColor(month.value, breaks) : anomalyColor(month.anomaly_pct),
+      ),
+    [months, breaks, mode],
   );
   const sideLabels = useMemo(() => sourceSideLabels(sources, years), [sources, years]);
   const totals = useMemo(() => new Map(yearly.map((year) => [year.year, year])), [yearly]);
@@ -131,22 +162,52 @@ export function BurnCalendar({ calendar, sources }: BurnCalendarProps) {
 
   return (
     <div className={styles.calendar}>
-      <ScaleLegend
-        title="Fire detections per month, VIIRS-equivalent"
-        colors={COUNT_RAMP}
-        boundaries={breaks.map(formatNumber)}
-        ends={['fewer', 'more']}
-        extras={[
-          { color: ZERO_COLOR, label: 'No fires' },
-          { color: null, label: 'No data' },
-        ]}
-      />
+      <div className={styles.modes} role="group" aria-label="Calendar mode">
+        {MODES.map((item) => (
+          <button
+            key={item.mode}
+            type="button"
+            aria-pressed={mode === item.mode}
+            onClick={() => onModeChange(item.mode)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {mode === 'count' ? (
+        <ScaleLegend
+          title="Fire detections per month, VIIRS-equivalent"
+          colors={COUNT_RAMP}
+          boundaries={breaks.map(formatNumber)}
+          ends={['fewer', 'more']}
+          extras={[
+            { color: ZERO_COLOR, label: 'No fires' },
+            { color: null, label: 'No data' },
+          ]}
+        />
+      ) : (
+        <ScaleLegend
+          title="Difference from the median of the same calendar month"
+          colors={ANOMALY_RAMP}
+          boundaries={ANOMALY_BREAKS.map(formatSignedPercent)}
+          ends={['below median', 'above median']}
+          extras={[
+            { color: null, hatched: true, label: 'Not compared' },
+            { color: null, label: 'No data' },
+          ]}
+        />
+      )}
 
       <div className={styles.wrap} ref={wrapRef} onMouseLeave={() => setTip(null)}>
         <div
           className={styles.grid}
           role="grid"
-          aria-label={`Fire detections by month, ${years[years.length - 1]} to ${years[0]}. Darker cells mean more detections.`}
+          aria-label={
+            mode === 'count'
+              ? `Fire detections by month, ${years[years.length - 1]} to ${years[0]}. Darker cells mean more detections.`
+              : `Fire anomalies by month, ${years[years.length - 1]} to ${years[0]}. Blue is below the median, orange is above.`
+          }
           style={{ gridTemplateRows: `auto repeat(${years.length}, var(--cell-height)) auto` }}
         >
           <div role="row" className={styles.row}>
@@ -219,6 +280,14 @@ export function BurnCalendar({ calendar, sources }: BurnCalendarProps) {
                       data-month={id}
                       data-seam={seam || undefined}
                       data-preliminary={data.preliminary || undefined}
+                      data-level={
+                        mode === 'anomaly' && data.anomaly_pct !== null
+                          ? classOf(data.anomaly_pct, ANOMALY_BREAKS)
+                          : undefined
+                      }
+                      data-uncompared={
+                        (mode === 'anomaly' && data.anomaly_pct === null) || undefined
+                      }
                       onMouseEnter={(event) => showTip(event.currentTarget, describeMonth(data))}
                       onFocus={(event) => {
                         setCursor(id);
@@ -266,7 +335,11 @@ export function BurnCalendar({ calendar, sources }: BurnCalendarProps) {
                 style={{
                   gridColumn: baseline.month + 1,
                   gridRow: medianRow,
-                  borderTopColor: countColor(baseline.median, breaks),
+                  // The median is the zero of the anomaly scale, so it takes the neutral color there.
+                  borderTopColor:
+                    mode === 'count'
+                      ? countColor(baseline.median, breaks)
+                      : ANOMALY_RAMP[ANOMALY_MIDPOINT],
                 }}
                 data-median={baseline.month}
                 onMouseEnter={(event) => showTip(event.currentTarget, describeBaseline(baseline))}

@@ -63,7 +63,8 @@ How to read the tables: `meta`, `calendar`, `current`, `points`, `daily`, `valid
 | Element | Where it comes from |
 | --- | --- |
 | Empty result ("no fires detected") | Response 200: `calendar.summary.total` = 0, `calendar.summary.peak_year` = `null` |
-| Error | `error.code`, `error.message`. Codes: `INVALID_GEOMETRY`, `INVALID_REQUEST`, `AREA_TOO_LARGE`, `EXPORT_TOO_LARGE`, `NO_DATA`, `INTERNAL` |
+| Error | `error.code`, `error.message`. Codes: `INVALID_GEOMETRY`, `INVALID_REQUEST`, `AREA_TOO_LARGE`, `EXPORT_TOO_LARGE`, `NO_DATA`, `INTERNAL`. The client adds `NETWORK`, `TIMEOUT` and `UNKNOWN` for failures outside the contract |
+| Start screen | `meta.first_date` for the first month of the record; `meta.coverage.global`, `meta.coverage.regions[]` for the covered regions |
 | "Preliminary" mark | `calendar.months[].preliminary`, `current.preliminary`, `daily.days[].preliminary`; the boundary is `meta.last_standard_date`; warning `PRELIMINARY_DATA` |
 | Partial month | `calendar.months[].partial`; its `percentile` and `category` are `null` |
 | Warnings above the calendar | `calendar.warnings[]`, `current.warnings[]`: `code`, `message` |

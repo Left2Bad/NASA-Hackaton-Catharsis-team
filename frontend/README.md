@@ -149,6 +149,38 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` 
 - **Mocks** honor the period and the size of the area (`src/mocks/tailor.ts`), so these controls can
   be tried without the backend. The fire numbers stay synthetic.
 
+## Connecting to the real API
+
+1. Start the backend (see `backend/README.md`). It needs the data files in `data/` and, for a browser
+   on another port, `CORS_ORIGINS=http://localhost:5173`.
+2. Run `npm run dev:api`. The app reads `VITE_API_URL` from the `.env` file in the repository root;
+   without it the address is `http://localhost:8000/api/v1`. The build (`npm run build`) uses the same
+   variable and never includes the mocks.
+
+How the app behaves while it talks to a server (`src/api/request.ts`, `src/api/queryClient.ts`):
+
+- **Loading:** a note with a spinner. After 4 seconds the calendar note adds that large areas take
+  longer. When only the period changes, the previous calendar stays in place, dimmed, until the new
+  one arrives; for another area nothing is kept, so numbers never appear under the wrong name.
+- **No fires:** an area without detections is a normal answer, not an error. A message stands in
+  for the calendar and the charts, and the "Now" panel says there are no levels to compare with.
+- **Errors:** every failure is said in the app's own words (`ERROR_LABELS`, `CLIENT_ERROR_LABELS` in
+  `src/labels.ts`). Besides the codes of the contract there are three of the client: `NETWORK` (the
+  server cannot be reached), `TIMEOUT` (no answer in 30 seconds) and `UNKNOWN` (an answer that is not
+  in the contract format, for example a proxy page).
+- **Trying again:** a network or server fault is retried once silently. After that the error shows a
+  "Try again" button. Requests the server refused (area too large, invalid shape, no data) get no
+  button, because the answer would be the same. A timeout is not retried silently.
+- **Cancelling:** a request whose answer is no longer needed (the user chose another area) is
+  cancelled, so the server is not kept busy.
+- **From the dataset, not from the text:** the first month of the record and the list of covered
+  regions on the start screen come from `GET /meta`.
+- **Tooltips do not outlive their numbers:** a calendar tooltip that is still open when another area
+  or period arrives is dropped, so it never describes cells it was not opened for.
+
+Checked against the backend running on the real FIRMS record (2000 to 2025, all countries): the three
+example areas, a change of period, a small area, an area without fires and an area above the limit.
+
 ## Environment variables
 
 Vite reads the `.env` file from the repository root (see `.env.example`).

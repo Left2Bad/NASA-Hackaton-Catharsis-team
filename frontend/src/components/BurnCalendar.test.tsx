@@ -152,6 +152,33 @@ describe('BurnCalendar', () => {
     expect(screen.queryByRole('tooltip', { hidden: true })).toBeNull();
   });
 
+  it('drops an open tooltip when the numbers under it change', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <BurnCalendar
+        calendar={calendar}
+        sources={meta.sources}
+        mode="count"
+        onModeChange={() => {}}
+      />,
+    );
+    const cell = container.querySelector('[data-month="2015-08"]') as HTMLElement;
+
+    await user.hover(cell);
+    expect(screen.getByRole('tooltip', { hidden: true })).toHaveTextContent('August 2015');
+
+    // Another area or period arrives while the pointer still rests on the cell.
+    rerender(
+      <BurnCalendar
+        calendar={{ ...calendar }}
+        sources={meta.sources}
+        mode="count"
+        onModeChange={() => {}}
+      />,
+    );
+    expect(screen.queryByRole('tooltip', { hidden: true })).toBeNull();
+  });
+
   it('marks preliminary months on the cell itself', () => {
     const { cell } = renderCalendar();
 

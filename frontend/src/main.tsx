@@ -1,7 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '@fontsource-variable/geologica';
+import { createQueryClient } from './api/queryClient';
 import App from './App';
 import './index.css';
 
@@ -13,11 +14,7 @@ async function enableMocking(): Promise<void> {
   }
 }
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 5 * 60 * 1000 },
-  },
-});
+const queryClient = createQueryClient();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('index.html has no #root element');

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { delay } from 'msw';
 import { http, HttpResponse } from 'msw/http';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import calendarExample from '../../contract/examples/calendar.response.json';
@@ -386,6 +387,180 @@ describe('charts under the calendar (F17, F18)', () => {
     // Three complete years are too few for a trend.
     expect(
       screen.getByText('There are too few complete years in this period to fit a trend.'),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('states of a real API (B10)', () => {
+  const internalError = () =>
+    HttpResponse.json(
+      { error: { code: 'INTERNAL', message: 'Something broke on the server.' } },
+      { status: 500 },
+    );
+
+  it('loads the calendar after "Try again" when the server recovers', async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    server.use(
+      http.post('*/api/v1/calendar', () => {
+        calls += 1;
+        return calls === 1 ? internalError() : HttpResponse.json(calendarExample);
+      }),
+    );
+    renderApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveAttribute('data-code', 'INTERNAL');
+
+    await user.click(within(alert).getByRole('button', { name: 'Try again' }));
+
+    await screen.findByRole('grid', { name: /^Fire detections by month/ });
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(calls).toBe(2);
+  });
+
+  it('says that the server cannot be reached and starts once it can', async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    server.use(
+      http.get('*/api/v1/meta', () => {
+        calls += 1;
+        return calls === 1 ? HttpResponse.error() : HttpResponse.json(metaExample);
+      }),
+    );
+    renderApp();
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveAttribute('data-code', 'NETWORK');
+    expect(alert).toHaveTextContent('The server cannot be reached.');
+
+    await user.click(within(alert).getByRole('button', { name: 'Try again' }));
+
+    expect(await screen.findByRole('group', { name: 'Example areas' })).toBeInTheDocument();
+  });
+
+  it('does not offer to repeat a request the server refused', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post('*/api/v1/calendar', () =>
+        HttpResponse.json(
+          { error: { code: 'NO_DATA', message: 'Outside the coverage.' } },
+          { status: 404 },
+        ),
+      ),
+    );
+    renderApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveAttribute('data-code', 'NO_DATA');
+    expect(within(alert).queryByRole('button')).toBeNull();
+  });
+
+  it('shows a calm message instead of an empty calendar for an area without fires', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post('*/api/v1/calendar', () =>
+        HttpResponse.json({
+          ...calendarExample,
+          months: calendarExample.months.map((month) => ({ ...month, value: 0, low: 0, high: 0 })),
+          yearly: calendarExample.yearly.map((year) => ({ ...year, total: 0 })),
+          summary: {
+            peak_year: null,
+            peak_month: null,
+            total: 0,
+            trend_pct_per_decade: null,
+            trend_line: null,
+          },
+        }),
+      ),
+    );
+    renderApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+
+    const empty = await screen.findByRole('region', { name: 'No fires detected' });
+    expect(empty).toHaveTextContent(
+      `The satellites recorded no fire detections in this area from ${FIRST_YEAR} to ${LAST_YEAR}.`,
+    );
+    expect(screen.queryByRole('grid', { name: /^Fire detections by month/ })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Season profile' })).toBeNull();
+    expect(screen.queryByRole('alert')).toBeNull();
+    // "Now" is a separate question and still gets its answer.
+    expect(await screen.findByRole('region', { name: 'Now' })).toBeInTheDocument();
+  });
+
+  it('keeps the calendar on screen, dimmed, while another period loads', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+    const grid = await screen.findByRole('grid', { name: /^Fire detections by month, 2000 to/ });
+    const results = grid.closest('[aria-busy]');
+    expect(results).toHaveAttribute('aria-busy', 'false');
+
+    // From now on the calendar answers slowly, like a real server under load.
+    server.use(
+      http.post('*/api/v1/calendar', async () => {
+        await delay(150);
+        return HttpResponse.json({
+          ...calendarExample,
+          months: calendarExample.months.filter((month) => month.year >= 2010),
+          yearly: calendarExample.yearly.filter((year) => year.year >= 2010),
+        });
+      }),
+    );
+    const period = screen.getByRole('group', { name: 'Period' });
+    await user.selectOptions(within(period).getByLabelText('From'), '2010');
+
+    // The old calendar is still there, marked as busy, with a note next to the area size.
+    expect(screen.getByRole('grid', { name: /^Fire detections by month, 2000 to/ })).toBe(grid);
+    expect(results).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByText(/updating for the new period/)).toBeInTheDocument();
+    expect(screen.queryByText('Loading the calendar…')).toBeNull();
+
+    await screen.findByRole('grid', { name: /^Fire detections by month, 2010 to/ });
+    await waitFor(() => expect(screen.queryByText(/updating for the new period/)).toBeNull());
+  });
+
+  it('does not show the numbers of one area under the name of another', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await user.click(await screen.findByRole('button', { name: 'Northern Kazakhstan' }));
+    await screen.findByRole('grid', { name: /^Fire detections by month/ });
+
+    server.use(
+      http.post('*/api/v1/calendar', async () => {
+        await delay(150);
+        return HttpResponse.json(calendarExample);
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Southern Amazon' }));
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Southern Amazon' })).toBeInTheDocument();
+    expect(screen.queryByRole('grid', { name: /^Fire detections by month/ })).toBeNull();
+    expect(screen.getByText('Loading the calendar…')).toBeInTheDocument();
+    await screen.findByRole('grid', { name: /^Fire detections by month/ });
+  });
+
+  it('takes the start of the record and the coverage from the dataset', async () => {
+    server.use(
+      http.get('*/api/v1/meta', () =>
+        HttpResponse.json({
+          ...metaExample,
+          first_date: '2001-03-01',
+          coverage: { global: false, regions: ['Kazakhstan', 'Brazil'] },
+        }),
+      ),
+    );
+    renderApp();
+
+    expect(
+      await screen.findByText(/shows fire activity for every month since March 2001\./),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Data is loaded for these regions only: Kazakhstan, Brazil.'),
     ).toBeInTheDocument();
   });
 });

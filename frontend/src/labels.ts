@@ -78,6 +78,12 @@ const monthFormat = new Intl.DateTimeFormat('en-US', { month: 'long', timeZone: 
 export const monthName = (month: number) =>
   monthFormat.format(new Date(Date.UTC(2001, month - 1, 1)));
 
+const shortMonthFormat = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' });
+
+/** Short month name for a month number 1 to 12: "Nov". */
+export const monthShortName = (month: number) =>
+  shortMonthFormat.format(new Date(Date.UTC(2001, month - 1, 1)));
+
 const numberFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
 
 /** A number for display: thousands separators, at most one decimal place. */

@@ -139,23 +139,6 @@
   font-size: var(--text-md);
 }
 
-.facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: var(--space-3) var(--space-5);
-}
-
-.facts dt {
-  color: var(--muted);
-  font-size: var(--text-sm);
-}
-
-.facts dd {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
 .planned {
   margin: 0;
   padding-left: var(--space-5);

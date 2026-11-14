@@ -1,6 +1,6 @@
 # frontend/ — zone of developer B
 
-The web app: React, TypeScript, Vite, and a map on MapLibre GL JS. Charts arrive with tasks B6 to B9.
+The web app: React, TypeScript, Vite, and a map on MapLibre GL JS. Charts are drawn as plain SVG, without a chart library.
 
 Which contract fields each part of the screen is drawn from: [docs/contract-coverage.md](docs/contract-coverage.md).
 
@@ -93,6 +93,27 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` 
   of a row, Escape closes the tooltip.
 - **Not color alone:** every cell has a spoken description with its numbers, preliminary months
   carry a corner mark, and seams between sensors are drawn as lines.
+
+## "Now" panel and summary
+
+- **Request (F15):** `POST /current` carries only the `geometry`. The period of the calendar does not
+  apply to "now", so changing the years does not ask for it again. An area above the size limit is not
+  requested. If the request fails, the error stays inside the "Now" section and the calendar remains.
+- **Answer first:** the panel leads with the level in words ("Above normal") and the difference from
+  the median of the same days, then the numbers behind them: detections so far, the median, the percentile.
+- **Level strip:** five levels on one scale, built from `baseline_same_days` (`p25`, `p75`, `p90`, `max`),
+  with a mark at the current value. The list under it names every level with its range, and the
+  current one is bold, so the level never depends on color alone. Colors are steps of the anomaly scale.
+- **Cumulative chart** (`src/components/CumulativeChart.tsx`): detections since the start of the month
+  against the median of the same days. The time axis covers the whole month. The readout above the plot
+  shows the latest day, the day under the pointer, or the day chosen with the arrow keys (Home and End
+  jump to the ends). The median line is dashed as well as gray. A hidden table holds the same numbers
+  for screen readers.
+- **Summary (F16):** four facts from `calendar.summary` (`src/calendar/summary.ts`): the most active
+  year with its total, the peak month with its median, the detections of the period, and the trend as
+  a word with an arrow ("Rising", "Falling", "No change"). A missing trend says "too few complete years".
+  An area without fires gets dashes and a sentence that says so.
+- **Wording** of the panel lives in `src/now/describe.ts`, the chart geometry in `src/now/chart.ts`.
 
 ## Area and period controls
 

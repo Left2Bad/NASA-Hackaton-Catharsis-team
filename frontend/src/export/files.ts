@@ -103,6 +103,21 @@ export function monthFileName(
   return `firms-hotspots_${areaSlug(scope)}_${year}-${String(month).padStart(2, '0')}.csv`;
 }
 
+/**
+ * The file name of the hot spots of a span of months, given as month indexes
+ * (year × 12 + month − 1): one month or "first_last".
+ */
+export function spanFileName(
+  scope: Pick<ExportScope, 'geometry' | 'presetId'>,
+  first: number,
+  last: number,
+): string {
+  const id = (index: number) =>
+    `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, '0')}`;
+  const months = first === last ? id(first) : `${id(first)}_${id(last)}`;
+  return `firms-hotspots_${areaSlug(scope)}_${months}.csv`;
+}
+
 /** Hands a file to the browser's download: a temporary link that is clicked and removed. */
 export function saveBlob(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);

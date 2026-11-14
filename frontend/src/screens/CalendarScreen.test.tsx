@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw/http';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -209,7 +209,9 @@ describe('hot spots of a month on the map (F13)', () => {
 
     await screen.findByText(/^October 2026: /);
     expect(
-      screen.getByText('Click a month in the calendar to see its hot spots.'),
+      screen.getByText(
+        /^Drag the ends to show up to 6 months, step with the arrows, or click a month/,
+      ),
     ).toBeInTheDocument();
   });
 
@@ -263,6 +265,110 @@ describe('hot spots of a month on the map (F13)', () => {
     const map = screen.getByRole('region', { name: 'Area selection' });
     expect(await within(map).findByRole('alert')).toHaveAttribute('data-code', 'NO_DATA');
     expect(screen.getByRole('grid', { name: /^Fire detections by month/ })).toBeInTheDocument();
+  });
+});
+
+describe('months and fire power of the hot spots', () => {
+  it('shows a span of months when an end of the slider is moved', async () => {
+    const user = userEvent.setup();
+    const bodies = record('/points', pointsExample);
+    const { container } = renderScreen();
+    await openArea(user);
+    await screen.findByText(/^October 2026: /);
+
+    // October 2026 is month 2026 × 12 + 9; the first end goes one month back.
+    const months = screen.getByRole('group', { name: 'Months on the map' });
+    const first = within(months).getByRole('slider', { name: 'First month on the map' });
+    expect(first).toHaveValue(String(2026 * 12 + 9));
+    fireEvent.change(first, { target: { value: String(2026 * 12 + 8) } });
+
+    expect(
+      await screen.findByText(
+        `September to October 2026: ${pointsExample.total * 2} hot spots on the map, all sensors.`,
+      ),
+    ).toBeInTheDocument();
+    // One request per month; October was already there and is not asked again.
+    expect(bodies.map((body) => body.month)).toEqual([10, 9]);
+    expect(screen.getByTestId('map')).toHaveAttribute(
+      'data-points',
+      String(pointsExample.features.length * 2),
+    );
+    for (const id of ['2026-09', '2026-10']) {
+      expect(container.querySelector(`[data-month="${id}"]`)).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    }
+  });
+
+  it('never shows more than six months: the other end follows', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+    await openArea(user);
+    await screen.findByText(/^October 2026: /);
+
+    const months = screen.getByRole('group', { name: 'Months on the map' });
+    const first = within(months).getByRole('slider', { name: 'First month on the map' });
+    const last = within(months).getByRole('slider', { name: 'Last month on the map' });
+    fireEvent.change(first, { target: { value: String(2020 * 12) } });
+
+    expect(first).toHaveValue(String(2020 * 12));
+    expect(last).toHaveValue(String(2020 * 12 + 5));
+    await screen.findByText(/^January to June 2020: /);
+  });
+
+  it('steps the whole span one month earlier or later', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+    await openArea(user);
+    await screen.findByText(/^October 2026: /);
+
+    await user.click(screen.getByRole('button', { name: 'One month earlier' }));
+    await screen.findByText(/^September 2026: /);
+    await user.click(screen.getByRole('button', { name: 'One month later' }));
+    await user.click(screen.getByRole('button', { name: 'One month later' }));
+    await screen.findByText(/^November 2026: /);
+    // November 2026 is the last month of the record: there is nothing later.
+    expect(screen.getByRole('button', { name: 'One month later' })).toBeDisabled();
+  });
+
+  it('returns to one month when a month of the calendar is clicked', async () => {
+    const user = userEvent.setup();
+    const { container } = renderScreen();
+    await openArea(user);
+    await screen.findByText(/^October 2026: /);
+    const months = screen.getByRole('group', { name: 'Months on the map' });
+    fireEvent.change(within(months).getByRole('slider', { name: 'First month on the map' }), {
+      target: { value: String(2026 * 12 + 7) },
+    });
+    await screen.findByText(/^August to October 2026: /);
+
+    await user.click(container.querySelector('[data-month="2021-07"]') as HTMLElement);
+
+    await screen.findByText(/^July 2021: /);
+    expect(within(months).getByRole('slider', { name: 'Last month on the map' })).toHaveValue(
+      String(2021 * 12 + 6),
+    );
+  });
+
+  it('keeps only the stronger fires when a class of the legend is clicked', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+    await openArea(user);
+    await screen.findByText(/^October 2026: /);
+
+    const power = screen.getByRole('group', { name: 'Fire power of the dots' });
+    const bands = within(power).getAllByRole('button');
+    expect(bands.length).toBeGreaterThan(1);
+    expect(bands[0]).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(bands[bands.length - 1]);
+
+    expect(bands[bands.length - 1]).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText(/^October 2026: .* Shown: \d+ of [\d.,]+ MW or more\.$/)).toBeVisible();
+    // The weakest class brings all the dots back.
+    await user.click(bands[0]);
+    expect(screen.queryByText(/Shown: /)).toBeNull();
   });
 });
 

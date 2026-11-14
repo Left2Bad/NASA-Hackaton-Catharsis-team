@@ -175,12 +175,20 @@ Three views that go deeper than the monthly calendar (requirements F19, F13 and 
   and not a change in fire activity. The tooltip puts the recorded count next to the harmonized one
   and names the factor between them; the yearly totals are sums of the recorded counts
   (`src/calendar/raw.ts`). The raw counts are asked only for this view: the request gets `series=raw`.
-- **Hot spots of a month (F13):** a click on a month (or Enter on a focused cell) asks `POST /points`
-  for that month and draws the detections as dots on the map, under the outline of the area. A strip
-  above the map says how many are drawn; above `limits.max_points` the API returns the strongest
-  fires by radiative power and the strip says so. A second click, the "Hide hot spots" button or a
-  change of area removes the dots. The dots are a MapLibre circle layer below the place names
-  (`showPoints` in `src/map/engine.ts`).
+- **Hot spots on the map (F13):** an open area shows at once the hot spots of its latest complete
+  month with fire, as dots under the outline of the area (`POST /points`). A strip above the map says
+  what is drawn and holds the controls (`src/components/SpotsBar.tsx`, helpers in `src/map/spots.ts`):
+  - **Months:** a click on a month of the calendar (or Enter on a focused cell) shows that month; a
+    slider with two handles sets a span of up to six months, and two arrows step it by a month. Every
+    month is its own request, sent together and kept, so a month seen before is not asked again.
+    Above `limits.max_points` the strongest fires are kept, and the strip says so.
+  - **Fire power:** dots are colored by fire radiative power in five classes at quantiles of the
+    points that are drawn, pale yellow for the weakest to dark red for the strongest, which are
+    drawn on top. A click on a class of the legend keeps that class and the stronger ones.
+  - **File and hiding:** "Download CSV" saves every detection of the months on the map; "Hide", or a
+    second click on the only month shown, removes the dots. A change of area starts again from the
+    latest month. The dots are a MapLibre circle layer below the place names (`showPoints` in
+    `src/map/engine.ts`).
 - **Daily calendar (F14):** the section under the yearly totals. A row per month and a column per day
   of the chosen year, from `POST /daily`. The classes are quantiles of that year alone. The readout
   above the grid names the busiest day, the day under the pointer, or the day reached with the arrow
@@ -251,8 +259,8 @@ The "Downloads" section of the panel (`src/components/Downloads.tsx`, helpers in
 - **Hot spots, CSV (F22):** `POST /export/points.csv`. The years of the period become dates, January 1
   to December 31, cut to the record of the dataset (`exportDates`). Two date fields under the buttons
   set any other range, so a single month of a large area fits under the row limit; the file is then
-  named after the dates. The strip above the map offers the same file for the month whose hot spots
-  are drawn ("Download this month (CSV)"). Every row has its sensor and its
+  named after the dates. The strip above the map offers the same file for the months whose hot
+  spots are drawn ("Download CSV"). Every row has its sensor and its
   weight in the harmonized record. Above `limits.max_export_rows` the server answers `EXPORT_TOO_LARGE`
   and the app says to shorten the period; when the calendar total already exceeds the limit, the
   note under the buttons warns before the click.

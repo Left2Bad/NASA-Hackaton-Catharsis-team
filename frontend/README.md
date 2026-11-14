@@ -76,6 +76,21 @@ CI (`.github/workflows/frontend.yml`) runs `npm ci`, `npm run lint`, `npm test` 
   takes its place, and the example areas keep working.
 - **Limitation:** an area that crosses the 180th meridian is not supported yet.
 
+## Area and period controls
+
+- **Coordinates (F2):** the "Enter coordinates" button opens a form with two ways to set the area:
+  four bounds, or a point with a radius in km. A circle is sent as a polygon of 64 points, because
+  the API has no circle type. The form is also the keyboard alternative to drawing on the map.
+- **Example areas (F3)** come from `GET /meta`; their English names are in `src/labels.ts`.
+- **Period (F4):** two lists of years; the whole record is the default. The years go into the
+  request as `start_year` and `end_year`.
+- **Area size (F5):** the app computes the area on a sphere (`src/geo/shapes.ts`) and compares it
+  with `limits.max_area_km2` from `GET /meta`. An area above the limit gets a message and is not
+  requested. A small area gets the `AREA_SMALL` warning from the API.
+- **Errors** are shown in the app's own words by contract code (`ERROR_LABELS` in `src/labels.ts`).
+- **Mocks** honor the period and the size of the area (`src/mocks/tailor.ts`), so these controls can
+  be tried without the backend. The fire numbers stay synthetic.
+
 ## Environment variables
 
 Vite reads the `.env` file from the repository root (see `.env.example`).

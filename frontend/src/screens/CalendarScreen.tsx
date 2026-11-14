@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { USE_MOCKS } from '../api/config';
 import { useCalendar, useMeta } from '../api/queries';
-import type { CalendarResponse, Meta } from '../api/types';
+import type { CalendarResponse, Geometry, Meta } from '../api/types';
+import { AreaMap } from '../components/AreaMap';
 import { CalendarPreview } from '../components/CalendarPreview';
 import { ErrorNote } from '../components/ErrorNote';
-import { MapPlaceholder } from '../components/MapPlaceholder';
+import { boundsOf, formatBounds } from '../geo/geometry';
 import {
   formatNumber,
   formatSignedPercent,
@@ -14,8 +15,14 @@ import {
 } from '../labels';
 import styles from './CalendarScreen.module.css';
 
-// Главный экран: слева карта с выбором области, справа панель с календарём и аналитикой.
-// В задаче B3 это макет: карта — заглушка, часть разделов панели только перечислена.
+// The main screen: the map with area selection on the left, the panel with the
+// calendar and analytics on the right. Some panel sections are still only listed.
+
+/** The area of interest: its shape and, when it came from an example, which one. */
+interface Area {
+  geometry: Geometry;
+  presetId: string | null;
+}
 
 const PLANNED = [
   'Now: the current month so far against the same days of past years',
@@ -52,20 +59,77 @@ function Summary({ calendar }: { calendar: CalendarResponse }) {
   );
 }
 
+/** Shown before any area is chosen: tells the user how to start. */
+function StartPrompt() {
+  return (
+    <div className={styles.start}>
+      <h1>Choose an area to see its fire calendar</h1>
+      <p>
+        Draw a rectangle or a polygon on the map, or start with one of the example areas above the
+        map. The calendar shows fire activity for every month since November 2000.
+      </p>
+    </div>
+  );
+}
+
+function AreaPanel({ area, meta }: { area: Area; meta: Meta }) {
+  const calendar = useCalendar({ geometry: area.geometry });
+
+  const preset = meta.presets.find((item) => item.id === area.presetId);
+  const label = preset ? presetLabel(preset) : { name: 'Custom area', description: '' };
+
+  return (
+    <>
+      <header className={styles.areaHeader}>
+        <h1>{label.name}</h1>
+        <p className={styles.description}>
+          {label.description || formatBounds(boundsOf(area.geometry))}
+        </p>
+        {calendar.data && (
+          <p className={styles.meta}>
+            {formatNumber(calendar.data.area_km2)} km², data through {calendar.data.data_through}
+          </p>
+        )}
+      </header>
+
+      {calendar.isPending && <p role="status">Loading the calendar…</p>}
+      {calendar.isError && <ErrorNote error={calendar.error} />}
+      {calendar.data && (
+        <>
+          <section className={styles.section} aria-labelledby="calendar-heading">
+            <h2 id="calendar-heading">Burn calendar</h2>
+            <CalendarPreview calendar={calendar.data} sources={meta.sources} />
+            {calendar.data.warnings.length > 0 && (
+              <ul className={styles.warnings}>
+                {calendar.data.warnings.map((warning) => (
+                  <li key={warning.code}>{WARNING_LABELS[warning.code]}</li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className={styles.section} aria-labelledby="summary-heading">
+            <h2 id="summary-heading">Summary</h2>
+            <Summary calendar={calendar.data} />
+          </section>
+        </>
+      )}
+
+      <section className={styles.section} aria-labelledby="planned-heading">
+        <h2 id="planned-heading">Coming to this panel</h2>
+        <ul className={styles.planned}>
+          {PLANNED.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </section>
+    </>
+  );
+}
+
 function Workspace({ meta }: { meta: Meta }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selected = meta.presets.find((preset) => preset.id === selectedId) ?? meta.presets[0];
-  const calendar = useCalendar(selected ? { geometry: selected.geometry } : null);
+  const [area, setArea] = useState<Area | null>(null);
 
-  if (!selected) {
-    return (
-      <main className={styles.state}>
-        <p>The dataset has no example areas yet. Drawing your own area arrives with the map.</p>
-      </main>
-    );
-  }
-
-  const label = presetLabel(selected);
   const firstYear = meta.first_date.slice(0, 4);
   const lastYear = meta.last_date.slice(0, 4);
 
@@ -78,8 +142,8 @@ function Workspace({ meta }: { meta: Meta }) {
               <button
                 key={preset.id}
                 type="button"
-                aria-pressed={preset.id === selected.id}
-                onClick={() => setSelectedId(preset.id)}
+                aria-pressed={preset.id === area?.presetId}
+                onClick={() => setArea({ geometry: preset.geometry, presetId: preset.id })}
               >
                 {presetLabel(preset).name}
               </button>
@@ -92,51 +156,15 @@ function Workspace({ meta }: { meta: Meta }) {
             </strong>
           </p>
         </div>
-        <MapPlaceholder geometry={selected.geometry} />
+        <AreaMap
+          geometry={area?.geometry ?? null}
+          // A shape drawn or edited on the map is no longer an example area.
+          onChange={(geometry) => setArea(geometry ? { geometry, presetId: null } : null)}
+        />
       </section>
 
       <section className={styles.panel} aria-label="Fire activity">
-        <header className={styles.areaHeader}>
-          <h1>{label.name}</h1>
-          {label.description && <p className={styles.description}>{label.description}</p>}
-          {calendar.data && (
-            <p className={styles.meta}>
-              {formatNumber(calendar.data.area_km2)} km², data through {calendar.data.data_through}
-            </p>
-          )}
-        </header>
-
-        {calendar.isPending && <p role="status">Loading the calendar…</p>}
-        {calendar.isError && <ErrorNote error={calendar.error} />}
-        {calendar.data && (
-          <>
-            <section className={styles.section} aria-labelledby="calendar-heading">
-              <h2 id="calendar-heading">Burn calendar</h2>
-              <CalendarPreview calendar={calendar.data} sources={meta.sources} />
-              {calendar.data.warnings.length > 0 && (
-                <ul className={styles.warnings}>
-                  {calendar.data.warnings.map((warning) => (
-                    <li key={warning.code}>{WARNING_LABELS[warning.code]}</li>
-                  ))}
-                </ul>
-              )}
-            </section>
-
-            <section className={styles.section} aria-labelledby="summary-heading">
-              <h2 id="summary-heading">Summary</h2>
-              <Summary calendar={calendar.data} />
-            </section>
-          </>
-        )}
-
-        <section className={styles.section} aria-labelledby="planned-heading">
-          <h2 id="planned-heading">Coming to this panel</h2>
-          <ul className={styles.planned}>
-            {PLANNED.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </section>
+        {area ? <AreaPanel area={area} meta={meta} /> : <StartPrompt />}
 
         <footer className={styles.footer}>
           <p>

@@ -21,3 +21,7 @@
 | `b3-layout-phone-top.jpg`, `b3-layout-phone-calendar.jpg` | Тот же экран на телефоне |
 | `b3-scale-detections.jpg` | Шкала количества при трёх типах дальтонизма |
 | `b3-scale-anomaly.jpg` | Шкала аномалий при трёх типах дальтонизма |
+| `b4-map-example-area.jpg` | Карта с областью-примером и календарём |
+| `b4-map-editing.jpg` | Область выделена: ручки на углах и серединах сторон для правки |
+| `b4-map-satellite.jpg` | Спутниковая подложка NASA Blue Marble |
+| `b4-map-phone.jpg` | Карта на телефоне |

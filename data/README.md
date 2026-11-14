@@ -54,6 +54,29 @@ fetch day itself is partial and is not served), `last_standard_date` the last da
 near real time and `preliminary`), `sensor_last_dates` the last day with detections per satellite. The backend reads them
 from here; data folders made before these keys existed fall back to the grid and the points files.
 
+## Sample data: three regions, 53 MB
+
+For a quick look without the full data (root README, "Quick start with sample data") the team publishes
+`burn-calendar-sample-data.zip` next to the full archive. It unpacks into a folder `sample_data/` with the same layout as
+`data/`; run the backend with `DATA_DIR=sample_data`. It is cut from a full data folder (read only) by:
+
+```bash
+python pipeline/make_sample.py --src data --out sample_data --zip burn-calendar-sample-data.zip
+```
+
+| File | In the sample |
+| --- | --- |
+| `grid_daily.parquet`, `grid_monthly.parquet`, `grid_daily_gap_months.parquet` | 0.1° cells of the three example regions with a 0.5° margin, Nov 2000 – last day |
+| `points_serve/<sensor>_<year>.parquet` | detections inside the same boxes, 2021–2026 (`--points-from`) |
+| `coefficients.parquet`, `uncertainty.parquet`, `outage_months.csv`, `gap_days.csv`, `harmonized/global_monthly.csv`, `validation/*.json` | unchanged, world-wide |
+| `harmonized/summary.json` | unchanged, plus a `sample` key: the boxes, the covered cell ranges and the row counts |
+
+The regions (west, south, east, north) are Northern Kazakhstan (61, 51, 71, 55), Southern Amazon (−62, −13, −52, −7)
+and Northern California (−124, 38.5, −120, 42), the presets of `backend/app/schemas.py`. When `summary.json` has the
+`sample` key, the backend answers `NO_DATA` for an area that is not fully inside the covered cells, instead of reporting
+zero fire there. `/points` and the points CSV answer `NO_DATA` for years before 2021 (no files). `--box` and
+`--points-from` cut other regions and years.
+
 ---
 
 ## Instructions for an AI assistant (Claude Code, etc.): how to prepare the data
@@ -63,8 +86,14 @@ Do not commit anything from `data/`. Do not commit keys or `.env`.
 
 ### Option A — a ready-made team archive is available (fast, ~5 minutes)
 
-The team shares a data archive (`FIRMS_data_*.zip`, ~1 GB) via Google Drive. The user downloads it themself
-and gives you the path to the file. Inside the archive, paths are relative to the repository root and all start with `data/`.
+The team publishes the data archive `FIRMS_data_2026-11-13.zip` (1.03 GB, 12 files) as a GitHub release asset:
+<!-- TODO(user): the link goes live once the GitHub release "data-2026-11-13" is published -->
+https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/download/data-2026-11-13/FIRMS_data_2026-11-13.zip
+The user downloads it (or gives you the path to a copy). Inside the archive, paths are relative to the repository root
+and all start with `data/`. It is packed from a full data folder by `python pipeline/pack_data.py --src data --zip <file>`
+(`--dry-run` lists the files): the three grids, `coefficients.parquet`, `uncertainty.parquet`, `static_mask.parquet`,
+`outage_months.csv`, `gap_days.csv`, `harmonized/summary.json`, `harmonized/global_monthly.csv`,
+`validation/report.json` and `validation/checks.json`.
 
 1. Check the archive: `python -c "import zipfile,sys; z=zipfile.ZipFile(sys.argv[1]); print(z.testzip())" <path>` → `None`.
 2. Extract into the repository root only the paths that start with `data/`:
@@ -75,7 +104,7 @@ and gives you the path to the file. Inside the archive, paths are relative to th
 
 3. Check that `data/grid_daily.parquet`, `data/grid_monthly.parquet`, `data/coefficients.parquet`,
    `data/uncertainty.parquet`, `data/outage_months.csv`, `data/gap_days.csv`, `data/grid_daily_gap_months.parquet`,
-   `data/harmonized/summary.json` have appeared, and that in `summary.json` `global_coefficients.count_ta` ≈ 4.04 and
+   `data/harmonized/summary.json`, `data/validation/report.json` have appeared, and that in `summary.json` `global_coefficients.count_ta` ≈ 4.04 and
    `last_complete_date` is set.
 
 This is enough for the backend (calendar, "Now", daily series, the "Method" page).

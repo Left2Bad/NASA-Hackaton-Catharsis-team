@@ -40,3 +40,7 @@ frontend/test-results/
 Thumbs.db
 desktop.ini
 *.log
+
+# --- Sample data for the quick start (README) ---
+sample_data/
+sample.zip

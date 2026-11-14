@@ -177,9 +177,7 @@ export function ScalesPage() {
         </p>
         <div className={styles.specimen}>
           <p className={styles.specimenLarge}>Is it burning more than usual?</p>
-          <p className={styles.specimenLarge} lang="ru">
-            Сейчас горит больше обычного?
-          </p>
+          <p className={styles.specimenLarge}>Above normal for these days of the month</p>
           <p className={styles.specimenFigures}>
             1 840 detections
             <br />2 111 detections

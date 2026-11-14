@@ -232,6 +232,16 @@ describe('anomaly mode (F10)', () => {
     expect(screen.getByText('Not compared')).toBeInTheDocument();
   });
 
+  it('says that the anomaly color is a percent, unlike the level in Now', async () => {
+    const user = userEvent.setup();
+    renderCalendar();
+
+    await user.click(screen.getByRole('button', { name: 'Anomaly' }));
+
+    expect(screen.getByText(/difference from the median in percent/)).toBeInTheDocument();
+    expect(screen.getByText(/The level in Now is a percentile/)).toBeInTheDocument();
+  });
+
   it('hatches a month that cannot be compared instead of coloring it', async () => {
     const user = userEvent.setup();
     const { cell } = renderCalendar();

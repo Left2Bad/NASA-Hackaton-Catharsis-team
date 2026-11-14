@@ -869,5 +869,7 @@ describe('color scales page', () => {
     // Calendar samples appear once the data has loaded: one per scale and kind of vision.
     const samples = await screen.findAllByRole('img', { name: /, 2008 to 2013, / });
     expect(samples).toHaveLength(VISIONS.length * 2);
+    // The whole interface is in English, the type specimen included.
+    expect(document.body.textContent).not.toMatch(/[\u0400-\u04FF]/);
   });
 });

@@ -16,7 +16,9 @@
 }
 
 .scale {
-  flex: 1 1 260px;
+  /* About 48px per class keeps labels such as "−60 %" apart. On a narrower screen the
+     extras wrap below the scale before the scale gets this tight. */
+  flex: 1 1 max(260px, calc(var(--classes, 6) * 48px));
   max-width: 420px;
 }
 
@@ -50,6 +52,11 @@
   display: flex;
   justify-content: space-between;
   margin-top: 2px;
+  color: var(--muted);
+}
+
+.note {
+  margin: var(--space-1) 0 0;
   color: var(--muted);
 }
 

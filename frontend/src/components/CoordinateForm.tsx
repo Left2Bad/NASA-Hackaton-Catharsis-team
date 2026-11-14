@@ -102,6 +102,7 @@ export function CoordinateForm({ geometry, onSubmit, onCancel }: CoordinateFormP
           <input
             type="radio"
             name={`${formId}-mode`}
+            value="bounds"
             checked={mode === 'bounds'}
             onChange={() => {
               setMode('bounds');
@@ -114,6 +115,7 @@ export function CoordinateForm({ geometry, onSubmit, onCancel }: CoordinateFormP
           <input
             type="radio"
             name={`${formId}-mode`}
+            value="circle"
             checked={mode === 'circle'}
             onChange={() => {
               setMode('circle');

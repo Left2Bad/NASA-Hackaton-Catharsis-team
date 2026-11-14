@@ -9,6 +9,8 @@ Built so every published number can be computed by hand:
 - coefficients of the cell: count_t 4, count_ta 2, count_n20 1.25, frp_t 1.5, frp_ta 0.75, frp_n20 1.1, so the
   harmonized count of every fire day before November 2026 is 4B (Terra x 4 = (Terra + Aqua) x 2 = S-NPP),
   and a month is 8B;
+- baseline Novembers also burn on the 20th (4B more, a month of 12B), after the 14th, so the same-days baseline of
+  /current (8B) differs from the whole month;
 - November 2026 (NOAA-20 leads): n_n20 = 40 on the 3rd and 10th and 8 on the 14th, the last day of the data;
   harmonized 1.25 x 88 = 110;
 - points: the last standard-processing (SP) VIIRS day is 2026-09-30, later points are near-real-time (NRT).
@@ -54,10 +56,11 @@ POINTS = {
 def _fire_days():
     m = dt.date(2000, 11, 1)
     while m <= LAST:
-        for day in (3, 10, 14):
+        for day in (3, 10, 14, 20):
             d = m.replace(day=day)
-            if d <= LAST and (day != 14 or (m.year, m.month) == (2026, 11)):
-                yield d
+            if d > LAST or (day == 14 and (m.year, m.month) != (2026, 11)) or (day == 20 and m.month != 11):
+                continue
+            yield d
         m = (m.replace(day=28) + dt.timedelta(days=4)).replace(day=1)
 
 

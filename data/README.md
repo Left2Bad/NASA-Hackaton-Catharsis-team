@@ -57,12 +57,12 @@ data/TASK_for_friend_claude.md → НЕ нужно
 
 ### Вариант Б — собрать всё самому (~1,5 часа, ~20 ГБ места на диске, ≥12 ГБ RAM)
 
-1. Окружение: `python -m venv .venv`, затем `.venv/Scripts/pip install -e pipeline` (Linux/macOS: `.venv/bin/pip`).
+1. Окружение: `python -m venv .venv`, затем `.venv/Scripts/pip install -e "pipeline[dev]"` (Linux/macOS: `.venv/bin/pip`).
 2. Проверь свободное место: нужно ≥ 20 ГБ.
-3. `python pipeline/00_download_archives.py` — 48 архивов в `data/raw/`. Логин не нужен.
+3. `python pipeline/download_archives.py` — 48 архивов в `data/raw/`. Логин не нужен.
    Если сервер отвечает не 200 (техобслуживание FIRMS), сообщи пользователю и не ищи других источников.
-4. `python pipeline/01_to_parquet.py data/raw/*.zip` — одним процессом, не параллельно (память).
-5. `python pipeline/02_harmonize.py`.
+4. `python pipeline/to_parquet.py data/raw/*.zip` — одним процессом, не параллельно (память).
+5. `python pipeline/harmonize.py`.
 6. Проверка: 48 файлов в `data/points/`, в выводе шага 5 строка
    `validation 2019-2025 ... 'r_country_month': 0.98...` и `S-NPP outage months: [('2022-07', ...), ('2022-08', ...), ('2024-07', ...), ('2024-11', ...)]`.
 
@@ -70,6 +70,6 @@ data/TASK_for_friend_claude.md → НЕ нужно
 
 Нужен бесплатный ключ FIRMS: пользователь получает его сам на https://firms.modaps.eosdis.nasa.gov/api/map_key/
 и вписывает в `.env` (`FIRMS_MAP_KEY=...`, образец — `.env.example`). Затем:
-`python pipeline/03_fetch_2026_api.py` → `python pipeline/04_api_to_parquet.py` → `python pipeline/02_harmonize.py`.
+`python pipeline/fetch_api.py` → `python pipeline/api_to_parquet.py` → `python pipeline/harmonize.py`.
 Загрузка идёт 1,5–2,5 часа из-за лимита ключа (5000 транзакций за 10 минут); скрипт сам ждёт квоту.
 Не обходи лимит несколькими ключами.

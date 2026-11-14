@@ -5,9 +5,16 @@ Output: data/api_2026/<SOURCE>/<start>.csv  -> then converted to data/parquet/<s
 Usage: put FIRMS_MAP_KEY into .env (or env var), then  python 03_fetch_2026_api.py
 Resumable: existing chunk files are skipped. Respects FIRMS limit (5000 transactions / 10 min).
 """
-import csv, io, os, sys, time, urllib.request
+
+import csv
+import io
+import os
+import sys
+import time
+import urllib.request
 from datetime import date, timedelta
 from pathlib import Path
+
 
 def _env_key():
     """Read FIRMS_MAP_KEY from the repo-root .env file (see .env.example)."""
@@ -19,15 +26,17 @@ def _env_key():
     return None
 
 
-KEY = os.environ.get("FIRMS_MAP_KEY") or _env_key() or sys.exit("set FIRMS_MAP_KEY")
+KEY = os.environ.get("FIRMS_MAP_KEY") or _env_key()
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "raw" / "api_2026"
 BASE = "https://firms.modaps.eosdis.nasa.gov/api"
 YEAR_START = date(2026, 1, 1)
 # our source name -> (SP product, NRT product)
-SOURCES = {"modis": ("MODIS_SP", "MODIS_NRT"),
-           "viirs-snpp": ("VIIRS_SNPP_SP", "VIIRS_SNPP_NRT"),
-           "viirs-jpss1": ("VIIRS_NOAA20_SP", "VIIRS_NOAA20_NRT")}
+SOURCES = {
+    "modis": ("MODIS_SP", "MODIS_NRT"),
+    "viirs-snpp": ("VIIRS_SNPP_SP", "VIIRS_SNPP_NRT"),
+    "viirs-jpss1": ("VIIRS_NOAA20_SP", "VIIRS_NOAA20_NRT"),
+}
 
 
 def get(url, tries=6):
@@ -36,7 +45,8 @@ def get(url, tries=6):
             with urllib.request.urlopen(url, timeout=300) as r:
                 return r.read().decode()
         except Exception as e:
-            print("  retry", i, e, flush=True); time.sleep(30 * (i + 1))
+            print("  retry", i, e, flush=True)
+            time.sleep(30 * (i + 1))
     raise RuntimeError(url)
 
 
@@ -46,13 +56,16 @@ def availability():
 
 
 def status():
-    try: return get(f"https://firms.modaps.eosdis.nasa.gov/mapserver/mapkey_status/?MAP_KEY={KEY}")
-    except Exception: return "?"
+    try:
+        return get(f"https://firms.modaps.eosdis.nasa.gov/mapserver/mapkey_status/?MAP_KEY={KEY}")
+    except Exception:
+        return "?"
 
 
 def wait_quota(limit=3500):
     """Block while the MAP_KEY has used more than `limit` of its 5000 transactions / 10 min."""
     import json
+
     while True:
         try:
             used = json.loads(status())["current_transactions"]
@@ -60,7 +73,8 @@ def wait_quota(limit=3500):
             used = 0
         if used < limit:
             return
-        print(f"  quota {used}/5000, waiting 60s", flush=True); time.sleep(60)
+        print(f"  quota {used}/5000, waiting 60s", flush=True)
+        time.sleep(60)
 
 
 def fetch(task):
@@ -77,15 +91,22 @@ def fetch(task):
             continue
         if txt.startswith("latitude"):
             break
-        print("  unexpected:", src, d, txt[:200], flush=True); time.sleep(120)
+        print("  unexpected:", src, d, txt[:200], flush=True)
+        time.sleep(120)
     else:
-        print("FAIL", src, d, flush=True); return
-    tmp = f.with_suffix(".tmp"); tmp.write_text(txt); tmp.replace(f)   # atomic
+        print("FAIL", src, d, flush=True)
+        return
+    tmp = f.with_suffix(".tmp")
+    tmp.write_text(txt)
+    tmp.replace(f)  # atomic
     print(f"{src} {d} +{n}d {prod} rows={txt.count(chr(10)) - 1}", flush=True)
 
 
 def main():
+    if not KEY:
+        sys.exit("set FIRMS_MAP_KEY in .env or environment")
     from concurrent.futures import ThreadPoolExecutor
+
     av = availability()
     print("availability:", {k: (str(a), str(b)) for k, (a, b) in av.items() if k in sum(SOURCES.values(), ())})
     tasks = []

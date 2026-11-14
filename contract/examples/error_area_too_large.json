@@ -1,6 +1,6 @@
 {
   "error": {
     "code": "AREA_TOO_LARGE",
-    "message": "Площадь области больше 3 000 000 км². Уменьшите область."
+    "message": "The area is larger than 3,000,000 km². Reduce the area."
   }
 }

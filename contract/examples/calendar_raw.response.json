@@ -6545,11 +6545,11 @@
   "warnings": [
     {
       "code": "PRELIMINARY_DATA",
-      "message": "Месяцы после 2026-06-30 посчитаны по оперативным данным и будут уточнены."
+      "message": "Months after 2026-06-30 are computed from near-real-time data and will be refined."
     },
     {
       "code": "SENSOR_GAP",
-      "message": "В 4 месяцах Suomi NPP работал с перерывами: значения посчитаны по NOAA-20."
+      "message": "In 4 months Suomi NPP had outages: values are computed from NOAA-20."
     }
   ]
 }

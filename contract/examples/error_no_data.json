@@ -1,6 +1,6 @@
 {
   "error": {
     "code": "NO_DATA",
-    "message": "Область находится вне покрытия набора данных."
+    "message": "The area is outside the dataset coverage."
   }
 }

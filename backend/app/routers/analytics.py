@@ -5,10 +5,10 @@ from collections import OrderedDict
 from threading import Lock
 
 from fastapi import APIRouter, Request
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 
-from .. import calendar_service, daily_service
-from ..schemas import AreaQuery, DailyQuery
+from .. import calendar_service, daily_service, points_service
+from ..schemas import AreaQuery, DailyQuery, ExportPointsQuery, PointsQuery
 
 router = APIRouter()
 
@@ -45,6 +45,21 @@ def post_current(q: AreaQuery, request: Request) -> dict:
 @router.post("/daily", tags=["analytics"])
 def post_daily(q: DailyQuery, request: Request) -> dict:
     return daily_service.daily(request.app.state.data, q)
+
+
+@router.post("/points", tags=["analytics"])
+def post_points(q: PointsQuery, request: Request) -> dict:
+    return points_service.points(request.app.state.data, q.geometry, q.year, q.month)
+
+
+@router.post("/export/points.csv", tags=["export"])
+def export_points(q: ExportPointsQuery, request: Request) -> StreamingResponse:
+    export = points_service.Export(request.app.state.data, q.geometry, q.start_date, q.end_date)  # 400/404/413 here
+    return StreamingResponse(
+        export.rows(),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="hotspots.csv"'},
+    )
 
 
 @router.post("/export/calendar.csv", tags=["export"])

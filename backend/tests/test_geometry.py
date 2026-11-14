@@ -130,8 +130,22 @@ def test_far_apart_parts_are_cheap_and_filtered_per_part():
     assert a.cells == 200
     # each part's box, widened by the row/column its edge touches on the grid line
     assert a.cell_ranges() == [(300, 310, 10, 20), (1600, 1610, 3580, 3590)]
-    sql = a.cell_filter_sql()
-    assert "iy BETWEEN 300 AND 310 AND ix BETWEEN 10 AND 20" in sql and " OR " in sql
+    sql = a.cell_scan_sql("g", "true")
+    assert sql.count("SELECT * FROM g WHERE") == 2 and " OR " not in sql  # one prunable range scan per part
+    assert "AND NOT (iy BETWEEN 300 AND 310 AND ix BETWEEN 10 AND 20)" in sql  # no row twice
+
+
+def test_parts_with_overlapping_boxes_count_each_cell_once(client):
+    # two triangles on either side of the box diagonal: valid MultiPolygon, the parts' boxes overlap almost fully
+    a = [ring((10.0, 20.0), (10.95, 20.0), (10.0, 20.95))]
+    b = [ring((11.0, 21.0), (10.05, 21.0), (11.0, 20.05))]
+    sep = [client.post(f"{API}/calendar", json={"geometry": poly(*p)}).json() for p in (a, b)]
+    r = client.post(f"{API}/calendar", json={"geometry": {"type": "MultiPolygon", "coordinates": [a, b]}})
+    assert r.status_code == 200, r.text
+    both = r.json()
+    assert both["cells"] == sep[0]["cells"] + sep[1]["cells"]
+    assert both["summary"]["total"] == pytest.approx(sep[0]["summary"]["total"] + sep[1]["summary"]["total"])
+    assert both["summary"]["total"] > 0
 
 
 def test_tiny_world_spanning_multipolygon_does_not_build_a_world_grid():

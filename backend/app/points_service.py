@@ -47,8 +47,8 @@ def _check_period(data: Data, first: dt.date, last: dt.date) -> tuple[dt.date, d
 def _scan(files: list[Path], area: geometry.Area, first: dt.date, last: dt.date) -> str:
     """FROM/WHERE over the point files: the period and the bounding box (lets DuckDB skip row groups)."""
     src = "[" + ", ".join(f"'{f.as_posix()}'" for f in files) + "]"
-    return f"""FROM read_parquet({src}, union_by_name = true)
-        WHERE acq_date BETWEEN DATE '{first}' AND DATE '{last}' AND {area.bbox_filter_sql()}"""
+    where = f"acq_date BETWEEN DATE '{first}' AND DATE '{last}'"
+    return f"FROM {area.point_scan_sql(f'read_parquet({src}, union_by_name = true)', where)}"
 
 
 def _sql(data: Data, files: list[Path], area: geometry.Area, first: dt.date, last: dt.date, cols: set[str]) -> str:
@@ -172,9 +172,8 @@ def grid_lower_bound(cur, data: Data, area: geometry.Area, first: dt.date, last:
     cur.register("cells", data.cells_frame(area.iy[whole], area.ix[whole]))
     return cur.execute(f"""
       SELECT coalesce(sum(n_t + n_a + n_snpp + n_n20), 0)::BIGINT
-      FROM grid_daily g JOIN cells c ON g.iy = c.iy AND g.ix = c.ix
-      WHERE {area.cell_filter_sql("g.iy", "g.ix")}
-        AND g.date BETWEEN DATE '{first}' AND DATE '{last}'""").fetchall()[0][0]
+      FROM {area.cell_scan_sql("grid_daily", f"date BETWEEN DATE '{first}' AND DATE '{last}'")} g
+      JOIN cells c ON g.iy = c.iy AND g.ix = c.ix""").fetchall()[0][0]
 
 
 class Export:

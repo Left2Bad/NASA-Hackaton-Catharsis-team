@@ -12,12 +12,28 @@
      modis_to_snpp_2012: mean 2012-2014 / mean 2009-2011 of the harmonized series (lead source x coefficient)
                          and of the naive one (raw lead source: raw MODIS before the seam, raw S-NPP after);
      snpp_to_n20_2026:   2024-2025 without S-NPP outages, sum(N20 x coefficient) / sum(S-NPP) and sum(N20) / sum(S-NPP).
+ * Sensor gap days (data/gap_days.csv, harmonize.py) are left out of every check, on both sides of each comparison:
+   the monthly grid is summed from data/grid_daily.parquet without those days (falls back to grid_monthly.parquet when
+   either file is missing).
+
+Checks that the contract's ValidationResponse has no field for go to data/validation/checks.json (and
+docs/methodology.md):
+ * terra_to_terra_aqua_2002: the third seam. Where Terra and Aqua both exist (2003-2011, before S-NPP), the Terra-only
+   estimate sum(Terra x w_count_t) over the Terra + Aqua estimate sum((Terra + Aqua) x w_count_ta), whole world, per
+   year and over the period, plus the same inside the fit window 2012-2020 for reference;
+ * baselines per region, on the same months as the region metrics: raw MODIS (no coefficient) and MODIS x the single
+   world coefficient. Pearson r is scale-free and follows the shared seasonal cycle, so it is the same for raw and
+   harmonized MODIS; only bias and the median error show what the 1-degree coefficients add.
 Lead-source rule and coefficient formulas come from pipeline/lead.py.
+
+Usage: python pipeline/validation.py
 """
 
+import argparse
 import json
 import math
 import statistics
+import sys
 from pathlib import Path
 
 import duckdb
@@ -45,9 +61,15 @@ LIMITATIONS = [  # docs/methodology.md, section 7
     "Small fires that VIIRS (375 m) sees and MODIS (1 km) does not are recovered before 2012 only "
     "statistically: the coefficient carries over the average ratio, not individual events.",
     "In small areas (smaller than a 1° cell) the coefficient is taken from the cell or the 5° block — the estimate is coarser and the interval wider.",
-    "2000–2002: Terra only, one morning overpass — the error is roughly one and a half times higher than for Terra + Aqua.",
-    "Satellite outages outside the detected outage months look like periods of low activity.",
+    "2000–2002: Terra only, one morning overpass — the error is 1.6–2 times higher than for Terra + Aqua, and in "
+    "2003–2011 the Terra-only estimate runs about 3 % below the Terra + Aqua one.",
+    "Days when the lead satellite did not report are filled from another one (NOAA-20 for Suomi NPP, Terra for Aqua); "
+    "Terra outages in 2000–2012 cannot be filled, so those months are flagged as sensor gaps and may be understated.",
+    "Active lava flows and gas flares: MODIS and VIIRS classify them differently, so such places are masked for all "
+    "satellites and their coefficient comes from the surrounding 5° block; detections left there are less reliable.",
 ]
+SEAM_2002 = {"id": "terra_to_terra_aqua_2002", "label": "MODIS Terra → Terra + Aqua transition, checked on 2003–2011",
+             "years": (2003, 2011), "fit_years": (2012, 2020)}  # fmt: skip
 
 # a coefficients row of ones: lead.value_sql over it gives the raw count of the same source
 UNIT_COEF = "(SELECT 1.0::DOUBLE AS w_count_t, 1.0::DOUBLE AS w_count_ta, 1.0::DOUBLE AS w_count_n20) one"
@@ -74,12 +96,26 @@ def cell_range(lo, hi):
 def connect(data):
     con = duckdb.connect()
     con.execute(f"SET memory_limit='8GB'; SET temp_directory='{(data / '_tmp' / 'spill').as_posix()}'")
-    con.execute(f"CREATE VIEW g AS SELECT * FROM read_parquet('{(data / 'grid_monthly.parquet').as_posix()}')")
+    daily, gaps = data / "grid_daily.parquet", data / "gap_days.csv"
+    if daily.exists() and gaps.exists():  # monthly sums without sensor gap days
+        con.execute(f"""
+        CREATE TABLE g AS
+        SELECT iy, ix, date_trunc('month', date)::DATE AS month,
+               sum(n_t) n_t, sum(n_a) n_a, sum(n_snpp) n_snpp, sum(n_n20) n_n20,
+               sum(f_t) f_t, sum(f_a) f_a, sum(f_snpp) f_snpp, sum(f_n20) f_n20
+        FROM read_parquet('{daily.as_posix()}')
+        ANTI JOIN (SELECT DISTINCT date FROM read_csv('{gaps.as_posix()}', header=true,
+                   columns={{'date': 'DATE', 'sensor': 'VARCHAR', 'ratio': 'DOUBLE'}})) USING (date)
+        WHERE year(date) BETWEEN 2003 AND {TEST[1]}
+        GROUP BY ALL""")
+    else:
+        con.execute(f"CREATE VIEW g AS SELECT * FROM read_parquet('{(data / 'grid_monthly.parquet').as_posix()}')")
     con.execute(f"CREATE VIEW w AS SELECT * FROM read_parquet('{(data / 'coefficients.parquet').as_posix()}')")
     return con
 
 
-def region_series(con, bbox, outages):
+def region_series(con, bbox, outages, w_world=1.0):
+    """Monthly test series of a region, its metrics, and the raw-MODIS and world-coefficient baselines."""
     west, south, east, north = bbox
     iy0, iy1 = cell_range(south + 90, north + 90)
     ix0, ix1 = cell_range(west + 180, east + 180)
@@ -107,8 +143,38 @@ def region_series(con, bbox, outages):
         }
         for m, r, v, h in rows
     ]
-    compared = [(h, v) for m, _, v, h in rows if m not in outages]
-    return series, metrics([h for h, _ in compared], [v for _, v in compared])
+    compared = [(r, v, h) for m, r, v, h in rows if m not in outages]
+    fact = [v for _, v, _ in compared]
+    baselines = {
+        "raw_modis": metrics([r for r, _, _ in compared], fact),
+        "world_coefficient": metrics([r * w_world for r, _, _ in compared], fact),
+    }
+    return series, metrics([h for _, _, h in compared], fact), baselines
+
+
+def seam_2002(con):
+    """Terra-only estimate over the Terra + Aqua estimate where both satellites exist, per year and overall."""
+    y0, y1 = SEAM_2002["years"]
+    f0, f1 = SEAM_2002["fit_years"]
+    rows = con.execute(f"""
+    SELECT year(month) AS y, sum(g.n_t * w.w_count_t), sum((g.n_t + g.n_a) * w.w_count_ta), sum(g.n_t), sum(g.n_t + g.n_a)
+    FROM g JOIN w ON w.cy = g.iy // 10 AND w.cx = g.ix // 10
+    WHERE (year(month) BETWEEN {f0} AND {f1} AND month >= DATE '{lead.SNPP_START}') OR year(month) BETWEEN {y0} AND {y1}
+    GROUP BY 1 ORDER BY 1""").fetchall()
+
+    def ratio(years):
+        sel = [r for r in rows if years[0] <= r[0] <= years[1]]
+        return sum(r[1] for r in sel) / sum(r[2] for r in sel), sum(r[3] for r in sel) / sum(r[4] for r in sel)
+
+    h, n = ratio((y0, y1))
+    return {
+        "id": SEAM_2002["id"],
+        "label": SEAM_2002["label"],
+        "ratio_harmonized": round(h, 3),
+        "ratio_naive": round(n, 3),
+        "ratio_harmonized_fit_window": round(ratio((f0, f1))[0], 3),
+        "by_year": {str(y): round(t / ta, 3) for y, t, ta, _, _ in rows if y <= y1},
+    }
 
 
 def seam_2012(con, outages):
@@ -139,39 +205,68 @@ def seam_2026(con, outages):
     return h / s, n / s
 
 
+def world_coefficient(data, con):
+    """World Terra + Aqua count coefficient from harmonize.py (summary.json), else the median cell coefficient."""
+    path = data / "harmonized" / "summary.json"
+    if path.exists():
+        g = json.loads(path.read_text(encoding="utf-8")).get("global_coefficients", {})
+        if "count_ta" in g:
+            return g["count_ta"]
+    return con.execute("SELECT median(w_count_ta) FROM w").fetchone()[0]
+
+
 def build_report(data=DATA):
+    """(report.json payload in the contract's ValidationResponse shape, checks.json payload)."""
     outages = lead.load_outages(data / "outage_months.csv")
     con = connect(data)
-    regions = []
+    w_world = world_coefficient(data, con)
+    regions, baselines = [], {}
     for rid, name, bbox in REGIONS:
-        series, m = region_series(con, bbox, outages)
+        series, m, base = region_series(con, bbox, outages, w_world)
         regions.append({"id": rid, "name": name, "metrics": m, "series": series})
+        baselines[rid] = {"harmonized": m, **base}
     seams = []
     for seam, fn in ((SEAM_2012, seam_2012), (SEAM_2026, seam_2026)):
         h, n = fn(con, outages)
         seams.append(
             {"id": seam["id"], "label": seam["label"], "ratio_harmonized": round(h, 3), "ratio_naive": round(n, 3)}
         )
-    return {
+    report = {
         "calibration_period": {"start_year": CALIB[0], "end_year": CALIB[1]},
         "test_period": {"start_year": TEST[0], "end_year": TEST[1]},
         "regions": regions,
         "seams": seams,
         "limitations": LIMITATIONS,
     }
+    checks = {
+        "gap_days_excluded": (data / "gap_days.csv").exists() and (data / "grid_daily.parquet").exists(),
+        "world_coefficient_count_ta": round(w_world, 4),
+        "region_baselines": baselines,
+        "seam_2002": seam_2002(con),
+    }
+    return report, checks
 
 
-def main(data=DATA):
-    report = build_report(data)
-    out = data / "validation" / "report.json"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+def main(argv=(), data=DATA):
+    ap = argparse.ArgumentParser(
+        description="Validation report: data/validation/report.json (contract ValidationResponse) and checks.json."
+    )
+    ap.parse_args(list(argv))
+    report, checks = build_report(data)
+    out = data / "validation"
+    out.mkdir(parents=True, exist_ok=True)
+    for name, payload in (("report.json", report), ("checks.json", checks)):
+        text = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
+        (out / name).write_bytes(text.encode("utf-8"))
     for r in report["regions"]:
         print(r["id"], r["metrics"], flush=True)
-    for s in report["seams"]:
+        for k in ("raw_modis", "world_coefficient"):
+            print("   baseline", k, checks["region_baselines"][r["id"]][k], flush=True)
+    for s in [*report["seams"], checks["seam_2002"]]:
         print(s["id"], "harmonized", s["ratio_harmonized"], "naive", s["ratio_naive"], flush=True)
+    print("2002 seam by year:", checks["seam_2002"]["by_year"], flush=True)
     return report
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

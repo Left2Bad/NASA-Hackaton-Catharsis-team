@@ -91,7 +91,7 @@ def test_report_matches_contract(report):
     assert report["calibration_period"] == {"start_year": 2012, "end_year": 2020}
     assert report["test_period"] == {"start_year": 2021, "end_year": 2025}
     assert [r["id"] for r in report["regions"]] == ["kz-steppe", "amazon-south", "california-north"]
-    assert 3 <= len(report["limitations"]) <= 4
+    assert 3 <= len(report["limitations"]) <= 6
 
 
 def test_region_series_and_metrics(report):

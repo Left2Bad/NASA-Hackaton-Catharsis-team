@@ -1,0 +1,3 @@
+# Типы API генерируются из contract/openapi.yaml командой `npm run gen:api`
+# (она же запускается при `npm install`, `npm run dev` и `npm run build`).
+src/api/schema.d.ts

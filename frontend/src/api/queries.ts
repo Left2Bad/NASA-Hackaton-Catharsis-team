@@ -1,4 +1,4 @@
-import { useQuery, type Query } from '@tanstack/react-query';
+import { useQueries, useQuery, type Query, type UseQueryResult } from '@tanstack/react-query';
 import { api } from './client';
 import { ApiError } from './errors';
 import { request } from './request';
@@ -161,6 +161,42 @@ export function usePoints(query: PointsQuery | null) {
     enabled: query !== null,
     // A month that is over does not change; the answer is large, so it is not asked twice.
     staleTime: Infinity,
+  });
+}
+
+/** What several months of hot spots look like to the screen: one state for all of them. */
+function combinePoints(results: UseQueryResult<PointsResponse>[]) {
+  return {
+    /** The answers of all the months, first to last, once every one has arrived. */
+    data:
+      results.length > 0 && results.every((result) => result.data !== undefined)
+        ? results.map((result) => result.data as PointsResponse)
+        : undefined,
+    isError: results.some((result) => result.isError),
+    error: results.find((result) => result.error)?.error ?? null,
+    isFetching: results.some((result) => result.isFetching),
+    refetch: () => results.forEach((result) => void result.refetch()),
+  };
+}
+
+/**
+ * Hot spots of a span of months: one request per month, sent together. A month that was
+ * shown before is not asked again. Nothing loads without an area.
+ */
+export function usePointsSpan(
+  geometry: Geometry | null,
+  months: readonly { year: number; month: number }[],
+) {
+  return useQueries({
+    queries: (geometry ? months : []).map(({ year, month }) => {
+      const query: PointsQuery = { geometry: geometry as Geometry, year, month };
+      return {
+        queryKey: ['points', query],
+        queryFn: ({ signal }: { signal: AbortSignal }) => fetchPoints(query, signal),
+        staleTime: Infinity,
+      };
+    }),
+    combine: combinePoints,
   });
 }
 

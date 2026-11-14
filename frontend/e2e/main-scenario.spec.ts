@@ -33,6 +33,16 @@ test.beforeEach(async ({ context, baseURL }) => {
   );
 });
 
+/**
+ * How far the page itself is scrolled, and how far it could be: both are zero on a laptop,
+ * where the app is exactly as tall as the window.
+ */
+const pageScroll = (page: Page) =>
+  page.evaluate(() => ({
+    scrolled: Math.round(window.scrollY),
+    room: document.documentElement.scrollHeight - document.documentElement.clientHeight,
+  }));
+
 /** The calendar grid in either mode. */
 const grid = (page: Page, name: RegExp) => page.getByRole('grid', { name });
 
@@ -79,6 +89,23 @@ test('main scenario: area, calendar, anomalies, now, period, downloads, method, 
   await expect(downloadsHeading).not.toBeInViewport();
   await sections.getByRole('button', { name: 'Downloads' }).click();
   await expect(downloadsHeading).toBeInViewport();
+  // The links stay at the very top of the panel and do not cover the heading they lead to.
+  const edges = await page.evaluate(() => {
+    const box = (selector: string) => document.querySelector(selector)?.getBoundingClientRect();
+    return {
+      panelTop: box('section[aria-label="Fire activity"]')?.top ?? -1,
+      navTop: box('nav[aria-label="Sections of the panel"]')?.top ?? -2,
+      navBottom: box('nav[aria-label="Sections of the panel"]')?.bottom ?? 0,
+      headingTop: box('#downloads-heading')?.top ?? -1,
+    };
+  });
+  expect(Math.round(edges.navTop)).toBe(Math.round(edges.panelTop));
+  expect(edges.headingTop).toBeGreaterThanOrEqual(edges.navBottom);
+
+  // On a laptop only the panel scrolls. The page itself must stay where it is: the header
+  // keeps its place, and no empty space opens under the app.
+  await expect(page.getByRole('link', { name: 'Burn Calendar' })).toBeInViewport();
+  expect(await pageScroll(page)).toEqual({ scrolled: 0, room: 0 });
   await sections.getByRole('button', { name: 'Calendar' }).click();
   await expect(page.getByRole('heading', { level: 2, name: 'Burn calendar' })).toBeInViewport();
 
@@ -157,6 +184,16 @@ test('main scenario: area, calendar, anomalies, now, period, downloads, method, 
   await expect(
     checks.getByRole('heading', { level: 3, name: 'The seams of the record' }),
   ).toBeVisible();
+  expect(await pageScroll(page)).toEqual({ scrolled: 0, room: 0 });
+
+  // The page of the color scales scrolls inside the app as well.
+  await page
+    .getByRole('navigation', { name: 'Sections' })
+    .getByRole('link', { name: 'Color scales' })
+    .click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Color scales' })).toBeVisible();
+  await expect(page.getByRole('img', { name: /, 2008 to 2013, / }).first()).toBeVisible();
+  expect(await pageScroll(page)).toEqual({ scrolled: 0, room: 0 });
 
   // Back on the calendar the view is the one that was left.
   await page

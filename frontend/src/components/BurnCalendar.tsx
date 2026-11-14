@@ -46,8 +46,8 @@ interface BurnCalendarProps {
   sources: readonly SourceInfo[];
   mode: CalendarMode;
   onModeChange: (mode: CalendarMode) => void;
-  /** The month whose hot spots are on the map, as "2020-09" (F13). */
-  selectedMonth?: string | null;
+  /** The months whose hot spots are on the map, as "2020-09" (F13). */
+  selectedMonths?: ReadonlySet<string>;
   /** Called when the user picks a month by a click or with Enter. */
   onSelectMonth?: (month: MonthValue) => void;
 }
@@ -62,6 +62,8 @@ interface Tip {
   cellBottom: number;
   below: boolean;
 }
+
+const NO_MONTHS: ReadonlySet<string> = new Set();
 
 const TIP_WIDTH = 248;
 /** Room the tooltip needs above a cell to open upward. */
@@ -81,7 +83,7 @@ export function BurnCalendar({
   sources,
   mode,
   onModeChange,
-  selectedMonth = null,
+  selectedMonths = NO_MONTHS,
   onSelectMonth,
 }: BurnCalendarProps) {
   const { months, yearly, monthly_baseline: baselines } = calendar;
@@ -319,8 +321,8 @@ export function BurnCalendar({
                       role="gridcell"
                       tabIndex={id === tabbable ? 0 : -1}
                       aria-label={view === 'raw' ? rawMonthSentence(data) : monthSentence(data)}
-                      aria-selected={onSelectMonth ? id === selectedMonth : undefined}
-                      data-selected={id === selectedMonth || undefined}
+                      aria-selected={onSelectMonth ? selectedMonths.has(id) : undefined}
+                      data-selected={selectedMonths.has(id) || undefined}
                       className={styles.cell}
                       style={{ ...position, background: cell.color ?? undefined }}
                       data-month={id}

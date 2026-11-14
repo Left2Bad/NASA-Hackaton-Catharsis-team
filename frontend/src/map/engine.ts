@@ -1,4 +1,4 @@
-import type { GeoJSONSource } from 'maplibre-gl';
+import type { ExpressionSpecification, GeoJSONSource } from 'maplibre-gl';
 import type { Geometry, PointsResponse } from '../api/types';
 import { boundsOf, geometryFromRings, outerRings } from '../geo/geometry';
 
@@ -16,7 +16,8 @@ const SATELLITE_LAYER = 'nasa-blue-marble';
 
 /** The hot spots of the month chosen on the calendar (requirement F13). */
 const HOTSPOT_LAYER = 'hot-spots';
-const HOTSPOT_COLOR = '#c85d02';
+// A red that stays visible on the light basemap and on the satellite imagery alike.
+const HOTSPOT_COLOR = '#e03a0e';
 const NO_POINTS = { type: 'FeatureCollection' as const, features: [] };
 
 /** Used when the basemap style cannot be fetched: a plain surface the user can still draw on. */
@@ -41,6 +42,13 @@ export interface AreaMapHandlers {
   onShapeFinished: () => void;
 }
 
+/** How the hot spots are colored and which of them are drawn. */
+export interface PointStyle {
+  breaks: readonly number[];
+  colors: readonly string[];
+  minFrp: number;
+}
+
 export interface AreaMapEngine {
   /** Switches between drawing a rectangle, drawing a polygon and selecting to edit. */
   setTool: (tool: DrawTool) => void;
@@ -48,8 +56,12 @@ export interface AreaMapEngine {
   showArea: (geometry: Geometry | null, options: { fit: boolean }) => void;
   /** Shows or hides the satellite imagery under the labels. */
   setSatellite: (visible: boolean) => void;
-  /** Draws hot spots as dots under the outline of the area; `null` removes them. */
-  showPoints: (points: PointsResponse | null) => void;
+  /**
+   * Draws hot spots as dots under the outline of the area; `null` removes them. The dots
+   * are colored by fire radiative power: `breaks` are the class boundaries in MW and
+   * `colors` one color per class. Fires weaker than `minFrp` are not drawn.
+   */
+  showPoints: (points: PointsResponse | null, style: PointStyle) => void;
   destroy: () => void;
 }
 
@@ -146,11 +158,12 @@ export async function createAreaMapEngine(
       source: HOTSPOT_LAYER,
       paint: {
         // A dot stands for one detection, not for its footprint: it only grows enough to stay visible.
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 1.5, 7, 2.5, 11, 4.5],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 2, 7, 3, 11, 5],
         'circle-color': HOTSPOT_COLOR,
-        'circle-opacity': 0.7,
-        'circle-stroke-color': WHITE,
-        'circle-stroke-width': 0.5,
+        'circle-opacity': 0.9,
+        // A dark rim keeps the pale dots of weak fires visible on the light basemap.
+        'circle-stroke-color': INK,
+        'circle-stroke-width': 0.6,
         'circle-stroke-opacity': 0.6,
       },
     },
@@ -276,6 +289,10 @@ export async function createAreaMapEngine(
         if (rejected) console.warn('The area could not be shown on the map:', rejected.reason);
 
         if (fit) {
+          // The strip of the hot spots appears above the map together with the area. The
+          // map learns its new height a moment later, so it is told now: otherwise the
+          // view would be fitted to the old height and the area would be cut at the bottom.
+          map.resize();
           const { west, south, east, north } = boundsOf(geometry);
           map.fitBounds(
             [
@@ -293,8 +310,23 @@ export async function createAreaMapEngine(
       map.setLayoutProperty(SATELLITE_LAYER, 'visibility', visible ? 'visible' : 'none');
     },
 
-    showPoints(points) {
+    showPoints(points, style) {
       map.getSource<GeoJSONSource>(HOTSPOT_LAYER)?.setData(points ?? NO_POINTS);
+      // A detection without a measured power counts as the weakest.
+      const power: ExpressionSpecification = ['coalesce', ['get', 'frp'], 0];
+      const color =
+        style.breaks.length > 0 && style.colors.length === style.breaks.length + 1
+          ? ([
+              'step',
+              power,
+              style.colors[0],
+              ...style.breaks.flatMap((edge, index) => [edge, style.colors[index + 1]]),
+            ] as ExpressionSpecification)
+          : HOTSPOT_COLOR;
+      map.setPaintProperty(HOTSPOT_LAYER, 'circle-color', color);
+      // The strongest fires are drawn last, on top of the weaker ones around them.
+      map.setLayoutProperty(HOTSPOT_LAYER, 'circle-sort-key', power);
+      map.setFilter(HOTSPOT_LAYER, style.minFrp > 0 ? ['>=', power, style.minFrp] : null);
     },
 
     destroy() {

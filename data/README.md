@@ -68,7 +68,7 @@ python pipeline/make_sample.py --src data --out sample_data --zip burn-calendar-
 | --- | --- |
 | `grid_daily.parquet`, `grid_monthly.parquet`, `grid_daily_gap_months.parquet` | 0.1° cells of the three example regions with a 0.5° margin, Nov 2000 – last day |
 | `points_serve/<sensor>_<year>.parquet` | detections inside the same boxes, 2021–2026 (`--points-from`) |
-| `coefficients.parquet`, `uncertainty.parquet`, `outage_months.csv`, `gap_days.csv`, `harmonized/global_monthly.csv`, `validation/*.json` | unchanged, world-wide |
+| `coefficients.parquet`, `uncertainty.parquet`, `static_mask.parquet`, `outage_months.csv`, `gap_days.csv`, `harmonized/global_monthly.csv`, `validation/*.json` | unchanged, world-wide |
 | `harmonized/summary.json` | unchanged, plus a `sample` key: the boxes, the covered cell ranges and the row counts |
 
 The regions (west, south, east, north) are Northern Kazakhstan (61, 51, 71, 55), Southern Amazon (−62, −13, −52, −7)

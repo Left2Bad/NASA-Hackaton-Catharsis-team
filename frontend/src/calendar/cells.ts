@@ -14,38 +14,56 @@ export function yearsNewestFirst(months: readonly MonthValue[]): number[] {
 }
 
 /**
+ * The sensor era of a month: the source whose period in /meta holds the first day of
+ * the month. A month taken from another satellite during an outage stays in its era.
+ * Without a matching period, the month's own source is used.
+ */
+function eraOf(month: MonthValue, sources: readonly SourceInfo[]): string {
+  const day = `${month.year}-${String(month.month).padStart(2, '0')}-01`;
+  const era = sources.find(
+    (source) => source.start <= day && (source.end === null || day <= source.end),
+  );
+  return era?.id ?? month.source;
+}
+
+/**
  * Prepares the cells of the year-by-month grid and marks the seams: the places
  * where the harmonized record passes from one lead sensor to another.
  *
- * A seam on the left: the source changed since the previous month.
- * A seam below: another source led the same month a year earlier.
+ * A seam on the left: the sensor era changed since the previous month.
+ * A seam below: another era held the same month a year earlier.
  * Together they form a stepped line between sensor eras.
  */
 export function buildCells(
   months: readonly MonthValue[],
+  sources: readonly SourceInfo[],
   colorOf: (month: MonthValue) => string | null,
 ): (year: number, month: number) => HeatCell | undefined {
   const byKey = new Map(months.map((m) => [keyOf(m.year, m.month), m]));
+  const eras = new Map(months.map((m) => [keyOf(m.year, m.month), eraOf(m, sources)]));
 
   return (year, month) => {
-    const current = byKey.get(keyOf(year, month));
+    const key = keyOf(year, month);
+    const current = byKey.get(key);
     if (!current) return undefined;
+    const era = eras.get(key);
 
     // The previous month counts only within the same row: January has the year label on its left.
-    const previous = month > 1 ? byKey.get(keyOf(year, month - 1)) : undefined;
-    const yearBefore = byKey.get(keyOf(year - 1, month));
+    const previous = month > 1 ? eras.get(keyOf(year, month - 1)) : undefined;
+    const yearBefore = eras.get(keyOf(year - 1, month));
 
     return {
       color: colorOf(current),
-      seamLeft: previous !== undefined && previous.source !== current.source,
-      seamBottom: yearBefore !== undefined && yearBefore.source !== current.source,
+      seamLeft: previous !== undefined && previous !== era,
+      seamBottom: yearBefore !== undefined && yearBefore !== era,
     };
   };
 }
 
 /**
  * Sensor-era labels for the right edge of the grid: the source name next to
- * the middle of the period in which it leads the record.
+ * the middle of the period in which it leads the record, for the sources that
+ * lead in at least one of the years on screen.
  */
 export function sourceSideLabels(
   sources: readonly SourceInfo[],
@@ -60,8 +78,12 @@ export function sourceSideLabels(
   const labels: { year: number; text: string }[] = [];
   // From newer sources to older ones: when rows are scarce, the newer one gets the place.
   for (const source of [...sources].reverse()) {
-    const start = clamp(Number(source.start.slice(0, 4)));
-    const end = clamp(source.end === null ? newest : Number(source.end.slice(0, 4)));
+    const first = Number(source.start.slice(0, 4));
+    const last = source.end === null ? newest : Number(source.end.slice(0, 4));
+    // A source that led only outside the years on screen gets no label.
+    if (first > newest || last < oldest) continue;
+    const start = clamp(first);
+    const end = clamp(last);
     let year = Math.round((start + end) / 2);
     while (taken.has(year) && year > oldest) year -= 1;
     if (taken.has(year)) continue;

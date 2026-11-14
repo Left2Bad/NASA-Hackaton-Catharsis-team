@@ -120,7 +120,9 @@ export function NowPanel({ current }: { current: CurrentResponse }) {
         <div>
           <dt>Percentile</dt>
           <dd>{current.percentile === null ? '—' : formatNumber(current.percentile)}</dd>
-          {current.percentile !== null && (
+          {/* Ties count half, so a month without fires among years without fires is the
+              50th percentile: yet it is above none of them, and the note would say otherwise. */}
+          {current.percentile !== null && current.value > 0 && (
             <dd className={styles.factNote}>
               above {formatNumber(Math.round(current.percentile))} % of those years
             </dd>

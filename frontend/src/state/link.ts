@@ -125,6 +125,25 @@ export function currentSearch(): string {
   return start === -1 ? '' : hash.slice(start);
 }
 
+/** Whether the address shows the calendar screen: `#/…` or no hash at all. */
+function onCalendar(): boolean {
+  const section = window.location.hash.replace(/^#/, '').split('?')[0];
+  return section === '' || section === '/';
+}
+
+/**
+ * Calls back with the query part when the reader changes the address of the calendar in an
+ * open tab: a pasted link, "Back" or "Forward". The app writes the address with replaceState,
+ * which fires no event, so its own changes do not come back here. Returns the unsubscribe.
+ */
+export function onLinkChange(listener: (search: string) => void): () => void {
+  const onChange = () => {
+    if (onCalendar()) listener(currentSearch());
+  };
+  window.addEventListener('hashchange', onChange);
+  return () => window.removeEventListener('hashchange', onChange);
+}
+
 /**
  * Writes the state into the address without adding a step to the browser history:
  * otherwise "Back" would walk through every change of the period.
@@ -132,8 +151,7 @@ export function currentSearch(): string {
 export function writeSearch(search: string): void {
   calendarSearch = search;
   // The reader may already have moved to another section: its address is not ours to change.
-  const section = window.location.hash.replace(/^#/, '').split('?')[0];
-  if (section !== '' && section !== '/') return;
+  if (!onCalendar()) return;
   const target = `#/${search}`;
   if (window.location.hash === target || (search === '' && window.location.hash === '')) return;
   window.history.replaceState(null, '', target);

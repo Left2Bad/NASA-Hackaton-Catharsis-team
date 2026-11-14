@@ -1,4 +1,4 @@
-import type { CalendarResponse } from '../api/types';
+import type { CalendarResponse, SourceInfo } from '../api/types';
 import { buildCells, yearsNewestFirst } from '../calendar/cells';
 import type { CalendarMode } from '../components/BurnCalendar';
 import { formatCompact, formatNumber, formatSignedPercent, MONTH_INITIALS } from '../labels';
@@ -104,12 +104,16 @@ function legend(mode: CalendarMode, breaks: readonly number[], top: number): str
 }
 
 /** The year-by-month grid with yearly totals and a legend, as a standalone SVG. */
-export function calendarSvg(calendar: CalendarResponse, mode: CalendarMode): SvgFigure {
+export function calendarSvg(
+  calendar: CalendarResponse,
+  sources: readonly SourceInfo[],
+  mode: CalendarMode,
+): SvgFigure {
   const { months, yearly, monthly_baseline: baselines } = calendar;
   const years = yearsNewestFirst(months);
   const byKey = new Map(months.map((month) => [`${month.year}-${month.month}`, month]));
   const breaks = quantileBreaks(months.filter((m) => !m.partial).map((m) => m.value));
-  const cellOf = buildCells(months, (month) =>
+  const cellOf = buildCells(months, sources, (month) =>
     mode === 'count' ? countColor(month.value, breaks) : anomalyColor(month.anomaly_pct),
   );
   const totals = new Map(yearly.map((year) => [year.year, year]));

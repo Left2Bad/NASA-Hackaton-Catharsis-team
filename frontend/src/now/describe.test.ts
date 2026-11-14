@@ -6,8 +6,10 @@ import {
   CATEGORY_COLORS,
   CATEGORY_ORDER,
   comparison,
+  detections,
   levelBands,
   levelStrip,
+  nowHeadline,
   periodLabel,
 } from './describe';
 
@@ -37,12 +39,43 @@ describe('comparison', () => {
     );
   });
 
-  it('counts detections instead of a percentage when the median is zero', () => {
+  it('says where the value stands when the median is zero', () => {
     expect(comparison(withFields({ anomaly_pct: null, value: 3.5 }))).toBe(
-      '3.5 above a median of zero',
+      'above the median, which is zero',
     );
     expect(comparison(withFields({ anomaly_pct: null, value: 0 }))).toBe(
-      'No detections, the same as the median',
+      'the same as the median, which is zero',
+    );
+  });
+});
+
+describe('detections', () => {
+  it('counts detections in words', () => {
+    expect(detections(0)).toBe('0 detections');
+    expect(detections(1)).toBe('1 detection');
+    expect(detections(25.7)).toBe('25.7 detections');
+  });
+});
+
+describe('nowHeadline', () => {
+  it('gives the count once, then the comparison', () => {
+    expect(nowHeadline(current).detail).toBe(
+      '25.7 detections, +48.6 % against the median of the same days',
+    );
+  });
+
+  it('reads as one sentence when the median is zero', () => {
+    // What the API returns for a box in the Sahara: no fires now and none in any baseline year.
+    const desert = withFields({
+      value: 0,
+      anomaly_pct: null,
+      percentile: 50,
+      category: 'normal',
+      baseline_same_days: { median: 0, p25: 0, p75: 0, p90: 0, max: 0, n_years: 25 },
+    });
+    expect(nowHeadline(desert).detail).toBe('0 detections, the same as the median, which is zero');
+    expect(nowHeadline(withFields({ ...desert, value: 1, category: 'high' })).detail).toBe(
+      '1 detection, above the median, which is zero',
     );
   });
 });
@@ -59,6 +92,17 @@ describe('levelBands', () => {
       '36.3 to 58.8',
       'above 58.8',
     ]);
+  });
+
+  it('names a level that collapses to one value by that value', () => {
+    // Most baseline years had no fires on these days, a few had some.
+    const bands = levelBands({ median: 0, p25: 0, p75: 0, p90: 4, max: 10, n_years: 25 });
+    expect(bands.map(bandRange)).toEqual(['0', '0', '0 to 4', '4 to 10', 'above 10']);
+  });
+
+  it('gives the normal level from zero as a range, not as "below"', () => {
+    const bands = levelBands({ median: 2, p25: 0, p75: 5, p90: 8, max: 12, n_years: 25 });
+    expect(bandRange(bands[1])).toBe('0 to 5');
   });
 
   it('puts the example value into the level the API reports', () => {

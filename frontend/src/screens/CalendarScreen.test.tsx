@@ -450,3 +450,60 @@ describe('daily calendar (F14)', () => {
     );
   });
 });
+
+describe('a link opened in a tab that already shows the app (F26)', () => {
+  async function openLink(hash: string) {
+    window.location.hash = hash;
+    renderScreen();
+    await screen.findByRole('grid', { name: /^Fire detections by month, / });
+  }
+
+  it('opens the area, period and mode of a link pasted into the address bar', async () => {
+    await openLink('#/?area=kz-steppe');
+
+    window.location.hash = '#/?area=amazon-south&from=2010&to=2020&mode=anomaly';
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Southern Amazon' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      ),
+    );
+    expect(screen.getByRole('button', { name: 'Northern Kazakhstan' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    expect(screen.getByLabelText('From')).toHaveValue('2010');
+    expect(screen.getByLabelText('to')).toHaveValue('2020');
+    expect(await screen.findByRole('button', { name: 'Anomaly' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(window.location.hash).toBe('#/?area=amazon-south&from=2010&to=2020&mode=anomaly');
+  });
+
+  it('returns to the starting state for the plain address', async () => {
+    await openLink('#/?area=kz-steppe');
+
+    window.location.hash = '#/';
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Northern Kazakhstan' })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      ),
+    );
+  });
+
+  it('keeps its state when the address moves to another section', async () => {
+    await openLink('#/?area=kz-steppe');
+
+    window.location.hash = '#/method';
+    await new Promise((resolve) => window.setTimeout(resolve, 20));
+
+    expect(screen.getByRole('button', { name: 'Northern Kazakhstan' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+});

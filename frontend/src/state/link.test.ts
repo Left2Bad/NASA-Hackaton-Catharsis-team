@@ -5,6 +5,7 @@ import {
   buildSearch,
   calendarHref,
   currentSearch,
+  onLinkChange,
   parseSearch,
   writeSearch,
   type LinkState,
@@ -126,5 +127,40 @@ describe('the address of the page', () => {
     expect(currentSearch()).toBe('');
     window.location.hash = '#/method';
     expect(currentSearch()).toBe('');
+  });
+});
+
+describe('a new address in an open tab', () => {
+  const changed = () => window.dispatchEvent(new HashChangeEvent('hashchange'));
+
+  it('reports the state of the calendar address, not of other sections', () => {
+    const seen: string[] = [];
+    const stop = onLinkChange((search) => seen.push(search));
+
+    window.history.replaceState(null, '', '#/?area=kz-steppe');
+    changed();
+    window.history.replaceState(null, '', '#/method');
+    changed();
+    window.history.replaceState(null, '', '#/');
+    changed();
+    stop();
+    window.history.replaceState(null, '', '#/?area=amazon-south');
+    changed();
+
+    expect(seen).toEqual(['?area=kz-steppe', '']);
+  });
+
+  it('does not hear the addresses the app writes itself', async () => {
+    const settle = () => new Promise((resolve) => window.setTimeout(resolve, 20));
+    // The changes of the address in the tests above fire their events late.
+    await settle();
+    const seen: string[] = [];
+    const stop = onLinkChange((search) => seen.push(search));
+
+    writeSearch('?area=kz-steppe');
+    await settle();
+    stop();
+
+    expect(seen).toEqual([]);
   });
 });

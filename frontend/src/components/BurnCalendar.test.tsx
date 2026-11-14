@@ -232,6 +232,16 @@ describe('anomaly mode (F10)', () => {
     expect(screen.getByText('Not compared')).toBeInTheDocument();
   });
 
+  it('says that the anomaly color is a percent, unlike the level in Now', async () => {
+    const user = userEvent.setup();
+    renderCalendar();
+
+    await user.click(screen.getByRole('button', { name: 'Anomaly' }));
+
+    expect(screen.getByText(/difference from the median in percent/)).toBeInTheDocument();
+    expect(screen.getByText(/The level in Now is a percentile/)).toBeInTheDocument();
+  });
+
   it('hatches a month that cannot be compared instead of coloring it', async () => {
     const user = userEvent.setup();
     const { cell } = renderCalendar();
@@ -253,6 +263,18 @@ describe('anomaly mode (F10)', () => {
     expect(cell('2012-02').getAttribute('data-seam')).toContain('left');
     fireEvent.focus(cell('2010-08'));
     expect(screen.getByRole('tooltip', { hidden: true })).toHaveTextContent('+273 % vs. median');
+  });
+
+  it('draws seams only where the lead sensor changes for good', () => {
+    const { cell } = renderCalendar();
+
+    // NOAA-20 fills these months during outages of Suomi NPP.
+    expect(monthOf(2022, 7).source).toBe('VIIRS_N20');
+    for (const id of ['2022-07', '2022-09', '2023-07', '2024-07', '2024-08', '2024-12']) {
+      expect(cell(id)).not.toHaveAttribute('data-seam');
+    }
+    // NOAA-20 leads the record from November 2026.
+    expect(cell('2026-11').getAttribute('data-seam')).toContain('left');
   });
 
   it('switches back to detections', async () => {

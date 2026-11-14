@@ -22,6 +22,7 @@ import { areaKm2 } from '../geo/shapes';
 import { formatNumber, monthName, presetLabel, WARNING_LABELS } from '../labels';
 import { nowHeadline } from '../now/describe';
 import { buildSearch, currentSearch, parseSearch, writeSearch } from '../state/link';
+import { defaultSpotsMonth } from '../state/spots';
 import { roundSignificant } from '../theme/scales';
 import styles from './CalendarScreen.module.css';
 
@@ -32,6 +33,23 @@ import styles from './CalendarScreen.module.css';
 interface Area {
   geometry: Geometry;
   presetId: string | null;
+}
+
+/**
+ * The calendar request of an area, or `null` for an area above the limit: the server would
+ * refuse it anyway (F5). The panel and the default hot spots ask the same query, so React Query
+ * sends it once.
+ */
+function calendarQuery(area: Area, period: Period, mode: CalendarMode, tooLarge: boolean) {
+  return tooLarge
+    ? null
+    : {
+        geometry: area.geometry,
+        start_year: period.startYear,
+        end_year: period.endYear,
+        // The counts of the sensors as they recorded are asked only for the view that shows them.
+        ...(mode === 'raw' ? { series: 'raw' as const } : {}),
+      };
 }
 
 /** Shown before any area is chosen: tells the user how to start. */
@@ -134,18 +152,7 @@ function AreaPanel({
   const limitKm2 = meta.limits.max_area_km2;
   const tooLarge = sizeKm2 > limitKm2;
 
-  // An area above the limit is never requested: the server would refuse it anyway (F5).
-  const calendar = useCalendar(
-    tooLarge
-      ? null
-      : {
-          geometry: area.geometry,
-          start_year: period.startYear,
-          end_year: period.endYear,
-          // The counts of the sensors as they recorded are asked only for the view that shows them.
-          ...(mode === 'raw' ? { series: 'raw' as const } : {}),
-        },
-  );
+  const calendar = useCalendar(calendarQuery(area, period, mode, tooLarge));
 
   // "Now" does not depend on the chosen period, so it is asked for the geometry alone
   // and is not asked again when the period changes.
@@ -354,8 +361,22 @@ function Workspace({ meta }: { meta: Meta }) {
   const [spots, setSpots] = useState<{ geometry: Geometry; year: number; month: number } | null>(
     null,
   );
-  const shownSpots = spots !== null && spots.geometry === area?.geometry ? spots : null;
+  // The area whose hot spots the user hid: its default month is not shown again.
+  const [hiddenFor, setHiddenFor] = useState<Geometry | null>(null);
   const tooLarge = area !== null && areaKm2(area.geometry) > meta.limits.max_area_km2;
+  // Without a month picked, the map shows the latest month with fire, so the dots are there
+  // as soon as an area is open. A copy of the app without a server has no single detections.
+  const calendar = useCalendar(area ? calendarQuery(area, period, mode, tooLarge) : null);
+  const latest =
+    area && FALLBACK_MODE !== 'only' && hiddenFor !== area.geometry && !calendar.isPlaceholderData
+      ? defaultSpotsMonth(calendar.data?.months ?? [])
+      : null;
+  const shownSpots =
+    spots !== null && spots.geometry === area?.geometry
+      ? spots
+      : area && latest
+        ? { geometry: area.geometry, year: latest.year, month: latest.month }
+        : null;
   const points = usePoints(
     shownSpots && !tooLarge
       ? { geometry: shownSpots.geometry, year: shownSpots.year, month: shownSpots.month }
@@ -368,8 +389,13 @@ function Workspace({ meta }: { meta: Meta }) {
   const toggleSpots = (month: MonthValue) => {
     if (!area) return;
     const same = shownSpots?.year === month.year && shownSpots.month === month.month;
-    setSpots(same ? null : { geometry: area.geometry, year: month.year, month: month.month });
+    if (same) hideSpots();
+    else setSpots({ geometry: area.geometry, year: month.year, month: month.month });
   };
+  function hideSpots() {
+    setSpots(null);
+    setHiddenFor(area?.geometry ?? null);
+  }
 
   // Every change goes back into the address, so the address always describes the screen.
   const search = buildSearch(
@@ -433,7 +459,7 @@ function Workspace({ meta }: { meta: Meta }) {
             error={points.isError ? points.error : null}
             onRetry={() => void points.refetch()}
             retrying={points.isFetching}
-            onHide={() => setSpots(null)}
+            onHide={hideSpots}
           />
         )}
         <div className={styles.mapSlot}>

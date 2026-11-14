@@ -306,7 +306,7 @@ describe('the hot spots of a month as a file', () => {
     await openArea(user);
 
     await user.click(container.querySelector('[data-month="2020-09"]') as HTMLElement);
-    await user.click(await screen.findByRole('button', { name: 'Download this month (CSV)' }));
+    await user.click(await screen.findByRole('button', { name: 'Download CSV of this month' }));
 
     await waitFor(() => expect(saved.files).toHaveLength(1));
     expect(bodies[0]).toMatchObject({ start_date: '2020-09-01', end_date: '2020-09-30' });
@@ -326,7 +326,7 @@ describe('the hot spots of a month as a file', () => {
     await user.click(container.querySelector('[data-month="2020-01"]') as HTMLElement);
 
     expect(await screen.findByText('No hot spots in January 2020.')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Download this month (CSV)' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Download CSV of this month' })).toBeNull();
   });
 
   it('says how many of the hot spots are drawn', () => {

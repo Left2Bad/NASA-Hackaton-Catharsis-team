@@ -382,9 +382,15 @@ function Workspace({ meta }: { meta: Meta }) {
       ? { geometry: shownSpots.geometry, year: shownSpots.year, month: shownSpots.month }
       : null,
   );
-  const spotsId = shownSpots
-    ? `${shownSpots.year}-${String(shownSpots.month).padStart(2, '0')}`
-    : null;
+  // The month nobody asked for stays quiet when it cannot be loaded: the calendar already
+  // reports a server that cannot be reached, and the saved demo data has no single
+  // detections. A month the user picked still gets its message.
+  const pickedSpots = spots !== null && spots.geometry === area?.geometry;
+  const spotsVisible = shownSpots !== null && (pickedSpots || !points.isError);
+  const spotsId =
+    shownSpots && spotsVisible
+      ? `${shownSpots.year}-${String(shownSpots.month).padStart(2, '0')}`
+      : null;
   /** A click on the chosen month hides its hot spots again. */
   const toggleSpots = (month: MonthValue) => {
     if (!area) return;
@@ -448,7 +454,7 @@ function Workspace({ meta }: { meta: Meta }) {
             />
           </div>
         )}
-        {shownSpots && area && (
+        {shownSpots && spotsVisible && area && (
           <SpotsBar
             geometry={shownSpots.geometry}
             presetId={area.presetId}
@@ -465,7 +471,7 @@ function Workspace({ meta }: { meta: Meta }) {
         <div className={styles.mapSlot}>
           <AreaMap
             geometry={area?.geometry ?? null}
-            points={shownSpots ? (points.data ?? null) : null}
+            points={spotsVisible ? (points.data ?? null) : null}
             // A shape drawn or edited on the map is no longer an example area.
             onChange={(geometry) => setArea(geometry ? { geometry, presetId: null } : null)}
           />

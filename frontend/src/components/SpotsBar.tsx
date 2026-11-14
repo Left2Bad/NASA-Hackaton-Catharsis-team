@@ -60,20 +60,30 @@ export function SpotsBar({
       {error ? (
         <ErrorNote error={error} onRetry={onRetry} retrying={retrying} />
       ) : (
-        <p role="status">
-          {points
-            ? spotsSummary(points, year, month)
-            : `Loading the hot spots of ${monthName(month)} ${year}…`}
-        </p>
+        <div className={styles.text}>
+          <p role="status">
+            {points
+              ? spotsSummary(points, year, month)
+              : `Loading the hot spots of ${monthName(month)} ${year}…`}
+          </p>
+          <p className={styles.hint}>Click a month in the calendar to see its hot spots.</p>
+        </div>
       )}
       <div className={styles.actions}>
         {points && points.total > 0 && (
-          <button type="button" onClick={() => void save()} disabled={saving} aria-busy={saving}>
-            {saving ? 'Preparing…' : 'Download this month (CSV)'}
+          <button
+            type="button"
+            onClick={() => void save()}
+            disabled={saving}
+            aria-busy={saving}
+            // Short on screen, so the strip stays one line high; said in full to a screen reader.
+            aria-label={saving ? undefined : 'Download CSV of this month'}
+          >
+            {saving ? 'Preparing…' : 'Download CSV'}
           </button>
         )}
-        <button type="button" onClick={onHide}>
-          Hide hot spots
+        <button type="button" onClick={onHide} aria-label="Hide hot spots">
+          Hide
         </button>
       </div>
       {failure && <ErrorNote error={failure} />}

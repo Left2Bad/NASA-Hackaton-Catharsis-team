@@ -1,7 +1,8 @@
 /* The hot spots that are on the map: what they are, their file, and the way to remove them. */
 .bar {
   display: flex;
-  flex-wrap: wrap;
+  /* The buttons stay next to the text: a strip of one height does not push the map around. */
+  flex-wrap: nowrap;
   gap: var(--space-2) var(--space-3);
   align-items: center;
   justify-content: space-between;
@@ -13,8 +14,12 @@
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
+  flex: none;
   gap: var(--space-2);
+}
+
+.bar button {
+  white-space: nowrap;
 }
 
 .bar button {
@@ -32,4 +37,14 @@
 
 .bar button:disabled {
   cursor: progress;
+}
+
+.text {
+  display: grid;
+  gap: 2px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: var(--text-xs);
 }

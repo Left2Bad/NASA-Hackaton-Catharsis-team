@@ -16,7 +16,8 @@ const SATELLITE_LAYER = 'nasa-blue-marble';
 
 /** The hot spots of the month chosen on the calendar (requirement F13). */
 const HOTSPOT_LAYER = 'hot-spots';
-const HOTSPOT_COLOR = '#c85d02';
+// A red that stays visible on the light basemap and on the satellite imagery alike.
+const HOTSPOT_COLOR = '#e03a0e';
 const NO_POINTS = { type: 'FeatureCollection' as const, features: [] };
 
 /** Used when the basemap style cannot be fetched: a plain surface the user can still draw on. */
@@ -146,12 +147,13 @@ export async function createAreaMapEngine(
       source: HOTSPOT_LAYER,
       paint: {
         // A dot stands for one detection, not for its footprint: it only grows enough to stay visible.
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 1.5, 7, 2.5, 11, 4.5],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 2, 7, 3, 11, 5],
         'circle-color': HOTSPOT_COLOR,
-        'circle-opacity': 0.7,
+        'circle-opacity': 0.8,
+        // The white rim separates a dot from dark imagery and from the dots around it.
         'circle-stroke-color': WHITE,
-        'circle-stroke-width': 0.5,
-        'circle-stroke-opacity': 0.6,
+        'circle-stroke-width': 0.75,
+        'circle-stroke-opacity': 0.8,
       },
     },
     firstLabelLayer,
@@ -276,6 +278,10 @@ export async function createAreaMapEngine(
         if (rejected) console.warn('The area could not be shown on the map:', rejected.reason);
 
         if (fit) {
+          // The strip of the hot spots appears above the map together with the area. The
+          // map learns its new height a moment later, so it is told now: otherwise the
+          // view would be fitted to the old height and the area would be cut at the bottom.
+          map.resize();
           const { west, south, east, north } = boundsOf(geometry);
           map.fitBounds(
             [

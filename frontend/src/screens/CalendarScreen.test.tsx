@@ -202,6 +202,49 @@ describe('hot spots of a month on the map (F13)', () => {
     expect(bodies.at(-1)).toMatchObject({ year: 2019, month: 7 });
   });
 
+  it('says how to pick another month next to the count', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+    await openArea(user);
+
+    await screen.findByText(/^October 2026: /);
+    expect(
+      screen.getByText('Click a month in the calendar to see its hot spots.'),
+    ).toBeInTheDocument();
+  });
+
+  it('stays quiet when the month nobody asked for cannot be loaded', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post('*/api/v1/points', () =>
+        HttpResponse.json(
+          { error: { code: 'INTERNAL', message: 'Points are not available.' } },
+          { status: 500 },
+        ),
+      ),
+    );
+    renderScreen();
+    await openArea(user);
+
+    // The calendar is there, and no error about points the user never asked for.
+    await screen.findByRole('region', { name: 'Now' });
+    const map = screen.getByRole('region', { name: 'Area selection' });
+    await waitFor(() => expect(within(map).queryByText(/^Loading the hot spots/)).toBeNull());
+    expect(within(map).queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Hide hot spots' })).toBeNull();
+    expect(screen.getByTestId('map')).toHaveAttribute('data-points', 'none');
+  });
+
+  it('does not ask for points of an area above the size limit', async () => {
+    const bodies = record('/points', pointsExample);
+    window.location.hash = '#/?poly=-60,-40;60,-40;60,40;-60,40';
+    renderScreen();
+
+    await screen.findByText(/The limit is 3,000,000 km²/);
+    expect(bodies).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'Hide hot spots' })).toBeNull();
+  });
+
   it('keeps the calendar when the points cannot be loaded', async () => {
     const user = userEvent.setup();
     server.use(

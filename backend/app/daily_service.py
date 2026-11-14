@@ -35,7 +35,7 @@ def _warnings(data: Data, area, preliminary: bool, gap_months: list[dt.date]) ->
 
 
 def current(data: Data, q: AreaQuery) -> dict:
-    area = geometry.parse(q.geometry, data.settings.max_area_km2)
+    area = data.parse_area(q.geometry)
     as_of = data.last_date
     year, month, days = as_of.year, as_of.month, as_of.day
     first_full, last_full = complete_years(data)
@@ -103,7 +103,7 @@ def _valid(y: int, m: int, d: int) -> bool:
 
 
 def daily(data: Data, q: DailyQuery) -> dict:
-    area = geometry.parse(q.geometry, data.settings.max_area_km2)
+    area = data.parse_area(q.geometry)
     if q.year > data.last_date.year or q.year < lead.FIRST_DATE.year:
         raise ApiError("NO_DATA", f"Daily data is available for {lead.FIRST_DATE}–{data.last_date}.")
     first = max(dt.date(q.year, 1, 1), lead.FIRST_DATE)

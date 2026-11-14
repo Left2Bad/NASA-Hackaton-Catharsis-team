@@ -8,7 +8,7 @@ splice of the two records shows a false jump in 2012. We bring all NASA FIRMS de
 any area on the map. It is built for fire services, climate researchers and journalists who need a consistent
 26-year series for a region, with honest uncertainty intervals and near-real-time data for 2026.
 
-**Live demo: TBD** (the site is not deployed yet)
+**Live demo: https://nasa.pin-planet.org** (the API: https://nasa.pin-planet.org/api/v1/docs; deployment: [docs/deploy.md](docs/deploy.md))
 
 ![Burn calendar for Northern Kazakhstan, 2000–2026](docs/demo/screenshots/b6-calendar-laptop.jpg)
 

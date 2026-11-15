@@ -16,14 +16,29 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  /* Only on a very low window: the map keeps its minimum height and the column scrolls. */
+  overflow-y: auto;
   border-right: 1px solid var(--line);
 }
 
-/* Holds the map and lets it fill whatever height the column has left. */
+/* Holds the map and lets it fill whatever height the column has left, but never less than this. */
 .mapSlot {
+  position: relative;
   display: flex;
-  flex: 1;
-  min-height: 0;
+  flex: 1 0 auto;
+  min-height: 360px;
+}
+
+/* The coordinates form floats over the top of the map instead of pushing it down. */
+.coordinateOverlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 5;
+  max-height: 100%;
+  overflow-y: auto;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.18);
 }
 
 .areaBar {

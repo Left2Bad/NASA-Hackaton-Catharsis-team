@@ -129,6 +129,13 @@ export async function createAreaMapEngine(
   map.addControl(new maplibre.NavigationControl({ showCompass: false }), 'top-right');
   map.touchZoomRotate.disableRotation();
 
+  // MapLibre follows the window size only. The strips above the map (hot spots, notes) come
+  // and go and change the map's height without resizing the window, so the canvas would keep
+  // its old height and be cut at the bottom. Watching the container keeps them equal.
+  const sizeWatcher =
+    typeof ResizeObserver === 'function' ? new ResizeObserver(() => map.resize()) : null;
+  sizeWatcher?.observe(container);
+
   // Satellite imagery sits above the vector basemap but below its labels.
   const firstLabelLayer = map.getStyle().layers.find((layer) => layer.type === 'symbol')?.id;
   map.addSource(SATELLITE_LAYER, {
@@ -330,6 +337,7 @@ export async function createAreaMapEngine(
     },
 
     destroy() {
+      sizeWatcher?.disconnect();
       draw.stop();
       map.remove();
     },

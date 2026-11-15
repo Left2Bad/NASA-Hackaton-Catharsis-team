@@ -20,7 +20,11 @@ const font = fileURLToPath(
 const previews = process.argv[2];
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+// Twice the pixels, so the photographed backgrounds stay sharp on a large screen.
+const page = await browser.newPage({
+  viewport: { width: 1920, height: 1080 },
+  deviceScaleFactor: 2,
+});
 await page.goto(pathToFileURL(`${folder}slides.html`).href);
 
 // The font goes into the page as a data URI: a file page may not read other folders.
@@ -46,25 +50,32 @@ if (broken.length > 0) {
 const slides = page.locator('.slide');
 const count = await slides.count();
 
-// The blurred fire backdrop of a slide is live SVG with a CSS filter. Printed as it is, every
-// backdrop becomes a lossless picture at print resolution (about 7 MB a slide), so each one is
-// photographed alone first and put back as a JPEG.
-const alone = await page.addStyleTag({
-  content:
-    '.slide > :not(.fx), .fx-front { visibility: hidden } .fx::before, .fx::after { display: none }',
+// The artwork of a slide (blurred backdrop, veil, flames, embers, glass panels, glows) is live
+// SVG and CSS. Printed as it is, it turns into hundreds of gradients, soft masks and shadows per
+// page, and a PDF viewer redraws them slowly on every slide change. So each slide is photographed
+// once without its words and screenshots, and that picture becomes its background: the PDF then
+// holds one JPEG per slide, the screenshots and real text on top.
+const bare = await page.addStyleTag({
+  content: `.slide, .slide *, .slide li::marker, .steps li::before { color: transparent !important }
+    .crop img { visibility: hidden }`,
 });
-const backdrops = [];
+const backgrounds = [];
 for (let index = 0; index < count; index += 1) {
-  const shot = await slides.nth(index).locator('.fx').screenshot({ type: 'jpeg', quality: 90 });
-  backdrops.push(`data:image/jpeg;base64,${shot.toString('base64')}`);
+  const shot = await slides.nth(index).screenshot({ type: 'jpeg', quality: 90 });
+  backgrounds.push(`data:image/jpeg;base64,${shot.toString('base64')}`);
 }
-await alone.evaluate((style) => style.remove());
+await bare.evaluate((style) => style.remove());
+await page.addStyleTag({
+  content: `.fx { display: none }
+    .slide > div, .foot span { background: none !important; border-color: transparent !important; box-shadow: none !important }
+    .steps li::before, .kicker::before { background: none; box-shadow: none }
+    th, td { border-color: transparent }`,
+});
 await page.evaluate((pictures) => {
-  document.querySelectorAll('.slide .fx').forEach((fx, index) => {
-    fx.querySelector('.fx-scene').remove();
-    fx.style.background = `url(${pictures[index]}) 0 0 / 100% 100% no-repeat`;
+  document.querySelectorAll('.slide').forEach((slide, index) => {
+    slide.style.background = `url(${pictures[index]}) 0 0 / 100% 100% no-repeat`;
   });
-}, backdrops);
+}, backgrounds);
 
 if (previews) {
   await mkdir(previews, { recursive: true });

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import pointsJson from '../../../contract/examples/points.response.json';
-import type { PointsResponse } from '../api/types';
+import type { MonthValue, PointsResponse } from '../api/types';
 import { spanFileName } from '../export/files';
 import {
+  calendarCount,
   countFrom,
   FRP_RAMP,
   frpBreaks,
@@ -165,5 +166,35 @@ describe('spotsSummary', () => {
     expect(spotsSummary(drawn, 'May 2020', 20)).toBe(
       'May 2020: 4 hot spots on the map, all sensors. Shown: 2 of 20 MW or more.',
     );
+  });
+
+  it('adds what the calendar counts for the same span, when it is known', () => {
+    expect(spotsSummary(withPowers([1, 2, 3]), 'October 2026', 0, 3143.4)).toBe(
+      'October 2026: 3 hot spots, all sensors; the calendar counts 3,143 (VIIRS-equivalent).',
+    );
+    expect(spotsSummary(withPowers([1, 20, 300]), 'May 2020', 20, 12.5)).toBe(
+      'May 2020: 3 hot spots, all sensors; the calendar counts 12.5 (VIIRS-equivalent). Shown: 2 of 20 MW or more.',
+    );
+    expect(
+      spotsSummary({ ...withPowers([1, 2]), total: 900, truncated: true }, 'May 2020', 0, 3),
+    ).toBe(
+      'May 2020: the 2 strongest of 900 hot spots on the map, all sensors; the calendar counts 3 (VIIRS-equivalent).',
+    );
+  });
+});
+
+describe('calendarCount', () => {
+  const month = (year: number, number: number, value: number) =>
+    ({ year, month: number, value }) as MonthValue;
+  const months = [month(2019, 12, 10), month(2020, 1, 2.5), month(2020, 2, 0)];
+
+  it('sums the calendar months of a span', () => {
+    expect(calendarCount(months, monthIndex(2019, 12), monthIndex(2020, 2))).toBe(12.5);
+    expect(calendarCount(months, monthIndex(2020, 2), monthIndex(2020, 2))).toBe(0);
+  });
+
+  it('is unknown when the calendar does not hold every month of the span', () => {
+    expect(calendarCount(months, monthIndex(2020, 2), monthIndex(2020, 3))).toBeNull();
+    expect(calendarCount([], monthIndex(2020, 1), monthIndex(2020, 1))).toBeNull();
   });
 });

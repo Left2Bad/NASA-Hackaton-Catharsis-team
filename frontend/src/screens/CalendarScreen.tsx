@@ -20,7 +20,15 @@ import { YearlyTotals } from '../components/YearlyTotals';
 import { boundsOf, formatBounds } from '../geo/geometry';
 import { areaKm2 } from '../geo/shapes';
 import { formatNumber, monthName, presetLabel, WARNING_LABELS } from '../labels';
-import { frpBreaks, frpColors, mergePoints, monthId, monthIndex, spanMonths } from '../map/spots';
+import {
+  calendarCount,
+  frpBreaks,
+  frpColors,
+  mergePoints,
+  monthId,
+  monthIndex,
+  spanMonths,
+} from '../map/spots';
 import { nowHeadline } from '../now/describe';
 import { buildSearch, currentSearch, onLinkChange, parseSearch, writeSearch } from '../state/link';
 import { defaultSpotsMonth } from '../state/spots';
@@ -555,6 +563,11 @@ function Workspace({ meta }: { meta: Meta }) {
             record={record}
             meta={meta}
             points={spanSettled ? drawn : undefined}
+            calendarCount={
+              calendar.data
+                ? calendarCount(calendar.data.months, shownSpots.first, shownSpots.last)
+                : null
+            }
             breaks={pointStyle.breaks}
             minFrp={minFrp}
             error={points.isError ? points.error : null}

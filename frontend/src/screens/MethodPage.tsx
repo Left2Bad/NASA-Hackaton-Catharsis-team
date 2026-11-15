@@ -305,8 +305,8 @@ export default function MethodPage() {
             , part of NASA&apos;s Earth Science Data and Information System (ESDIS).
           </p>
           <p>
-            Active fire detections: MODIS Collection 6.1 (Terra and Aqua), VIIRS 375 m Suomi NPP and
-            VIIRS 375 m NOAA-20.
+            Active fire detections: MODIS (Terra and Aqua), Collection 6 for 2000 to 2022 and
+            Collection 6.1 from 2023; VIIRS 375 m Suomi NPP and VIIRS 375 m NOAA-20, Collection 2.
             {meta.data && ` Data version ${meta.data.data_version}.`}
           </p>
         </section>

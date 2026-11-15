@@ -104,9 +104,10 @@ describe('hot spots of a month on the map (F13)', () => {
     await openArea(user);
 
     // The example calendar ends with a partial November 2026; October is the latest complete month.
+    // The strip also says what the calendar counts for it: 205.1 in the example.
     expect(
       await screen.findByText(
-        `October 2026: ${pointsExample.total} hot spots on the map, all sensors.`,
+        `October 2026: ${pointsExample.total} hot spots, all sensors; the calendar counts 205 (VIIRS-equivalent).`,
       ),
     ).toBeInTheDocument();
     expect(bodies).toHaveLength(1);
@@ -132,7 +133,7 @@ describe('hot spots of a month on the map (F13)', () => {
 
     expect(
       await screen.findByText(
-        `August 2020: ${pointsExample.total} hot spots on the map, all sensors.`,
+        `August 2020: ${pointsExample.total} hot spots, all sensors; the calendar counts 1,240 (VIIRS-equivalent).`,
       ),
     ).toBeInTheDocument();
     expect(bodies.at(-1)).toMatchObject({ year: 2020, month: 8 });
@@ -287,7 +288,7 @@ describe('months and fire power of the hot spots', () => {
 
     expect(
       await screen.findByText(
-        `September to October 2026: ${pointsExample.total * 2} hot spots on the map, all sensors.`,
+        `September to October 2026: ${pointsExample.total * 2} hot spots, all sensors; the calendar counts 1,107 (VIIRS-equivalent).`,
         {},
         SETTLED,
       ),
@@ -327,7 +328,7 @@ describe('months and fire power of the hot spots', () => {
 
     expect(
       await screen.findByText(
-        `May to October 2026: ${pointsExample.total * 6} hot spots on the map, all sensors.`,
+        `May to October 2026: ${pointsExample.total * 6} hot spots, all sensors; the calendar counts 3,342 (VIIRS-equivalent).`,
         {},
         SETTLED,
       ),

@@ -46,6 +46,26 @@ if (broken.length > 0) {
 const slides = page.locator('.slide');
 const count = await slides.count();
 
+// The blurred fire backdrop of a slide is live SVG with a CSS filter. Printed as it is, every
+// backdrop becomes a lossless picture at print resolution (about 7 MB a slide), so each one is
+// photographed alone first and put back as a JPEG.
+const alone = await page.addStyleTag({
+  content:
+    '.slide > :not(.fx), .fx-front { visibility: hidden } .fx::before, .fx::after { display: none }',
+});
+const backdrops = [];
+for (let index = 0; index < count; index += 1) {
+  const shot = await slides.nth(index).locator('.fx').screenshot({ type: 'jpeg', quality: 90 });
+  backdrops.push(`data:image/jpeg;base64,${shot.toString('base64')}`);
+}
+await alone.evaluate((style) => style.remove());
+await page.evaluate((pictures) => {
+  document.querySelectorAll('.slide .fx').forEach((fx, index) => {
+    fx.querySelector('.fx-scene').remove();
+    fx.style.background = `url(${pictures[index]}) 0 0 / 100% 100% no-repeat`;
+  });
+}, backdrops);
+
 if (previews) {
   await mkdir(previews, { recursive: true });
   for (let index = 0; index < count; index += 1) {

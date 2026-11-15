@@ -25,6 +25,8 @@ interface SpotsBarProps {
   meta: Meta;
   /** The detections of the span, once they are there. */
   points: PointsResponse | undefined;
+  /** What the calendar counts for the span (VIIRS-equivalent), or `null` when it is not known. */
+  calendarCount: number | null;
   /** Class boundaries of fire power, in MW, for the points that are drawn. */
   breaks: readonly number[];
   /** The weakest fire that is drawn, in MW; 0 draws them all. */
@@ -56,6 +58,7 @@ export function SpotsBar({
   record,
   meta,
   points,
+  calendarCount,
   breaks,
   minFrp,
   error,
@@ -104,7 +107,9 @@ export function SpotsBar({
           <ErrorNote error={error} onRetry={onRetry} retrying={retrying} />
         ) : (
           <p role="status">
-            {points ? spotsSummary(points, when, minFrp) : `Loading the hot spots of ${when}…`}
+            {points
+              ? spotsSummary(points, when, minFrp, calendarCount)
+              : `Loading the hot spots of ${when}…`}
           </p>
         )}
         <div className={styles.actions}>

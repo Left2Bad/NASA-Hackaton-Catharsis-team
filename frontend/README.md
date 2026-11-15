@@ -6,7 +6,7 @@ Which contract fields each part of the screen is drawn from: [docs/contract-cove
 
 ## Quick start
 
-You need Node 22 or newer. The version is pinned in `.nvmrc`, and CI reads it from the same file. With nvm: `nvm use`.
+You need Node 22.12 or newer. The version is pinned in `.nvmrc`, and CI reads it from the same file. With nvm: `nvm use`.
 
 ```bash
 cd frontend

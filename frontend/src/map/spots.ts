@@ -1,4 +1,4 @@
-import type { PointsResponse } from '../api/types';
+import type { MonthValue, PointsResponse } from '../api/types';
 import { formatNumber, monthName } from '../labels';
 import { quantileBreaks } from '../theme/scales';
 
@@ -108,16 +108,49 @@ export function mergePoints(answers: readonly PointsResponse[], cap: number): Po
 export const countFrom = (points: PointsResponse, minFrp: number) =>
   points.features.filter((feature) => (feature.properties.frp ?? 0) >= minFrp).length;
 
-/** What the strip says about the hot spots that are drawn. `when` is the label of the span. */
-export function spotsSummary(points: PointsResponse, when: string, minFrp = 0): string {
+/**
+ * The detections the calendar counts for a span: the sum of its months on the harmonized,
+ * VIIRS-equivalent scale. `null` when the calendar does not hold every month of the span.
+ */
+export function calendarCount(
+  months: readonly MonthValue[],
+  first: number,
+  last: number,
+): number | null {
+  let sum = 0;
+  for (let index = first; index <= last; index += 1) {
+    const { year, month } = monthOf(index);
+    const found = months.find((value) => value.year === year && value.month === month);
+    if (!found) return null;
+    sum += found.value;
+  }
+  return sum;
+}
+
+/**
+ * What the strip says about the hot spots that are drawn. `when` is the label of the span.
+ * `calendar` is what the calendar counts for the same span, or `null` when it is not known:
+ * the map draws every detection of every sensor, the calendar counts them on one scale.
+ */
+export function spotsSummary(
+  points: PointsResponse,
+  when: string,
+  minFrp = 0,
+  calendar: number | null = null,
+): string {
   if (points.total === 0) return `No hot spots in ${when}.`;
   // Above the limit the strongest fires are kept, so the map still covers the whole span.
   const shown = points.truncated
     ? `the ${formatNumber(points.features.length)} strongest of ${formatNumber(points.total)} hot spots`
     : `${formatNumber(points.total)} hot ${points.total === 1 ? 'spot' : 'spots'}`;
+  // With the count of the calendar the line drops "on the map", so it stays one line beside
+  // the buttons on a desktop screen. A cut map keeps it: only a part of the spots is drawn.
+  const onMap = calendar === null || points.truncated ? ' on the map' : '';
+  const counted =
+    calendar === null ? '' : `; the calendar counts ${formatNumber(calendar)} (VIIRS-equivalent)`;
   const filtered =
     minFrp > 0
       ? ` Shown: ${formatNumber(countFrom(points, minFrp))} of ${formatNumber(minFrp)} MW or more.`
       : '';
-  return `${when}: ${shown} on the map, all sensors.${filtered}`;
+  return `${when}: ${shown}${onMap}, all sensors${counted}.${filtered}`;
 }

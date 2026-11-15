@@ -543,18 +543,6 @@ function Workspace({ meta }: { meta: Meta }) {
           </button>
           <PeriodSelect range={range} value={period} onChange={setPeriod} />
         </div>
-        {coordinatesOpen && (
-          <div id="coordinate-form">
-            <CoordinateForm
-              geometry={area?.geometry ?? null}
-              onSubmit={(geometry) => {
-                setArea({ geometry, presetId: null });
-                setCoordinatesOpen(false);
-              }}
-              onCancel={() => setCoordinatesOpen(false)}
-            />
-          </div>
-        )}
         {shownSpots && spotsVisible && area && (
           <SpotsBar
             geometry={shownSpots.geometry}
@@ -580,6 +568,19 @@ function Workspace({ meta }: { meta: Meta }) {
           />
         )}
         <div className={styles.mapSlot}>
+          {/* Over the map, not above it: opening the form does not make the map smaller. */}
+          {coordinatesOpen && (
+            <div id="coordinate-form" className={styles.coordinateOverlay}>
+              <CoordinateForm
+                geometry={area?.geometry ?? null}
+                onSubmit={(geometry) => {
+                  setArea({ geometry, presetId: null });
+                  setCoordinatesOpen(false);
+                }}
+                onCancel={() => setCoordinatesOpen(false)}
+              />
+            </div>
+          )}
           <AreaMap
             geometry={area?.geometry ?? null}
             points={spotsVisible ? (drawn ?? null) : null}

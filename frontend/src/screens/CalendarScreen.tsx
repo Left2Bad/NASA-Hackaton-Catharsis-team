@@ -564,7 +564,8 @@ function Workspace({ meta }: { meta: Meta }) {
             meta={meta}
             points={spanSettled ? drawn : undefined}
             calendarCount={
-              calendar.data
+              // In "Original sensors" the cells show each sensor's own count, not this number.
+              calendar.data && mode !== 'raw'
                 ? calendarCount(calendar.data.months, shownSpots.first, shownSpots.last)
                 : null
             }

@@ -1,4 +1,4 @@
-# frontend/ — zone of developer B
+# frontend/: the web application
 
 The web app: React, TypeScript, Vite, and a map on MapLibre GL JS. Charts are drawn as plain SVG, without a chart library.
 

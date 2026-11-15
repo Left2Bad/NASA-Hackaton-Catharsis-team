@@ -80,6 +80,9 @@ documentation, the code comments, the API contract and the API messages were als
 with Claude Code (Claude Opus 5.5 and Claude Fable 5.2); the Russian original of the method is kept as
 `docs/methodology.ru.md`.
 
+The text of the Space Apps project page was written by the team in Russian; Claude Code (Claude Opus 5.5) translated
+it into English and corrected the grammar, without adding content.
+
 The pitch deck (`docs/demo/slides/`) and the storyboard of the video (`docs/demo/README.md`) were drafted with
 Claude Code (Claude Fable 5.2; slides 6 and 7 were finished with Claude Opus 5.5). The pictures in the deck are real
 screenshots of the running application on real FIRMS data, taken by a script (`frontend/scripts/demo-shots.mjs`). None

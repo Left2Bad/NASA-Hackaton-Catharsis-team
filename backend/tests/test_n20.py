@@ -91,7 +91,8 @@ def test_preliminary_follows_last_standard_date(calendar):
         (2007, 26.0, "normal"),
         (2019, 74.0, "normal"),
         (2020, 78.0, "above_normal"),
-        (2023, 90.0, "above_normal"),
+        (2022, 86.0, "above_normal"),
+        (2023, 90.0, "high"),  # 184 is above p90 = 180.8: the level follows the threshold, not the rank
         (2024, 94.0, "high"),
         (2026, 100.0, "record"),  # 208 is above the baseline maximum 200 and 2026 is outside the baseline
         (2000, 0.0, "below_normal"),  # no fires yet in 2000 (B = 0)

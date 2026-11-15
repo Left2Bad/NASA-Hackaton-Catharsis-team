@@ -10,6 +10,8 @@ who need a consistent 26-year series for a region, with honest uncertainty inter
 
 **Live demo: https://nasa.pin-planet.org** (the API: https://nasa.pin-planet.org/api/v1/docs; deployment: [docs/deploy.md](docs/deploy.md))
 
+**Pitch:** [30-second video](https://youtu.be/tdj4Dv01Lrs) · [7 slides (PDF)](https://drive.google.com/file/d/1ddteLKIbTuUwZlcC62qwqidlGcDI4hgb/view?usp=sharing)
+
 ![Burn calendar for Northern California, 2000–2026](docs/demo/screenshots/demo-02-calendar.jpg)
 
 ## Validation results

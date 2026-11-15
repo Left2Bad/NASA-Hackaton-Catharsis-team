@@ -8,9 +8,9 @@ The pitch for the Space Apps submission is **one of two**: a video of at most 30
 | What | Where |
 | --- | --- |
 | Script and storyboard of the 30-second video | this file, below |
-| Deck, 7 slides: title, problem, solution (two slides), NASA data, plans, team | [slides/burn-calendar-pitch.pdf](slides/burn-calendar-pitch.pdf), source [slides/slides.html](slides/slides.html) |
+| Deck, 7 slides: title, problem, solution (two slides), NASA data, plans, team | [slides/burn-calendar-pitch.pdf](slides/burn-calendar-pitch.pdf), source [slides/slides.html](slides/slides.html); public copy: [Google Drive](https://drive.google.com/file/d/1ddteLKIbTuUwZlcC62qwqidlGcDI4hgb/view?usp=sharing) |
 | Frames of the demo | `screenshots/demo-NN-*.jpg`, 1920 × 1200 |
-| Video, 29.5 s, 1920 × 1080 | upload to YouTube (Unlisted) and put the link here; sources in [video/](video/) |
+| Video, 29.5 s, 1920 × 1080 | https://youtu.be/tdj4Dv01Lrs (YouTube, unlisted); sources in [video/](video/) |
 
 The video is made from real screenshots of the live site, with zooms, highlight rings, a pointer and word-timed
 captions drawn on top; the voice-over is ElevenLabs; the music is by Dmitrii Spis from Pixabay. Every AI tool used is named in the "Data & Resources Usage" field

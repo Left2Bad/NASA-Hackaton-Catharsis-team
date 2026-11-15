@@ -2,7 +2,7 @@
 // taken again after any change of the interface.
 //
 //   npm run demo:shots                          -> the app at http://localhost:5173
-//   npm run demo:shots -- http://localhost:5174 -> the app that talks to the real API
+//   npm run demo:shots -- https://nasa.pin-planet.org -> the live site on real data
 //
 // The app must show real numbers: start it against the real API (`npm run dev:api`) or
 // build it on the saved answers (VITE_API_FALLBACK=only). The frames go to

@@ -324,7 +324,7 @@ export const Pitch: React.FC = () => {
           <div style={{ ...up(25.8), font: `800 120px ${FONT}`, letterSpacing: -2 }}>Burn Calendar</div>
           <div style={{ ...up(26.0), font: `500 42px ${FONT}`, color: "#c9d4e6", marginTop: 12 }}>One fire record from MODIS and VIIRS, 2000 to today</div>
           <div style={{ ...up(26.2), font: `800 76px ${FONT}`, color: ORANGE, marginTop: 48 }}>nasa.pin-planet.org</div>
-          <div style={{ ...up(26.4), font: `600 36px ${FONT}`, color: "#e8eef8", marginTop: 34 }}>Open source · Data: NASA FIRMS (MODIS C6.1, VIIRS 375 m)</div>
+          <div style={{ ...up(26.4), font: `600 36px ${FONT}`, color: "#e8eef8", marginTop: 34 }}>Open source · Data: NASA FIRMS (MODIS and VIIRS 375 m hot spots)</div>
           <div style={{ ...up(26.6), font: `500 32px ${FONT}`, color: "#9fb0c9", marginTop: 14 }}>Team Catharsis · NASA Space Apps Challenge 2026</div>
         </AbsoluteFill>
       </AbsoluteFill>,

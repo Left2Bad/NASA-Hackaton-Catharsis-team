@@ -1,4 +1,4 @@
-# docs/demo/ — zone of developer B
+# docs/demo/: pitch video, deck and screenshots
 
 Materials for the presentation: the demo script, screenshots, slides and the link to the video.
 
@@ -41,8 +41,9 @@ One area carries the story: **Northern California**, data through 2026-11-13. Ti
 
 ### How it was made
 
-1. Frames: `node docs/demo/video/capture.mjs <folder>` from `frontend/` takes the live site at 1920 × 1080, 2× pixel
-   density, and writes the boxes of the elements the video points at.
+1. Frames: `node ../docs/demo/video/capture.mjs <folder>` from `frontend/` takes the live site at 1920 × 1080, 2×
+   pixel density, and writes the boxes of the elements the video points at. It needs Microsoft Edge (Playwright
+   channel `msedge`).
 2. Voice: ElevenLabs, model eleven_v3, one take of [video/voice-lines.json](video/voice-lines.json) (the words in
    square brackets are acting directions, not spoken); word times in [video/words.ts](video/words.ts), with a 0.5 s
    pause added after "The jump is gone."
@@ -72,10 +73,10 @@ header; the three example areas keep working.
 
 ## Retaking the frames and the deck
 
-From `frontend/`, with the app running on real data (see "How to record"):
+From `frontend/`, on the live site (real data):
 
 ```bash
-npm run demo:shots -- http://localhost:5174
+npm run demo:shots -- https://nasa.pin-planet.org
 ```
 
 ```bash
@@ -91,7 +92,8 @@ the slides.
 The `screenshots/` folder. File names start with the task a screenshot belongs to.
 
 The `demo-*` files are the frames of the video and of the deck (taken by `npm run demo:shots`); the others were
-taken task by task and show the app at that stage.
+taken task by task and show the app at that stage. The `b3-*` to `b9-*` files were taken before the real API was
+connected (PR #24) and show synthetic mock numbers.
 
 | File | What it shows |
 | --- | --- |

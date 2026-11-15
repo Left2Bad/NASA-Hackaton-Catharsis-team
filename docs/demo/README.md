@@ -36,8 +36,8 @@ One area carries the story: **Northern California**, data through 2026-11-13. Ti
 | 12.1–15.8 | Drawing tools, the From/To years, the whole calendar | Draw any area, pick any years, get every month since 2000. |
 | 15.8–20.6 | A click on "Anomaly" (blue/orange against the median); then "Now": +58.6 % against the median of the same days | Spot unusual months, and today: Northern California is fifty-nine percent above its median. |
 | 20.6–22.7 | Downloads: "Hot spots (CSV)" and the dates of the file | Every hot spot downloads as CSV. |
-| 22.7–25.75 | Method page, "How it was checked": the forecast from MODIS against real VIIRS on 2021–2025, bias +4.2 % | Tested on years it never saw: totals within four percent. |
-| 25.75–29.5 | End card: name, the address of the site, NASA FIRMS, team | Open source, built on NASA FIRMS. |
+| 22.7–26.25 | Method page, "How it was checked": the forecast from MODIS against real VIIRS on 2021–2025; Northern California, total bias +4.2 % | Tested on years it never saw: here, the totals are off by about four percent. |
+| 26.25–29.5 | End card: name, the address of the site, NASA FIRMS, team | Open source, built on NASA FIRMS. |
 
 ### How it was made
 
@@ -52,6 +52,10 @@ One area carries the story: **Northern California**, data through 2026-11-13. Ti
    loudness −16 LUFS.
 4. Music: Music by Dmitrii Spis from Pixabay (https://pixabay.com/users/nastelbom-48128234/, track 617068, Pixabay
    Content License; attribution is not required but given). Put the same line in the YouTube description.
+
+The composition and the mix run inside a separate Remotion 4 project (frames in its `public/nasa/`); the voice
+recording and the music file are not in git. The captures run Microsoft Edge with an English UI (`--lang=en-US`), so
+dates read as 10/01/2026.
 
 If the data are refreshed, take the frames again and check every number in the voice-over and on the rings.
 

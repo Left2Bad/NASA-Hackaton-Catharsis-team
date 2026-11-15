@@ -75,6 +75,7 @@ python -m venv .venv
 Set-ExecutionPolicy -Scope Process RemoteSigned
 .venv\Scripts\Activate.ps1
 pip install -c constraints.txt -e backend
+$ProgressPreference = 'SilentlyContinue'   # the progress bar slows the 53 MB download down a lot
 Invoke-WebRequest https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/download/data-2026-11-13/burn-calendar-sample-data.zip -OutFile sample.zip
 python -m zipfile -e sample.zip .
 $env:DATA_DIR = "sample_data"; $env:CORS_ORIGINS = "http://localhost:5173"
@@ -84,6 +85,7 @@ uvicorn app.main:app --app-dir backend --port 8000
 In a second PowerShell window, from the repository root:
 
 ```powershell
+Set-ExecutionPolicy -Scope Process RemoteSigned   # a new window needs it again: npm is a script in PowerShell
 cd frontend
 npm ci
 $env:VITE_API_FALLBACK = "off"; npm run dev:api

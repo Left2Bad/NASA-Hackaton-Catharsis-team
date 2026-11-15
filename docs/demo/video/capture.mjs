@@ -9,8 +9,8 @@ const { chromium } = createRequire(`${process.cwd()}/`)('@playwright/test');
 const out = process.argv[2];
 const SITE = 'https://nasa.pin-planet.org/';
 await mkdir(out, { recursive: true });
-const browser = await chromium.launch({ channel: 'msedge' });
-const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 2 });
+const browser = await chromium.launch({ channel: 'msedge', args: ['--lang=en-US'] });
+const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 2, locale: 'en-US' });
 const page = await context.newPage();
 const boxes = {};
 

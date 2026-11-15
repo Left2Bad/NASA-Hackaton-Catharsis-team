@@ -21,12 +21,14 @@ const AREA_NAME = 'Northern California';
 const SEASON_YEAR = '2020';
 
 await mkdir(out, { recursive: true });
-const browser = await chromium.launch();
+// An English UI, so date fields read as 10/01/2026 on any machine.
+const browser = await chromium.launch({ args: ['--lang=en-US'] });
 
 async function open(width, height, scale) {
   const context = await browser.newContext({
     viewport: { width, height },
     deviceScaleFactor: scale,
+    locale: 'en-US',
   });
   return context.newPage();
 }

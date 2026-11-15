@@ -43,21 +43,23 @@ def percentile_of(sample: list[float], value: float) -> float | None:
     return r1(100 * (below + 0.5 * equal) / len(sample))
 
 
-def category(percentile: float | None, value: float, base: dict, in_baseline: bool) -> str | None:
-    """Contract Category from the published percentile, so the two fields always agree.
+def category(value: float, base: dict, in_baseline: bool) -> str | None:
+    """Contract Category from the published thresholds of baseline_stats, so the level matches the legend.
 
-    below 25 -> below_normal, 25-75 -> normal, above 75 up to 90 -> above_normal, above 90 -> high;
-    record = a year outside the baseline whose rounded value is above the baseline maximum.
+    below p25 -> below_normal, p25 to p75 -> normal, above p75 up to p90 -> above_normal, above p90 up to the
+    maximum -> high; record = a year outside the baseline whose rounded value is above the baseline maximum.
+    The rounded value is compared, as published. A baseline without fires gives normal for a zero value.
     """
-    if percentile is None or base["n_years"] == 0:
+    if base["n_years"] == 0:
         return None
-    if not in_baseline and r1(value) > base["max"] and value > 0:
+    v = r1(value)
+    if not in_baseline and v > base["max"] and value > 0:
         return "record"
-    if percentile < 25:
+    if v < base["p25"]:
         return "below_normal"
-    if percentile <= 75:
+    if v <= base["p75"]:
         return "normal"
-    if percentile <= 90:
+    if v <= base["p90"]:
         return "above_normal"
     return "high"
 

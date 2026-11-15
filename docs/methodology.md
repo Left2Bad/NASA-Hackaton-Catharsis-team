@@ -2,7 +2,7 @@
 
 Russian version: [methodology.ru.md](methodology.ru.md)
 
-> Owner: developer A. This text goes to the "Method" page of the app and into the presentation.
+> This text goes to the "Method" page of the app and into the presentation.
 > Code: `pipeline/`. The numbers below come from `data/harmonized/summary.json`, `data/validation/report.json` and
 > `data/validation/checks.json` (data as of 13 November 2026).
 
@@ -17,9 +17,9 @@ NASA FIRMS, yearly "Country Yearly Summary" archives (all countries), standard p
 
 | Sensor | Years | Detections per year | After the filters (section 3) |
 | --- | --- | --- | --- |
-| MODIS Collection 6.1 (Terra, Aqua) | 2000-11 – 2025 | 3.7–5.1 million (2003–2025) | 3.3–4.7 million |
-| VIIRS 375 m, Suomi NPP | 2012-01-20 – 2025 | 17–22 million | 14–18 million |
-| VIIRS 375 m, NOAA-20 | 2018-04 – 2025 | 18–23 million | 14–18 million |
+| MODIS (Terra, Aqua): Collection 6 to 2022, Collection 6.1 from 2023 | 2000-11 – 2025 | 3.7–5.1 million (2003–2025) | 3.3–4.7 million |
+| VIIRS 375 m Collection 2, Suomi NPP | 2012-01-20 – 2025 | 17–22 million | 14–18 million |
+| VIIRS 375 m Collection 2, NOAA-20 | 2018-04 – 2025 | 18–23 million | 14–18 million |
 
 In 2001, with Terra only, MODIS has 1.8 million detections.
 
@@ -212,6 +212,9 @@ error; we do not correct for it.
 - Active lava flows and gas flares: MODIS and VIIRS classify them differently, so such places are masked for all satellites
   and outlier cells take the coefficient of their 5° block. Detections left around them are less reliable — for example the
   Kilauea cell keeps a coefficient of 24 from 1 MODIS detection against 538 Suomi NPP detections in 2012–2020.
+- The FIRMS MODIS archive switches from Collection 6 to Collection 6.1 in 2023. C6.1 changes the calibration, not the
+  fire algorithm. The coefficients are fitted on C6 years (2012–2020); the 2021–2025 check runs on C6 in 2021–2022 and
+  on C6.1 in 2023–2025.
 - 2026: NRT data (from August) is preliminary and will be refined. NRT has no `type` field: permanent sources are removed
   with the same mask as the archive. It marks 6.9 % of Suomi NPP NRT detections as static sources against 8.5 % with
   standard processing — some industrial sources may remain in NRT.

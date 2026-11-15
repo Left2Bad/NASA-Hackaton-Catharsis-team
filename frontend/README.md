@@ -1,4 +1,4 @@
-# frontend/ — zone of developer B
+# frontend/: the web application
 
 The web app: React, TypeScript, Vite, and a map on MapLibre GL JS. Charts are drawn as plain SVG, without a chart library.
 
@@ -6,7 +6,7 @@ Which contract fields each part of the screen is drawn from: [docs/contract-cove
 
 ## Quick start
 
-You need Node 22 or newer. The version is pinned in `.nvmrc`, and CI reads it from the same file. With nvm: `nvm use`.
+You need Node 22.12 or newer. The version is pinned in `.nvmrc`, and CI reads it from the same file. With nvm: `nvm use`.
 
 ```bash
 cd frontend

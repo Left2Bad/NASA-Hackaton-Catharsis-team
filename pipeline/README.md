@@ -1,4 +1,4 @@
-# pipeline/ — developer A zone
+# pipeline/
 
 The data pipeline: from the NASA FIRMS archives to a single harmonized series. Method and metrics — `docs/methodology.md`.
 How to get the ready-made data without recomputing everything — `data/README.md`.
@@ -64,7 +64,7 @@ python pipeline/points_serve.py --only modis_2026 viirs-snpp_2026 viirs-jpss1_20
   rebuilds those years, and any missing or stale part is rebuilt too, so the full grids are never replaced by a partial set.
 - Do not run two copies of the same step at once — they would corrupt each other's files.
 
-## Differences from the original plan
+## Design notes
 
 - The 0.1° daily grid (`grid.py`) is the basis for the API: raw counts and FRP per satellite per cell and day,
   already after the filters. Harmonized value = lead-source count × the 1° cell coefficient.

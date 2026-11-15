@@ -5,12 +5,12 @@ Team Catharsis, NASA Space Apps Challenge 2026, challenge **"Harmonization of MO
 MODIS (since 2000) and VIIRS (since 2012) count fires differently: VIIRS sees about four times more hot spots, so a naive
 splice of the two records shows a false jump in 2012. We bring all NASA FIRMS detections to one unit, the
 "VIIRS Suomi NPP equivalent", and show the result as a fire calendar (year × month, colored by activity or anomaly) for
-any area on the map. It is built for fire services, climate researchers and journalists who need a consistent
-26-year series for a region, with honest uncertainty intervals and near-real-time data for 2026.
+any area on the map. It is built for early warning and emergency responders, firefighters, land managers and scientists
+who need a consistent 26-year series for a region, with honest uncertainty intervals and near-real-time data for 2026.
 
 **Live demo: https://nasa.pin-planet.org** (the API: https://nasa.pin-planet.org/api/v1/docs; deployment: [docs/deploy.md](docs/deploy.md))
 
-![Burn calendar for Northern Kazakhstan, 2000–2026](docs/demo/screenshots/b6-calendar-laptop.jpg)
+![Burn calendar for Northern California, 2000–2026](docs/demo/screenshots/demo-02-calendar.jpg)
 
 ## Validation results
 
@@ -37,11 +37,12 @@ completely are flagged. Full method, all metrics and limitations: [docs/methodol
 
 ## Architecture
 
-**Pipeline (`pipeline/`, Python + DuckDB).** Downloads the FIRMS yearly archives (MODIS Collection 6.1 since November 2000,
-VIIRS 375 m Suomi NPP since 2012, NOAA-20 since 2018) and the 2026 data through the FIRMS Area API, converts them to one
-Parquet schema, drops low-confidence and non-vegetation detections, and builds a 0.1° × day grid. It then fits the
-harmonization coefficients per 1° cell with shrinkage to a 5° block and the world value, estimates `low`/`high`
-intervals, detects days when a satellite did not report and writes the validation report.
+**Pipeline (`pipeline/`, Python + DuckDB).** Downloads the FIRMS yearly archives (MODIS since November 2000: Collection 6 to
+2022, Collection 6.1 from 2023; VIIRS 375 m Collection 2: Suomi NPP since 2012, NOAA-20 since 2018) and the 2026 data
+through the FIRMS Area API, converts them to one Parquet schema, drops low-confidence and non-vegetation detections,
+and builds a 0.1° × day grid. It then fits the harmonization coefficients per 1° cell with shrinkage to a 5° block and
+the world value, estimates `low`/`high` intervals, detects days when a satellite did not report and writes the
+validation report.
 
 **Data (`data/`, not in git).** The pipeline output: the daily and monthly grids, coefficients, uncertainty table,
 outage months and gap days, a world summary and the validation report, about 1 GB in total; plus a lightweight copy of all detections
@@ -60,7 +61,7 @@ the two sides is [contract/openapi.yaml](contract/openapi.yaml), with examples i
 See the app working without the 20 GB data rebuild. The sample dataset (`burn-calendar-sample-data.zip`, 53 MB) holds
 the real harmonized data for the three example regions of the app: **Northern Kazakhstan, Southern Amazon and Northern
 California**, every month from November 2000 to the last fetched day of 2026, plus the hotspot points of these regions
-for 2021–2026. You need Python 3.12 or newer, Node 22 or newer and git. Measured from a clean clone on Windows:
+for 2021–2026. You need Python 3.12 or newer, Node 22.12 or newer and git. Measured from a clean clone on Windows:
 about 2 minutes, plus the download.
 
 Sample data: https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/download/data-2026-11-13/burn-calendar-sample-data.zip
@@ -71,6 +72,7 @@ Sample data: https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/d
 git clone https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team.git
 cd NASA-Hackaton-Catharsis-team
 python -m venv .venv
+Set-ExecutionPolicy -Scope Process RemoteSigned
 .venv\Scripts\Activate.ps1
 pip install -c constraints.txt -e backend
 Invoke-WebRequest https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/download/data-2026-11-13/burn-calendar-sample-data.zip -OutFile sample.zip
@@ -120,7 +122,7 @@ uncertainty intervals and the "Method" page are the full-data ones. The sample w
 
 ## Quick start (local), with the full data
 
-You need Python 3.13 (3.11 or newer works; CI uses 3.12), Node 22 or newer (pinned in `frontend/.nvmrc`) and git.
+You need Python 3.12 or newer (CI tests 3.12 and 3.13), Node 22.12 or newer (`frontend/.nvmrc`) and git.
 Every command below runs from the repository root, one per line, in Windows PowerShell and in bash alike
 (on Linux/macOS use `python3` if `python` is not Python 3).
 

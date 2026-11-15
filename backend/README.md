@@ -1,9 +1,7 @@
-# backend/ — developer A zone
+# backend/: the API
 
 A FastAPI API. It reads the ready-made files from `data/` (DuckDB, read-only) and serves responses
 strictly following the contract `contract/openapi.yaml`.
-
-Tasks from the spec: A6 (skeleton, `/health`, `/meta`, `/calendar`), A11 (the remaining endpoints, limits, errors), A13 (deployment).
 
 ## Running
 
@@ -76,8 +74,9 @@ Python 3.12 and 3.13, so `requires-python` is `>=3.12`.
   (`data/coefficients.parquet`). The lead-source rule is the shared module `pipeline/lead.py`.
 - `app/daily_service.py` — `/current`: accumulation since the 1st of the month against the same days of the baseline years; `/daily`: values by day of the year.
 - `app/stats.py` — `percentile` is the mid-rank of the value among the baseline years (equal years count half),
-  on values rounded to 0.1 as published; `category` is derived from that percentile with the contract's bands
-  (below 25, 25–75, above 75 up to 90, above 90; `record` = above the baseline maximum, outside the baseline).
+  on values rounded to 0.1 as published; `category` compares the value with the published p25/p75/p90/max of the
+  baseline (below p25, up to p75, up to p90, above p90; `record` = above the baseline maximum, outside the baseline),
+  so the level always matches the bands the app draws.
 - `app/calendar_service.py` — medians and percentiles over the baseline years, categories, `low`/`high` intervals
   (`data/uncertainty.parquet`), yearly totals, trend (least squares), warnings.
 - `app/points_service.py` — points from `points_serve/`: selection by date and bounding box in DuckDB (row-group skipping),

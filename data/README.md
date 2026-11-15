@@ -79,16 +79,16 @@ zero fire there. `/points` and the points CSV answer `NO_DATA` for years before 
 
 ---
 
-## Instructions for an AI assistant (Claude Code, etc.): how to prepare the data
+## How to prepare the data
 
 The goal is to get exactly the layout above in `data/`. Work from the repository root.
-Do not commit anything from `data/`. Do not commit keys or `.env`.
+Do not commit anything from `data/`, and do not commit keys or `.env`.
 
 ### Option A — a ready-made team archive is available (fast, ~5 minutes)
 
 The team publishes the data archive `FIRMS_data_2026-11-13.zip` (1.03 GB, 12 files) as a GitHub release asset:
 https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/download/data-2026-11-13/FIRMS_data_2026-11-13.zip
-The user downloads it (or gives you the path to a copy). Inside the archive, paths are relative to the repository root
+Download it, or use a copy you already have. Inside the archive, paths are relative to the repository root
 and all start with `data/`. It is packed from a full data folder by `python pipeline/pack_data.py --src data --zip <file>`
 (`--dry-run` lists the files): the three grids, `coefficients.parquet`, `uncertainty.parquet`, `static_mask.parquet`,
 `outage_months.csv`, `gap_days.csv`, `harmonized/summary.json`, `harmonized/global_monthly.csv`,
@@ -119,7 +119,8 @@ Commands run from the repository root, one per line; they work in Windows PowerS
    `source .venv/Scripts/activate`; Linux/macOS: `source .venv/bin/activate`), then `pip install -e "pipeline[dev]"`.
 2. Check the free space: ≥ 20 GB is needed.
 3. `python pipeline/download_archives.py` — 48 archives into `data/raw/`. No login is needed.
-   If the server responds with anything other than 200 (FIRMS maintenance), tell the user and do not look for other sources.
+   If the server responds with anything other than 200 (FIRMS maintenance), stop and try again later; do not look for
+   other sources.
 4. `python pipeline/to_parquet.py` — all archives in `data/raw/`, in a single process, not in parallel (memory).
 5. `python pipeline/grid.py`, then `python pipeline/harmonize.py`, then `python pipeline/validation.py`.
 6. Optional, for `/points` and the points CSV export: `python pipeline/points_serve.py` (~11 minutes).
@@ -128,8 +129,8 @@ Commands run from the repository root, one per line; they work in Windows PowerS
 
 ### 2026 (optional)
 
-A free FIRMS key is needed: the user gets it themself at https://firms.modaps.eosdis.nasa.gov/api/map_key/
-and puts it into `.env` (`FIRMS_MAP_KEY=...`, see `.env.example` for a template). Then:
+A free FIRMS key is needed: get it at https://firms.modaps.eosdis.nasa.gov/api/map_key/
+and put it into `.env` (`FIRMS_MAP_KEY=...`, see `.env.example` for a template). Then:
 `python pipeline/fetch_api.py` → `python pipeline/api_to_parquet.py` → `python pipeline/grid.py --years 2026` →
 `python pipeline/harmonize.py` → `python pipeline/validation.py` →
 `python pipeline/points_serve.py --only modis_2026 viirs-snpp_2026 viirs-jpss1_2026`.

@@ -1,18 +1,18 @@
-# Zone owners. GitHub automatically requests their review on PRs.
+# Code owners. GitHub automatically requests their review on PRs.
 #
 
-# Developer A zone: data, harmonization, backend
+# Data pipeline and API: data, harmonization, backend
 /pipeline/                      @Left2Bad
 /backend/                       @Left2Bad
 /docs/methodology.md            @Left2Bad
 /docs/methodology.ru.md         @Left2Bad
 /.github/workflows/backend.yml  @Left2Bad
 
-# Developer B zone: interface
+# Web application: interface
 /frontend/                      @Miraculum-ADA
 /docs/demo/                     @Miraculum-ADA
 /.github/workflows/frontend.yml @Miraculum-ADA
 
-# Shared zone: changes only in a separate PR approved by the other developer
+# Shared files: changes only in a separate PR approved by the other developer
 /contract/                      @Left2Bad @Miraculum-ADA
 /README.md                      @Left2Bad @Miraculum-ADA

@@ -8,18 +8,23 @@
       title, problem, solution (two slides), NASA data, plans, team. Edit the text here and print the deck
       again with `npm run demo:slides` (from frontend/), which writes burn-calendar-pitch.pdf.
       The pictures are the frames of ../screenshots/, taken by `npm run demo:shots`.
+      The fire artwork (backdrop, flames, embers, badge, thermometer) is SVG drawn in this file;
+      it carries no text, so the words of the slides live only in the sections below.
       Every number on the slides comes from the app on real FIRMS data: check them against
       the app after the data is refreshed.
     -->
     <style>
+      /* The palette: charcoal with the colors of fire. */
       :root {
-        --ink: #16212b;
-        --ink-2: #44505c;
-        --muted: #5d6975;
-        --plane: #eef1f4;
-        --line: #d3d9df;
-        --accent: #c85d02;
-        --cool: #1d6fb8;
+        --ink: #fff7ec;
+        --ink-2: #eadccd;
+        --muted: #cdbba8;
+        --plane: #050404;
+        --coal: #0e0a09;
+        --line: rgba(255, 170, 90, 0.3);
+        --accent: #ff9a2e;
+        --flame: #ff5a2a;
+        --gold: #ffd24a;
       }
       * {
         box-sizing: border-box;
@@ -40,7 +45,7 @@
         width: 1920px;
         height: 1080px;
         padding: 88px 104px 80px;
-        background: #fff;
+        background: var(--coal);
         overflow: hidden;
         page-break-after: always;
         break-after: page;
@@ -57,6 +62,72 @@
           margin-top: 0;
         }
       }
+
+      /* The fire artwork: a blurred backdrop, a dark veil over it, sharp details on top. */
+      .fx-defs {
+        position: absolute;
+      }
+      .fx {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+      }
+      .fx svg {
+        position: absolute;
+        display: block;
+      }
+      .fx-scene {
+        left: -60px;
+        top: -60px;
+        width: 2040px;
+        height: 1200px;
+        filter: blur(11px);
+      }
+      .fx::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: linear-gradient(
+          180deg,
+          rgba(8, 6, 6, 0.78) 0%,
+          rgba(8, 6, 6, 0.6) 40%,
+          rgba(8, 6, 6, 0.34) 78%,
+          rgba(8, 6, 6, 0.12) 100%
+        );
+      }
+      /* A warning stripe along the top edge. */
+      .fx::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 12px;
+        z-index: 3;
+        background: repeating-linear-gradient(-45deg, #ffb21e 0 22px, #120a08 22px 44px);
+      }
+      .fx-front {
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        z-index: 2;
+      }
+      .slide > :not(.fx):not(.foot) {
+        position: relative;
+        z-index: 1;
+      }
+      /* Text columns sit on dark glass; the negative margin keeps the text where it was. */
+      .slide:not(.title) > div:not(.fx):not(.foot):not(:has(> .crop:only-child)),
+      .title .text {
+        margin: -27px -31px;
+        padding: 26px 30px;
+        background: rgba(14, 10, 9, 0.8);
+        border: 1px solid rgba(255, 170, 90, 0.22);
+        border-radius: 20px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      }
+
       .kicker {
         grid-column: 1 / -1;
         margin: 0 0 20px;
@@ -65,6 +136,17 @@
         letter-spacing: 0.04em;
         text-transform: uppercase;
         color: var(--accent);
+      }
+      /* Three chevrons in front of the kicker. */
+      .kicker::before {
+        content: '';
+        display: inline-block;
+        width: 52px;
+        height: 20px;
+        margin-right: 16px;
+        vertical-align: -2px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 20'%3E%3Cpath d='M0 0h8l8 10-8 10H0l8-10z' fill='%23ffd24a'/%3E%3Cpath d='M18 0h8l8 10-8 10h-8l8-10z' fill='%23ff9a2e'/%3E%3Cpath d='M36 0h8l8 10-8 10h-8l8-10z' fill='%23ff5a2a'/%3E%3C/svg%3E")
+          no-repeat;
       }
       h1,
       h2 {
@@ -97,28 +179,44 @@
       li {
         margin-bottom: 18px;
       }
+      li::marker {
+        color: var(--accent);
+      }
       strong {
         color: var(--ink);
         font-weight: 650;
       }
       .foot {
         position: absolute;
+        z-index: 4;
         left: 104px;
         right: 104px;
         bottom: 36px;
         display: flex;
         justify-content: space-between;
         font-size: 20px;
-        color: var(--muted);
+        color: var(--ink-2);
+      }
+      /* The footers are small plates, so they read over the brightest part of the fire. */
+      .foot span {
+        margin: -7px -16px;
+        padding: 7px 16px;
+        background: rgba(10, 7, 6, 0.82);
+        border: 1px solid rgba(255, 170, 90, 0.3);
+        border-radius: 10px;
       }
 
       /* A piece of a 1920 x 1200 frame: the picture is placed behind a window. */
       .crop {
         position: relative;
         overflow: hidden;
-        border: 2px solid var(--line);
+        border: 2px solid #ff9a2e;
         border-radius: 10px;
         background: #fff;
+        box-shadow:
+          0 0 0 6px rgba(10, 7, 6, 0.6),
+          0 0 70px rgba(255, 110, 20, 0.35),
+          0 26px 60px rgba(0, 0, 0, 0.6);
       }
       .crop img {
         position: absolute;
@@ -147,10 +245,10 @@
         line-height: 1.3;
       }
       .figure.bad b {
-        color: var(--accent);
+        color: var(--flame);
       }
       .figure.good b {
-        color: var(--cool);
+        color: var(--gold);
       }
 
       table {
@@ -172,7 +270,7 @@
       th {
         font-size: 22px;
         font-weight: 600;
-        color: var(--muted);
+        color: var(--accent);
         text-transform: uppercase;
         letter-spacing: 0.03em;
       }
@@ -184,7 +282,7 @@
         white-space: nowrap;
       }
       a {
-        color: inherit;
+        color: var(--gold);
         text-decoration: none;
       }
       .url {
@@ -208,6 +306,7 @@
       .title h1 {
         font-size: 104px;
         margin-bottom: 36px;
+        color: var(--gold);
       }
       .title .lead {
         font-size: 44px;
@@ -218,7 +317,8 @@
       .title .text {
         grid-column: 1;
         grid-row: 2;
-        margin-top: 40px;
+        /* 40px, less the padding and the border of the glass. */
+        margin-top: 13px;
       }
       .title .crop {
         grid-column: 2;
@@ -246,12 +346,13 @@
         width: 50px;
         height: 50px;
         border-radius: 50%;
-        background: var(--ink);
-        color: #fff;
+        background: linear-gradient(180deg, #ffd24a, #ff7a12 60%, #e23a0a);
+        color: #1a0d08;
         font-size: 28px;
         font-weight: 700;
         line-height: 50px;
         text-align: center;
+        box-shadow: 0 0 22px rgba(255, 120, 20, 0.6);
       }
       .pair {
         display: flex;
@@ -261,8 +362,97 @@
     </style>
   </head>
   <body>
+    <!--
+      Fire artwork, drawn by hand in SVG for this deck (no outside pictures). #scene is one wide
+      panorama of a burning ridge: every slide shows its own part of it, blurred, as the backdrop.
+      #fringe, #embers, #badge and #thermo are the sharp details on top of it.
+    -->
+    <svg class="fx-defs" width="0" height="0" aria-hidden="true">
+      <defs>
+        <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+          <stop offset="0.12" stop-color="#050608" />
+          <stop offset="0.36" stop-color="#140a09" />
+          <stop offset="0.54" stop-color="#3b0f06" />
+          <stop offset="0.66" stop-color="#9a2c06" />
+          <stop offset="0.75" stop-color="#e8640c" />
+          <stop offset="0.82" stop-color="#ffb12e" />
+          <stop offset="0.9" stop-color="#ffd978" />
+        </linearGradient>
+        <radialGradient id="g-glow">
+          <stop offset="0" stop-color="#ffe08a" stop-opacity="0.95" />
+          <stop offset="0.35" stop-color="#ff8a14" stop-opacity="0.7" />
+          <stop offset="1" stop-color="#ff3b0a" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="g-smoke">
+          <stop offset="0" stop-color="#17100e" stop-opacity="0.85" />
+          <stop offset="0.6" stop-color="#17100e" stop-opacity="0.5" />
+          <stop offset="1" stop-color="#17100e" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="g-smoke-lit">
+          <stop offset="0" stop-color="#ff7a1a" stop-opacity="0.4" />
+          <stop offset="1" stop-color="#ff7a1a" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="g-ember">
+          <stop offset="0" stop-color="#ffb347" stop-opacity="0.55" />
+          <stop offset="1" stop-color="#ff6a1a" stop-opacity="0" />
+        </radialGradient>
+        <linearGradient id="g-flame" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ff2d0a" />
+          <stop offset="0.5" stop-color="#ff7a12" />
+          <stop offset="1" stop-color="#ffd24a" />
+        </linearGradient>
+        <linearGradient id="g-core" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffb62e" />
+          <stop offset="1" stop-color="#fff6c9" />
+        </linearGradient>
+        <linearGradient id="g-thermo" x1="0" y1="930" x2="0" y2="150" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#ff3b0a" />
+          <stop offset="0.5" stop-color="#ff9a1e" />
+          <stop offset="1" stop-color="#fff0a8" />
+        </linearGradient>
+        <path id="flame-shape" d="M0 0C-40 0-50-40-36-68C-26-88-28-104-20-120C-16-98-6-94-2-110C2-130-4-146 6-160C10-132 34-116 38-76C42-36 34 0 0 0Z" />
+        <g id="flame">
+          <use href="#flame-shape" fill="url(#g-flame)" />
+          <use href="#flame-shape" fill="url(#g-core)" transform="scale(0.5)" />
+        </g>
+        <path id="pine" d="M-3 0V-14H-30L-10-38H-22L-7-66H-14L0-100L14-66H7L22-38H10L30-14H3V0Z" />
+        <path id="snag" d="M-3 0L-2-90L0-100L2-90L3 0ZM-1-60L-20-78L-18-80L0-66ZM1-45L18-62L20-60L1-40Z" />
+        <g id="scene"><rect x="-200" y="-200" width="4240" height="1500" fill="url(#g-sky)"/><ellipse cx="260" cy="930" rx="552.8" ry="452.3" fill="url(#g-glow)"/><ellipse cx="900" cy="930" rx="530.4" ry="395.3" fill="url(#g-glow)"/><ellipse cx="1520" cy="930" rx="555.2" ry="396.1" fill="url(#g-glow)"/><ellipse cx="2160" cy="930" rx="639.2" ry="465.8" fill="url(#g-glow)"/><ellipse cx="2790" cy="930" rx="614" ry="401.8" fill="url(#g-glow)"/><ellipse cx="3440" cy="930" rx="639.5" ry="452" fill="url(#g-glow)"/><ellipse cx="350" cy="640" rx="248.1" ry="176.6" fill="url(#g-smoke)" transform="rotate(-20.5 350 640)"/><ellipse cx="473" cy="504.6" rx="276.8" ry="184.5" fill="url(#g-smoke)" transform="rotate(-23.6 473 504.6)"/><ellipse cx="530.5" cy="349.5" rx="238.5" ry="141.1" fill="url(#g-smoke)" transform="rotate(-23.3 530.5 349.5)"/><ellipse cx="662.5" cy="247.8" rx="257.8" ry="175.3" fill="url(#g-smoke)" transform="rotate(-15.4 662.5 247.8)"/><ellipse cx="320" cy="700" rx="300" ry="120" fill="url(#g-smoke-lit)"/><ellipse cx="990" cy="640" rx="265.3" ry="185.1" fill="url(#g-smoke)" transform="rotate(-17.9 990 640)"/><ellipse cx="1102.2" cy="491.6" rx="260.1" ry="143.6" fill="url(#g-smoke)" transform="rotate(-10.3 1102.2 491.6)"/><ellipse cx="1224" cy="379.5" rx="299.6" ry="185.4" fill="url(#g-smoke)" transform="rotate(-12.8 1224 379.5)"/><ellipse cx="1279.1" cy="262.2" rx="278.3" ry="169.4" fill="url(#g-smoke)" transform="rotate(-15.5 1279.1 262.2)"/><ellipse cx="960" cy="700" rx="300" ry="120" fill="url(#g-smoke-lit)"/><ellipse cx="1610" cy="640" rx="302.3" ry="148.8" fill="url(#g-smoke)" transform="rotate(-12.8 1610 640)"/><ellipse cx="1747.7" cy="513.7" rx="294.6" ry="176.1" fill="url(#g-smoke)" transform="rotate(-11.6 1747.7 513.7)"/><ellipse cx="1852.5" cy="360.8" rx="324.7" ry="164.6" fill="url(#g-smoke)" transform="rotate(-23.2 1852.5 360.8)"/><ellipse cx="2053.4" cy="216.5" rx="308.1" ry="183.3" fill="url(#g-smoke)" transform="rotate(-16.1 2053.4 216.5)"/><ellipse cx="1580" cy="700" rx="300" ry="120" fill="url(#g-smoke-lit)"/><ellipse cx="2250" cy="640" rx="235.7" ry="157.6" fill="url(#g-smoke)" transform="rotate(-22.7 2250 640)"/><ellipse cx="2388.1" cy="510.3" rx="288.1" ry="175.1" fill="url(#g-smoke)" transform="rotate(-23.6 2388.1 510.3)"/><ellipse cx="2481.6" cy="352.3" rx="253.1" ry="187.5" fill="url(#g-smoke)" transform="rotate(-19.5 2481.6 352.3)"/><ellipse cx="2620.2" cy="266.7" rx="300" ry="167.5" fill="url(#g-smoke)" transform="rotate(-21.3 2620.2 266.7)"/><ellipse cx="2220" cy="700" rx="300" ry="120" fill="url(#g-smoke-lit)"/><ellipse cx="2880" cy="640" rx="306.2" ry="157.8" fill="url(#g-smoke)" transform="rotate(-11.9 2880 640)"/><ellipse cx="2978.6" cy="510.9" rx="300.2" ry="183" fill="url(#g-smoke)" transform="rotate(-19.3 2978.6 510.9)"/><ellipse cx="3070.8" cy="341.1" rx="256.5" ry="163.8" fill="url(#g-smoke)" transform="rotate(-22 3070.8 341.1)"/><ellipse cx="3328.8" cy="200.7" rx="252.6" ry="156.8" fill="url(#g-smoke)" transform="rotate(-21.5 3328.8 200.7)"/><ellipse cx="2850" cy="700" rx="300" ry="120" fill="url(#g-smoke-lit)"/><ellipse cx="3530" cy="640" rx="269.4" ry="130.6" fill="url(#g-smoke)" transform="rotate(-12.8 3530 640)"/><ellipse cx="3648.7" cy="514.9" rx="273.6" ry="180.9" fill="url(#g-smoke)" transform="rotate(-18.1 3648.7 514.9)"/><ellipse cx="3712.5" cy="374.8" rx="324.9" ry="139.8" fill="url(#g-smoke)" transform="rotate(-20.1 3712.5 374.8)"/><ellipse cx="3943.3" cy="239.1" rx="233.5" ry="155.2" fill="url(#g-smoke)" transform="rotate(-20.8 3943.3 239.1)"/><ellipse cx="3500" cy="700" rx="300" ry="120" fill="url(#g-smoke-lit)"/><path d="M-200 1300L-200 834.7L-160 840L-120 849.3L-80 861.4L-40 873.7L0 883.1L40 887.9L80 888.1L120 885.8L160 883.5L200 883.4L240 885.7L280 889.1L320 891.1L360 889.6L400 883.9L440 875.5L480 867.2L520 861.8L560 860.9L600 864L640 868.8L680 872.7L720 873.8L760 871.8L800 868.3L840 866L880 866.8L920 870.9L960 876.8L1000 881.5L1040 882.5L1080 878.5L1120 870.4L1160 860.5L1200 851.8L1240 845.9L1280 842.9L1320 840.9L1360 837.6L1400 831.3L1440 821.8L1480 811.2L1520 802.2L1560 797.5L1600 798.1L1640 802.7L1680 808.8L1720 813.8L1760 815.9L1800 815.6L1840 814.7L1880 815.7L1920 820.1L1960 827.8L2000 836.7L2040 843.9L2080 847.1L2120 845.6L2160 840.8L2200 835.4L2240 832.2L2280 832.5L2320 835.7L2360 839.8L2400 842.2L2440 841.6L2480 838.4L2520 834.8L2560 833.6L2600 836.7L2640 844.6L2680 855.5L2720 866.5L2760 874.9L2800 879.5L2840 881.2L2880 882L2920 884.4L2960 889.5L3000 896.6L3040 903.5L3080 907.2L3120 906L3160 899.9L3200 890.8L3240 881.7L3280 875.2L3320 872.2L3360 871.5L3400 871.1L3440 868.5L3480 862.7L3520 854.8L3560 847.1L3600 842.4L3640 842.2L3680 846.2L3720 852.2L3760 857.4L3800 859.2L3840 857.2L3880 852.5L3920 847.7L3960 844.9L4000 845.1L4040 847.2L4040 1300Z" fill="#4a1606"/><use href="#pine" transform="translate(-150 845.9) scale(0.455 0.7120000000000001)" fill="#4a1606"/><use href="#pine" transform="translate(-108.3 856.6) scale(0.72 0.504)" fill="#4a1606"/><use href="#pine" transform="translate(-74.1 867.3) scale(0.45899999999999996 0.828)" fill="#4a1606"/><use href="#pine" transform="translate(-41.2 877.4) scale(0.425 0.946)" fill="#4a1606"/><use href="#pine" transform="translate(-14.4 884.2) scale(0.504 0.754)" fill="#4a1606"/><use href="#pine" transform="translate(34 891.5) scale(0.7170000000000001 0.5820000000000001)" fill="#4a1606"/><use href="#pine" transform="translate(86.9 891.8) scale(0.705 0.583)" fill="#4a1606"/><use href="#pine" transform="translate(133.3 888.9) scale(0.451 0.9)" fill="#4a1606"/><use href="#pine" transform="translate(168.8 887.2) scale(0.43799999999999994 0.638)" fill="#4a1606"/><use href="#pine" transform="translate(204.2 887.5) scale(0.544 0.8540000000000001)" fill="#4a1606"/><use href="#pine" transform="translate(236.8 889.5) scale(0.611 0.603)" fill="#4a1606"/><use href="#pine" transform="translate(269.9 892.3) scale(0.742 0.5579999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(323 895.1) scale(0.5660000000000001 0.794)" fill="#4a1606"/><use href="#pine" transform="translate(362.1 893.3) scale(0.669 0.605)" fill="#4a1606"/><use href="#pine" transform="translate(397.7 888.3) scale(0.588 0.649)" fill="#4a1606"/><use href="#pine" transform="translate(424.5 882.9) scale(0.445 0.584)" fill="#4a1606"/><use href="#pine" transform="translate(454.1 876.4) scale(0.49700000000000005 0.826)" fill="#4a1606"/><use href="#pine" transform="translate(497.4 868.4) scale(0.518 0.625)" fill="#4a1606"/><use href="#pine" transform="translate(530.4 865.1) scale(0.45899999999999996 0.8009999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(574.7 865.7) scale(0.579 0.8290000000000001)" fill="#4a1606"/><use href="#pine" transform="translate(629 871.5) scale(0.613 0.693)" fill="#4a1606"/><use href="#pine" transform="translate(655.3 874.6) scale(0.728 0.627)" fill="#4a1606"/><use href="#pine" transform="translate(708.8 877.8) scale(0.62 0.703)" fill="#4a1606"/><use href="#pine" transform="translate(745.4 876.8) scale(0.539 0.586)" fill="#4a1606"/><use href="#pine" transform="translate(777 874.3) scale(0.502 0.914)" fill="#4a1606"/><use href="#pine" transform="translate(832.2 870.3) scale(0.703 0.5820000000000001)" fill="#4a1606"/><use href="#pine" transform="translate(887.1 871.3) scale(0.48 0.7829999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(917 874.5) scale(0.501 0.7759999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(961.5 881) scale(0.69 0.531)" fill="#4a1606"/><use href="#pine" transform="translate(997.1 885.3) scale(0.7040000000000001 0.745)" fill="#4a1606"/><use href="#pine" transform="translate(1049.7 886) scale(0.405 0.8290000000000001)" fill="#4a1606"/><use href="#pine" transform="translate(1075.8 883.2) scale(0.486 0.672)" fill="#4a1606"/><use href="#pine" transform="translate(1117.7 875) scale(0.418 0.537)" fill="#4a1606"/><use href="#pine" transform="translate(1165 863.4) scale(0.5529999999999999 0.8190000000000001)" fill="#4a1606"/><use href="#pine" transform="translate(1216.4 853) scale(0.439 0.735)" fill="#4a1606"/><use href="#pine" transform="translate(1266.7 847.6) scale(0.419 0.763)" fill="#4a1606"/><use href="#pine" transform="translate(1312 845.3) scale(0.649 0.506)" fill="#4a1606"/><use href="#pine" transform="translate(1371.6 840.1) scale(0.63 0.7959999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(1426.2 829.4) scale(0.44 0.527)" fill="#4a1606"/><use href="#pine" transform="translate(1453.1 822.4) scale(0.527 0.545)" fill="#4a1606"/><use href="#pine" transform="translate(1501 810.1) scale(0.599 0.616)" fill="#4a1606"/><use href="#pine" transform="translate(1535.2 803.9) scale(0.677 0.922)" fill="#4a1606"/><use href="#pine" transform="translate(1592 801.6) scale(0.58 0.601)" fill="#4a1606"/><use href="#pine" transform="translate(1639.1 806.5) scale(0.731 0.6970000000000001)" fill="#4a1606"/><use href="#pine" transform="translate(1684.3 813.5) scale(0.41700000000000004 0.594)" fill="#4a1606"/><use href="#pine" transform="translate(1710.4 816.8) scale(0.725 0.583)" fill="#4a1606"/><use href="#pine" transform="translate(1762.1 820) scale(0.504 0.633)" fill="#4a1606"/><use href="#pine" transform="translate(1815.1 819.2) scale(0.47 0.711)" fill="#4a1606"/><use href="#pine" transform="translate(1858.2 818.8) scale(0.5479999999999999 0.941)" fill="#4a1606"/><use href="#pine" transform="translate(1905.7 822.1) scale(0.512 0.6509999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(1941.1 827.9) scale(0.441 0.807)" fill="#4a1606"/><use href="#pine" transform="translate(1989.1 838.3) scale(0.489 0.9109999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(2024.4 845.5) scale(0.596 0.7959999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(2072.1 850.8) scale(0.636 0.623)" fill="#4a1606"/><use href="#pine" transform="translate(2115.3 849.9) scale(0.653 0.507)" fill="#4a1606"/><use href="#pine" transform="translate(2162 844.5) scale(0.462 0.6779999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(2203.1 839.1) scale(0.47100000000000003 0.67)" fill="#4a1606"/><use href="#pine" transform="translate(2236.3 836.4) scale(0.41700000000000004 0.521)" fill="#4a1606"/><use href="#pine" transform="translate(2292.1 837.2) scale(0.706 0.611)" fill="#4a1606"/><use href="#pine" transform="translate(2321.4 839.9) scale(0.6579999999999999 0.882)" fill="#4a1606"/><use href="#pine" transform="translate(2358.7 843.7) scale(0.46799999999999997 0.8590000000000001)" fill="#4a1606"/><use href="#pine" transform="translate(2387.3 845.7) scale(0.425 0.73)" fill="#4a1606"/><use href="#pine" transform="translate(2438.4 845.7) scale(0.541 0.75)" fill="#4a1606"/><use href="#pine" transform="translate(2475.6 842.9) scale(0.677 0.6)" fill="#4a1606"/><use href="#pine" transform="translate(2520.3 838.8) scale(0.586 0.8)" fill="#4a1606"/><use href="#pine" transform="translate(2568.1 837.8) scale(0.603 0.898)" fill="#4a1606"/><use href="#pine" transform="translate(2622.8 844.7) scale(0.593 0.879)" fill="#4a1606"/><use href="#pine" transform="translate(2666 855.5) scale(0.6579999999999999 0.775)" fill="#4a1606"/><use href="#pine" transform="translate(2702.4 865.8) scale(0.5539999999999999 0.738)" fill="#4a1606"/><use href="#pine" transform="translate(2731 873.1) scale(0.732 0.93)" fill="#4a1606"/><use href="#pine" transform="translate(2783.8 882.1) scale(0.62 0.836)" fill="#4a1606"/><use href="#pine" transform="translate(2814.2 884.4) scale(0.611 0.725)" fill="#4a1606"/><use href="#pine" transform="translate(2869.7 885.7) scale(0.40700000000000003 0.922)" fill="#4a1606"/><use href="#pine" transform="translate(2910.5 887.6) scale(0.5660000000000001 0.875)" fill="#4a1606"/><use href="#pine" transform="translate(2968.8 895) scale(0.495 0.726)" fill="#4a1606"/><use href="#pine" transform="translate(3025.6 905.2) scale(0.732 0.894)" fill="#4a1606"/><use href="#pine" transform="translate(3058.5 909.7) scale(0.647 0.614)" fill="#4a1606"/><use href="#pine" transform="translate(3097.9 911.3) scale(0.45299999999999996 0.588)" fill="#4a1606"/><use href="#pine" transform="translate(3145.6 906.5) scale(0.499 0.727)" fill="#4a1606"/><use href="#pine" transform="translate(3205.5 893.5) scale(0.46799999999999997 0.76)" fill="#4a1606"/><use href="#pine" transform="translate(3261.7 881.8) scale(0.495 0.711)" fill="#4a1606"/><use href="#pine" transform="translate(3301.1 877.2) scale(0.664 0.687)" fill="#4a1606"/><use href="#pine" transform="translate(3353.6 875.6) scale(0.639 0.818)" fill="#4a1606"/><use href="#pine" transform="translate(3403.9 875) scale(0.42200000000000004 0.73)" fill="#4a1606"/><use href="#pine" transform="translate(3430.9 873.3) scale(0.585 0.895)" fill="#4a1606"/><use href="#pine" transform="translate(3464.3 869.4) scale(0.49700000000000005 0.757)" fill="#4a1606"/><use href="#pine" transform="translate(3493.8 864.2) scale(0.529 0.5539999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(3536.4 855.5) scale(0.69 0.63)" fill="#4a1606"/><use href="#pine" transform="translate(3591.2 847.1) scale(0.45399999999999996 0.588)" fill="#4a1606"/><use href="#pine" transform="translate(3649.8 846.8) scale(0.536 0.6920000000000001)" fill="#4a1606"/><use href="#pine" transform="translate(3692.7 852) scale(0.67 0.895)" fill="#4a1606"/><use href="#pine" transform="translate(3721.1 856.4) scale(0.6629999999999999 0.5529999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(3761.8 861.5) scale(0.6809999999999999 0.7070000000000001)" fill="#4a1606"/><use href="#pine" transform="translate(3796.9 863.2) scale(0.508 0.564)" fill="#4a1606"/><use href="#pine" transform="translate(3837.1 861.4) scale(0.494 0.821)" fill="#4a1606"/><use href="#pine" transform="translate(3875.4 857.1) scale(0.446 0.895)" fill="#4a1606"/><use href="#pine" transform="translate(3927.3 851) scale(0.625 0.7509999999999999)" fill="#4a1606"/><use href="#pine" transform="translate(3953.4 849.2) scale(0.595 0.743)" fill="#4a1606"/><use href="#flame" transform="translate(29.4 963.8) scale(0.8420000000000001 0.92)"/><use href="#flame" transform="translate(54.9 964.4) scale(1.178 1.165)"/><use href="#flame" transform="translate(77.7 964.1) scale(1.149 1.2590000000000001)"/><use href="#flame" transform="translate(102.2 962.4) scale(1.091 1.123)"/><use href="#flame" transform="translate(142.4 957) scale(1.78 1.735)"/><use href="#flame" transform="translate(171.3 953) scale(1.611 1.6740000000000002)"/><use href="#flame" transform="translate(198 951.1) scale(1.41 1.5419999999999998)"/><use href="#flame" transform="translate(228.8 951.9) scale(2.105 2.272)"/><use href="#flame" transform="translate(254.1 954.7) scale(1.3219999999999998 1.6480000000000001)"/><use href="#flame" transform="translate(279.8 958.7) scale(1.295 1.4409999999999998)"/><use href="#flame" transform="translate(312.4 962.9) scale(1.564 1.376)"/><use href="#flame" transform="translate(353.7 963.9) scale(1.288 1.531)"/><use href="#flame" transform="translate(381.5 961.5) scale(1.3719999999999999 1.525)"/><use href="#flame" transform="translate(419.8 956.6) scale(1.661 1.5090000000000001)"/><use href="#flame" transform="translate(455.6 953.3) scale(1.258 1.2570000000000001)"/><use href="#flame" transform="translate(485.5 952.6) scale(0.977 1.115)"/><use href="#flame" transform="translate(561.2 952.1) scale(0.537 0.672)"/><use href="#flame" transform="translate(730.7 919.8) scale(1.3869999999999998 1.3940000000000001)"/><use href="#flame" transform="translate(753.5 919.9) scale(1.4340000000000002 1.527)"/><use href="#flame" transform="translate(791.2 921.4) scale(1.744 1.7990000000000002)"/><use href="#flame" transform="translate(830.1 921.4) scale(1.652 1.567)"/><use href="#flame" transform="translate(861.9 919.4) scale(1.889 2.131)"/><use href="#flame" transform="translate(897.6 916.7) scale(1.735 2.168)"/><use href="#flame" transform="translate(936.2 916.6) scale(1.3259999999999998 1.464)"/><use href="#flame" transform="translate(977.4 922.3) scale(1.7480000000000002 1.625)"/><use href="#flame" transform="translate(1007.7 929.4) scale(1.6909999999999998 1.9509999999999998)"/><use href="#flame" transform="translate(1048.5 938.6) scale(1.7369999999999999 1.6059999999999999)"/><use href="#flame" transform="translate(1075.4 942.3) scale(1.561 1.5390000000000001)"/><use href="#flame" transform="translate(1100.2 943.5) scale(1.194 1.215)"/><use href="#flame" transform="translate(1175.4 941.9) scale(0.6779999999999999 0.7440000000000001)"/><use href="#flame" transform="translate(1200.2 942.9) scale(0.6579999999999999 0.7709999999999999)"/><use href="#flame" transform="translate(1289.7 952.3) scale(1.031 1.165)"/><use href="#flame" transform="translate(1314.5 952.6) scale(0.955 1.17)"/><use href="#flame" transform="translate(1356 948.9) scale(1.3659999999999999 1.199)"/><use href="#flame" transform="translate(1418.2 941.2) scale(1.774 1.902)"/><use href="#flame" transform="translate(1460.5 942) scale(1.5230000000000001 1.51)"/><use href="#flame" transform="translate(1485 945.1) scale(2.301 2.269)"/><use href="#flame" transform="translate(1524.5 951.7) scale(1.936 2.255)"/><use href="#flame" transform="translate(1566.6 956.7) scale(1.4980000000000002 1.8659999999999999)"/><use href="#flame" transform="translate(1644.7 958.4) scale(1.247 1.296)"/><use href="#flame" transform="translate(1669.3 960) scale(1.273 1.203)"/><use href="#flame" transform="translate(1708.4 966.3) scale(1.1320000000000001 1.018)"/><use href="#flame" transform="translate(1966 974) scale(1.276 1.284)"/><use href="#flame" transform="translate(1992.9 974.2) scale(1.092 1.1079999999999999)"/><use href="#flame" transform="translate(2030.2 972.8) scale(1.472 1.307)"/><use href="#flame" transform="translate(2061.6 968.4) scale(1.969 1.885)"/><use href="#flame" transform="translate(2097.3 960.2) scale(1.7169999999999999 1.639)"/><use href="#flame" transform="translate(2121.9 953.8) scale(1.923 2.211)"/><use href="#flame" transform="translate(2149.9 947.5) scale(1.798 1.973)"/><use href="#flame" transform="translate(2179 943.8) scale(1.381 1.6269999999999998)"/><use href="#flame" transform="translate(2207 943.1) scale(2.01 2.178)"/><use href="#flame" transform="translate(2250.5 945.6) scale(1.403 1.587)"/><use href="#flame" transform="translate(2324.8 945.4) scale(1.0659999999999998 1.327)"/><use href="#flame" transform="translate(2367.9 941.1) scale(1.396 1.229)"/><use href="#flame" transform="translate(2587.8 944) scale(1.172 1.02)"/><use href="#flame" transform="translate(2625.7 936.7) scale(1.3430000000000002 1.47)"/><use href="#flame" transform="translate(2669.5 930.7) scale(1.11 1.3880000000000001)"/><use href="#flame" transform="translate(2706.4 929.5) scale(2.354 2.123)"/><use href="#flame" transform="translate(2729.2 929.6) scale(1.383 1.511)"/><use href="#flame" transform="translate(2767.3 929) scale(2.062 2.123)"/><use href="#flame" transform="translate(2807.2 924.9) scale(1.3659999999999999 1.645)"/><use href="#flame" transform="translate(2863.8 915.6) scale(2.102 1.839)"/><use href="#flame" transform="translate(2889.6 913.1) scale(1.071 1.297)"/><use href="#flame" transform="translate(2927.7 914.3) scale(1.9069999999999998 1.7380000000000002)"/><use href="#flame" transform="translate(2954.2 918.4) scale(1.0490000000000002 1.054)"/><use href="#flame" transform="translate(3023.4 931.9) scale(0.971 0.94)"/><use href="#flame" transform="translate(3066 936) scale(0.79 0.8390000000000001)"/><use href="#flame" transform="translate(3236.7 960.8) scale(1.058 1.186)"/><use href="#flame" transform="translate(3267.2 965.3) scale(1.358 1.286)"/><use href="#flame" transform="translate(3298.5 966.2) scale(1.093 1.151)"/><use href="#flame" transform="translate(3323.2 964.5) scale(1.15 1.224)"/><use href="#flame" transform="translate(3348 961.8) scale(1.355 1.6159999999999999)"/><use href="#flame" transform="translate(3389.1 958.2) scale(1.574 1.931)"/><use href="#flame" transform="translate(3423.7 958.4) scale(2.0180000000000002 2.3040000000000003)"/><use href="#flame" transform="translate(3454.4 960.5) scale(1.871 2.069)"/><use href="#flame" transform="translate(3481 962.6) scale(2.0069999999999997 2.2640000000000002)"/><use href="#flame" transform="translate(3512.7 963.5) scale(1.5630000000000002 1.531)"/><use href="#flame" transform="translate(3541 962) scale(1.482 1.578)"/><use href="#flame" transform="translate(3578.1 957.9) scale(1.8840000000000001 1.777)"/><use href="#flame" transform="translate(3619.5 954.4) scale(1.177 1.0659999999999998)"/><use href="#flame" transform="translate(3652.6 955.3) scale(1.39 1.2890000000000001)"/><use href="#flame" transform="translate(3757.1 972.6) scale(0.7170000000000001 0.782)"/><use href="#flame" transform="translate(3919.5 973.9) scale(0.428 0.518)"/><use href="#flame" transform="translate(3989.8 978.3) scale(0.456 0.506)"/><path d="M-200 1300L-200 966.9L-170 969.3L-140 968.3L-110 963.9L-80 958L-50 952.7L-20 949.8L10 949.3L40 950.1L70 950.3L100 948.6L130 944.9L160 940.5L190 937.4L220 937.3L250 940.2L280 944.7L310 948.7L340 950.2L370 948.7L400 945.2L430 941.4L460 939.1L490 938.7L520 939.3L550 938.9L580 935.9L610 929.9L640 921.8L670 913.9L700 908.2L730 905.8L760 906.1L790 907.3L820 907.7L850 906.3L880 903.9L910 902.1L940 902.8L970 906.8L1000 913.5L1030 920.7L1060 926.4L1090 929.2L1120 929.3L1150 928.3L1180 928L1210 929.7L1240 933.1L1270 936.7L1300 938.7L1330 937.8L1360 934.3L1390 930L1420 927.1L1450 927.2L1480 930.3L1510 935.3L1540 940L1570 942.9L1600 943.9L1630 944L1660 945.2L1690 948.8L1720 954.9L1750 962.1L1780 968.1L1810 971L1840 970.4L1870 967.2L1900 963.4L1930 960.8L1960 960L1990 960.1L2020 959.5L2050 956.4L2080 950.5L2110 942.8L2140 935.5L2170 930.6L2200 929L2230 930.2L2260 932.1L2290 933L2320 931.8L2350 928.9L2380 926.1L2410 925.2L2440 926.8L2470 930.5L2500 934.2L2530 935.8L2560 934.1L2590 929.6L2620 923.7L2650 918.8L2680 916L2710 915.5L2740 915.7L2770 914.9L2800 911.9L2830 907.1L2860 902.1L2890 899.1L2920 899.6L2950 903.6L2980 909.7L3010 915.7L3040 920L3070 922.2L3100 923.4L3130 925.4L3160 929.5L3190 935.9L3220 943.2L3250 949.2L3280 952.1L3310 951.6L3340 948.7L3370 945.5L3400 943.9L3430 944.7L3460 947L3490 949.1L3520 949.3L3550 947.2L3580 943.7L3610 940.8L3640 940.5L3670 943.4L3700 948.8L3730 954.7L3760 958.9L3790 960.5L3820 959.7L3850 958.1L3880 957.6L3910 959.1L3940 961.8L3970 964.1L4000 963.9L4030 960.1L4040 1300Z" fill="#1a0906"/><use href="#pine" transform="translate(-150 975) scale(1.245 1.4469999999999998)" fill="#120604"/><use href="#pine" transform="translate(-62.9 960.8) scale(1.005 1.815)" fill="#120604"/><use href="#pine" transform="translate(-4.9 955.3) scale(0.912 1.714)" fill="#120604"/><use href="#pine" transform="translate(99.4 954.7) scale(1.06 1.287)" fill="#120604"/><use href="#pine" transform="translate(141.2 949.2) scale(0.9940000000000001 1.6280000000000001)" fill="#120604"/><use href="#snag" transform="translate(208.3 943) scale(0.9109999999999999 1.296)" fill="#120604"/><use href="#snag" transform="translate(256.5 947.1) scale(1.31 1.1079999999999999)" fill="#120604"/><use href="#pine" transform="translate(316.7 955.3) scale(1.375 1.632)" fill="#120604"/><use href="#pine" transform="translate(418.5 948.7) scale(1.216 1.208)" fill="#120604"/><use href="#pine" transform="translate(474.2 944.7) scale(0.976 1.5019999999999998)" fill="#120604"/><use href="#pine" transform="translate(559.3 944.3) scale(1.2570000000000001 1.291)" fill="#120604"/><use href="#snag" transform="translate(627.3 931.3) scale(0.9079999999999999 1.248)" fill="#120604"/><use href="#pine" transform="translate(688.5 916.1) scale(1.207 1.5659999999999998)" fill="#120604"/><use href="#pine" transform="translate(795.1 913.5) scale(1.05 1.5530000000000002)" fill="#120604"/><use href="#pine" transform="translate(840.8 912.9) scale(1.2 1.4880000000000002)" fill="#120604"/><use href="#pine" transform="translate(882.6 909.7) scale(1.321 1.16)" fill="#120604"/><use href="#pine" transform="translate(926 908.1) scale(1.16 1.777)" fill="#120604"/><use href="#pine" transform="translate(995.1 918.3) scale(1.077 1.59)" fill="#120604"/><use href="#pine" transform="translate(1055.8 931.8) scale(1.3559999999999999 1.344)" fill="#120604"/><use href="#snag" transform="translate(1130.6 935) scale(1.206 1.192)" fill="#120604"/><use href="#pine" transform="translate(1172.4 933.9) scale(1.494 1.516)" fill="#120604"/><use href="#snag" transform="translate(1225.7 937.3) scale(1.022 1.176)" fill="#120604"/><use href="#snag" transform="translate(1322.1 944.3) scale(0.975 1.117)" fill="#120604"/><use href="#pine" transform="translate(1394.5 935.5) scale(1.186 1.896)" fill="#120604"/><use href="#snag" transform="translate(1479.2 936.2) scale(1.325 1.113)" fill="#120604"/><use href="#pine" transform="translate(1574.3 949.2) scale(1.4480000000000002 1.642)" fill="#120604"/><use href="#snag" transform="translate(1632 950) scale(1.192 1.393)" fill="#120604"/><use href="#snag" transform="translate(1717.6 960.3) scale(0.9059999999999999 1.162)" fill="#120604"/><use href="#pine" transform="translate(1820.3 977.2) scale(1.111 1.35)" fill="#120604"/><use href="#pine" transform="translate(1924.9 967.1) scale(1.239 1.166)" fill="#120604"/><use href="#pine" transform="translate(2006.1 966) scale(0.9620000000000001 1.788)" fill="#120604"/><use href="#pine" transform="translate(2073.4 958) scale(1.1640000000000001 1.182)" fill="#120604"/><use href="#pine" transform="translate(2155.6 938.6) scale(1.2209999999999999 1.109)" fill="#120604"/><use href="#pine" transform="translate(2214.8 935.4) scale(1.05 1.39)" fill="#120604"/><use href="#pine" transform="translate(2298.1 938.9) scale(1.367 1.713)" fill="#120604"/><use href="#pine" transform="translate(2403.9 931.1) scale(0.927 1.62)" fill="#120604"/><use href="#snag" transform="translate(2474 937) scale(1.412 1.713)" fill="#120604"/><use href="#pine" transform="translate(2524.4 941.7) scale(1.206 1.3940000000000001)" fill="#120604"/><use href="#snag" transform="translate(2582.4 936.9) scale(1.365 1.494)" fill="#120604"/><use href="#snag" transform="translate(2659 923.7) scale(0.907 1.66)" fill="#120604"/><use href="#snag" transform="translate(2729.3 921.6) scale(1.4569999999999999 1.889)" fill="#120604"/><use href="#pine" transform="translate(2812.8 916) scale(1.341 1.117)" fill="#120604"/><use href="#pine" transform="translate(2868.6 907) scale(1.165 1.305)" fill="#120604"/><use href="#snag" transform="translate(2954.4 910.4) scale(1.345 1.7180000000000002)" fill="#120604"/><use href="#snag" transform="translate(3023.2 923.9) scale(1.222 1.476)" fill="#120604"/><use href="#snag" transform="translate(3131.8 931.6) scale(1.021 1.849)" fill="#120604"/><use href="#pine" transform="translate(3187 941.2) scale(1.054 1.456)" fill="#120604"/><use href="#snag" transform="translate(3233.7 952.2) scale(1.4140000000000001 1.3330000000000002)" fill="#120604"/><use href="#snag" transform="translate(3285.7 958.3) scale(1.252 1.3780000000000001)" fill="#120604"/><use href="#snag" transform="translate(3326.3 956.2) scale(0.985 1.855)" fill="#120604"/><use href="#pine" transform="translate(3398.5 950) scale(1.186 1.765)" fill="#120604"/><use href="#pine" transform="translate(3449.2 952.1) scale(1.489 1.278)" fill="#120604"/><use href="#pine" transform="translate(3513.4 955.5) scale(1.234 1.35)" fill="#120604"/><use href="#pine" transform="translate(3572.9 950.6) scale(1.3230000000000002 1.6369999999999998)" fill="#120604"/><use href="#pine" transform="translate(3669.6 949.3) scale(1.237 1.8780000000000001)" fill="#120604"/><use href="#pine" transform="translate(3719.4 958.7) scale(1.2990000000000002 1.88)" fill="#120604"/><use href="#snag" transform="translate(3782.6 966.4) scale(1.05 1.695)" fill="#120604"/><use href="#pine" transform="translate(3876.8 963.6) scale(1.33 1.766)" fill="#120604"/><use href="#snag" transform="translate(3930.8 966.9) scale(0.9940000000000001 1.101)" fill="#120604"/><use href="#pine" transform="translate(3987.1 970.3) scale(1.055 1.199)" fill="#120604"/><use href="#flame" transform="translate(11.4 1048.5) scale(0.6890000000000001 0.6890000000000001)"/><use href="#flame" transform="translate(51.3 1048.3) scale(0.585 0.585)"/><use href="#flame" transform="translate(152.2 1049.7) scale(0.71 0.71)"/><use href="#flame" transform="translate(183.3 1044.5) scale(0.7070000000000001 0.7070000000000001)"/><use href="#flame" transform="translate(225.7 1039.4) scale(0.985 0.985)"/><use href="#flame" transform="translate(278.1 1038) scale(0.62 0.62)"/><use href="#flame" transform="translate(333.4 1032) scale(0.736 0.736)"/><use href="#flame" transform="translate(388.2 1027.5) scale(0.498 0.498)"/><use href="#flame" transform="translate(655.8 1052.6) scale(0.595 0.595)"/><use href="#flame" transform="translate(767.8 1049.7) scale(0.8079999999999999 0.8079999999999999)"/><use href="#flame" transform="translate(832.4 1051.1) scale(0.745 0.745)"/><use href="#flame" transform="translate(931.2 1053.4) scale(0.86 0.86)"/><use href="#flame" transform="translate(1149.3 1066.4) scale(0.392 0.392)"/><use href="#flame" transform="translate(1327 1047.5) scale(0.532 0.532)"/><use href="#flame" transform="translate(1359.3 1043.5) scale(0.765 0.765)"/><use href="#flame" transform="translate(1413.6 1038.4) scale(0.8690000000000001 0.8690000000000001)"/><use href="#flame" transform="translate(1479.8 1044.2) scale(0.695 0.695)"/><use href="#flame" transform="translate(1526.5 1044.5) scale(0.66 0.66)"/><use href="#flame" transform="translate(1587.6 1041) scale(0.603 0.603)"/><use href="#flame" transform="translate(1649.7 1043.3) scale(0.677 0.677)"/><use href="#flame" transform="translate(1815.2 1033.8) scale(0.4 0.4)"/><use href="#flame" transform="translate(1852.2 1035.4) scale(0.414 0.414)"/><use href="#flame" transform="translate(1979.5 1047.1) scale(0.631 0.631)"/><use href="#flame" transform="translate(2048.6 1054.8) scale(0.8440000000000001 0.8440000000000001)"/><use href="#flame" transform="translate(2132.6 1058) scale(1.064 1.064)"/><use href="#flame" transform="translate(2185.2 1060.7) scale(0.897 0.897)"/><use href="#flame" transform="translate(2475.4 1059) scale(0.469 0.469)"/><use href="#flame" transform="translate(2508.9 1063) scale(0.469 0.469)"/><use href="#flame" transform="translate(2608.7 1055.4) scale(0.782 0.782)"/><use href="#flame" transform="translate(2669.5 1052.8) scale(0.718 0.718)"/><use href="#flame" transform="translate(2771.2 1036.3) scale(0.966 0.966)"/><use href="#flame" transform="translate(2863.5 1036.6) scale(0.617 0.617)"/><use href="#flame" transform="translate(2987.1 1038.3) scale(0.483 0.483)"/><use href="#flame" transform="translate(3022.7 1043.2) scale(0.371 0.371)"/><use href="#flame" transform="translate(3087.9 1042) scale(0.439 0.439)"/><use href="#flame" transform="translate(3250.6 1038.7) scale(0.6509999999999999 0.6509999999999999)"/><use href="#flame" transform="translate(3319 1038.4) scale(0.684 0.684)"/><use href="#flame" transform="translate(3350.1 1043.7) scale(0.748 0.748)"/><use href="#flame" transform="translate(3411 1051.3) scale(0.665 0.665)"/><use href="#flame" transform="translate(3472.6 1055) scale(0.623 0.623)"/><use href="#flame" transform="translate(3514.4 1061.9) scale(0.703 0.703)"/><use href="#flame" transform="translate(3566.4 1066.7) scale(0.526 0.526)"/><use href="#flame" transform="translate(3603 1063.6) scale(0.445 0.445)"/><path d="M-200 1300L-200 1051L-170 1045.8L-140 1041.4L-110 1040.5L-80 1042.3L-50 1043.7L-20 1042.8L10 1040.6L40 1039.9L70 1041.7L100 1044.2L130 1044.1L160 1040.5L190 1035.3L220 1031.8L250 1030.6L280 1029.9L310 1027.3L340 1023L370 1019.7L400 1020.1L430 1024L460 1028.2L490 1030.4L520 1030.9L550 1032.5L580 1036.5L610 1041.6L640 1044.6L670 1043.9L700 1041.2L730 1039.8L760 1041.1L790 1043.2L820 1043.6L850 1041.9L880 1040.6L910 1042.2L940 1047L970 1052.1L1000 1054.5L1030 1054.4L1060 1054.1L1090 1055.6L1120 1058L1150 1058.4L1180 1054.9L1210 1049L1240 1044L1270 1041.8L1300 1041.1L1330 1039.3L1360 1035.4L1390 1031.5L1420 1030.5L1450 1032.9L1480 1036.2L1510 1037.2L1540 1035.5L1570 1033.4L1600 1033.2L1630 1034.7L1660 1035.1L1690 1032.4L1720 1027.5L1750 1023.7L1780 1023.3L1810 1025.4L1840 1027.2L1870 1027.2L1900 1026.9L1930 1029.1L1960 1034.7L1990 1041.3L2020 1045.7L2050 1046.8L2080 1046.7L2110 1047.9L2140 1050.8L2170 1052.8L2200 1051.8L2230 1048L2260 1044.7L2290 1044.4L2320 1046.7L2350 1048.7L2380 1048.5L2410 1047.1L2440 1047.3L2470 1050.2L2500 1054.2L2530 1055.8L2560 1053.6L2590 1049.6L2620 1046.5L2650 1045.4L2680 1044.2L2710 1040.5L2740 1034.3L2770 1028.5L2800 1026.1L2830 1027L2860 1028.5L2890 1028.3L2920 1026.7L2950 1026.5L2980 1029.3L3010 1033.6L3040 1036.4L3070 1035.6L3100 1032.8L3130 1031.1L3160 1031.8L3190 1033.4L3220 1033.2L3250 1030.7L3280 1028.5L3310 1029.4L3340 1033.8L3370 1039.2L3400 1042.6L3430 1044L3460 1045.6L3490 1049.6L3520 1054.9L3550 1058.4L3580 1058L3610 1054.8L3640 1051.9L3670 1051.2L3700 1051.6L3730 1050.5L3760 1046.8L3790 1042.6L3820 1041.1L3850 1043L3880 1046L3910 1047L3940 1045.5L3970 1043.5L4000 1043.4L4030 1045L4040 1300Z" fill="#070302"/></g>
+        <g id="embers"><circle cx="1210.7" cy="342.2" r="11.5" fill="url(#g-ember)" opacity="0.408"/><circle cx="1210.7" cy="342.2" r="2.9" fill="#ff5a1f" opacity="0.408"/><circle cx="684.1" cy="552.1" r="2.1" fill="#ff8a1f" opacity="0.392"/><circle cx="1100.1" cy="740.8" r="3.7" fill="#ffe9a8" opacity="0.29100000000000004"/><circle cx="987.3" cy="1079.9" r="7.9" fill="url(#g-ember)" opacity="0.7120000000000001"/><circle cx="987.3" cy="1079.9" r="2" fill="#ff8a1f" opacity="0.7120000000000001"/><circle cx="1751" cy="880.7" r="16.7" fill="url(#g-ember)" opacity="0.307"/><circle cx="1751" cy="880.7" r="4.2" fill="#ffc24a" opacity="0.307"/><circle cx="696.6" cy="517.2" r="6.6" fill="url(#g-ember)" opacity="0.544"/><circle cx="696.6" cy="517.2" r="1.7" fill="#ffe9a8" opacity="0.544"/><circle cx="1447.6" cy="366.8" r="1.5" fill="#ff8a1f" opacity="0.48700000000000004"/><circle cx="2329.9" cy="925.1" r="3.1" fill="#ffe9a8" opacity="0.5429999999999999"/><circle cx="1037.8" cy="1014.3" r="13.3" fill="url(#g-ember)" opacity="0.828"/><circle cx="1037.8" cy="1014.3" r="3.3" fill="#ffc24a" opacity="0.828"/><circle cx="1384.2" cy="517.7" r="1.9" fill="#ff5a1f" opacity="0.27699999999999997"/><circle cx="317.6" cy="532" r="1.6" fill="#ff8a1f" opacity="0.414"/><circle cx="1032.3" cy="525.1" r="13.3" fill="url(#g-ember)" opacity="0.27399999999999997"/><circle cx="1032.3" cy="525.1" r="3.3" fill="#ffe9a8" opacity="0.27399999999999997"/><circle cx="1511.8" cy="539.9" r="2.9" fill="#ff8a1f" opacity="0.42200000000000004"/><circle cx="2123.6" cy="1039.6" r="4.3" fill="#ffc24a" opacity="0.37799999999999995"/><circle cx="1310.9" cy="1026.5" r="10.2" fill="url(#g-ember)" opacity="0.39299999999999996"/><circle cx="1310.9" cy="1026.5" r="2.5" fill="#ff8a1f" opacity="0.39299999999999996"/><circle cx="796.7" cy="1037.9" r="12.3" fill="url(#g-ember)" opacity="0.8690000000000001"/><circle cx="796.7" cy="1037.9" r="3.1" fill="#ffe9a8" opacity="0.8690000000000001"/><circle cx="1210.2" cy="573.3" r="3.7" fill="#ff8a1f" opacity="0.43700000000000006"/><circle cx="214.5" cy="355.6" r="2.9" fill="#ffc24a" opacity="0.369"/><circle cx="253.8" cy="1066.3" r="2.9" fill="#ffc24a" opacity="0.639"/><circle cx="1220.8" cy="368" r="9.8" fill="url(#g-ember)" opacity="0.27699999999999997"/><circle cx="1220.8" cy="368" r="2.5" fill="#ff5a1f" opacity="0.27699999999999997"/><circle cx="1969.1" cy="1031.5" r="3.7" fill="#ffe9a8" opacity="0.7809999999999999"/><circle cx="2199.3" cy="409.7" r="6.2" fill="url(#g-ember)" opacity="0.47200000000000003"/><circle cx="2199.3" cy="409.7" r="1.6" fill="#ffc24a" opacity="0.47200000000000003"/><circle cx="443.3" cy="1040.3" r="13.9" fill="url(#g-ember)" opacity="0.769"/><circle cx="443.3" cy="1040.3" r="3.5" fill="#ff8a1f" opacity="0.769"/><circle cx="1611.5" cy="496.4" r="1.5" fill="#ffe9a8" opacity="0.397"/><circle cx="1129.3" cy="560.2" r="1.9" fill="#ff5a1f" opacity="0.36"/><circle cx="1216.8" cy="599.9" r="1.7" fill="#ffc24a" opacity="0.46"/><circle cx="2211.1" cy="1001.7" r="18.7" fill="url(#g-ember)" opacity="0.529"/><circle cx="2211.1" cy="1001.7" r="4.7" fill="#ffe9a8" opacity="0.529"/><circle cx="1655.2" cy="976.5" r="1.9" fill="#ffe9a8" opacity="0.63"/><circle cx="2366.7" cy="853.5" r="3.3" fill="#ff8a1f" opacity="0.368"/><circle cx="631.3" cy="1005.6" r="4.6" fill="#ffc24a" opacity="0.8029999999999999"/><circle cx="1308.8" cy="950.6" r="3.8" fill="#ffe9a8" opacity="0.479"/><circle cx="2071.8" cy="57.8" r="1.7" fill="#ffe9a8" opacity="0.304"/><circle cx="2175.9" cy="320.3" r="12" fill="url(#g-ember)" opacity="0.243"/><circle cx="2175.9" cy="320.3" r="3" fill="#ffc24a" opacity="0.243"/><circle cx="85.1" cy="1073.4" r="2.3" fill="#ff5a1f" opacity="0.85"/><circle cx="1703.7" cy="348.3" r="3.3" fill="#ff8a1f" opacity="0.213"/><circle cx="1351.6" cy="335.4" r="9.3" fill="url(#g-ember)" opacity="0.48100000000000004"/><circle cx="1351.6" cy="335.4" r="2.3" fill="#ff5a1f" opacity="0.48100000000000004"/><circle cx="760" cy="928.6" r="2.2" fill="#ff5a1f" opacity="0.349"/><circle cx="1421" cy="678.2" r="2.3" fill="#ffe9a8" opacity="0.22"/><circle cx="1841.2" cy="411.2" r="5.6" fill="url(#g-ember)" opacity="0.516"/><circle cx="1841.2" cy="411.2" r="1.4" fill="#ffe9a8" opacity="0.516"/><circle cx="1193.3" cy="575.1" r="3.5" fill="#ffe9a8" opacity="0.544"/><circle cx="1533.2" cy="984.2" r="17.6" fill="url(#g-ember)" opacity="0.7290000000000001"/><circle cx="1533.2" cy="984.2" r="4.4" fill="#ff5a1f" opacity="0.7290000000000001"/><circle cx="356.2" cy="62.2" r="1.7" fill="#ff5a1f" opacity="0.307"/><circle cx="12.5" cy="21.5" r="1.1" fill="#ff5a1f" opacity="0.342"/><circle cx="1164.7" cy="832.9" r="13.3" fill="url(#g-ember)" opacity="0.54"/><circle cx="1164.7" cy="832.9" r="3.3" fill="#ffe9a8" opacity="0.54"/><circle cx="774.7" cy="1045.3" r="2.7" fill="#ff8a1f" opacity="0.502"/><circle cx="1379.8" cy="715.2" r="2.2" fill="#ff8a1f" opacity="0.308"/><circle cx="493.1" cy="1046.1" r="4" fill="#ff8a1f" opacity="0.609"/><circle cx="2058.7" cy="514.6" r="13.6" fill="url(#g-ember)" opacity="0.278"/><circle cx="2058.7" cy="514.6" r="3.4" fill="#ff8a1f" opacity="0.278"/><circle cx="1640.3" cy="1008.3" r="3.7" fill="#ffe9a8" opacity="0.47700000000000004"/><circle cx="1480" cy="1049.9" r="16.7" fill="url(#g-ember)" opacity="0.542"/><circle cx="1480" cy="1049.9" r="4.2" fill="#ff8a1f" opacity="0.542"/><circle cx="1799.7" cy="649.2" r="3.9" fill="#ff8a1f" opacity="0.348"/><circle cx="558.3" cy="459.1" r="1.5" fill="#ffe9a8" opacity="0.439"/><circle cx="2229.7" cy="595.1" r="9.7" fill="url(#g-ember)" opacity="0.547"/><circle cx="2229.7" cy="595.1" r="2.4" fill="#ff8a1f" opacity="0.547"/><circle cx="1296.2" cy="35.8" r="2.1" fill="#ffc24a" opacity="0.36700000000000005"/><circle cx="734.5" cy="337.6" r="2.9" fill="#ff5a1f" opacity="0.239"/><circle cx="1985.4" cy="709.4" r="2.5" fill="#ff8a1f" opacity="0.34600000000000003"/><circle cx="909.7" cy="994.7" r="4.6" fill="#ff8a1f" opacity="0.7290000000000001"/><circle cx="1724.9" cy="893.6" r="2.8" fill="#ffc24a" opacity="0.48700000000000004"/><circle cx="1994.6" cy="885.7" r="3.5" fill="#ffc24a" opacity="0.442"/><circle cx="191" cy="503.6" r="7.4" fill="url(#g-ember)" opacity="0.267"/><circle cx="191" cy="503.6" r="1.8" fill="#ff5a1f" opacity="0.267"/><circle cx="96.3" cy="370.9" r="3" fill="#ffe9a8" opacity="0.40700000000000003"/><circle cx="1471.4" cy="945.3" r="2.9" fill="#ff5a1f" opacity="0.373"/><circle cx="181.7" cy="855.5" r="1.9" fill="#ffe9a8" opacity="0.35700000000000004"/><circle cx="489" cy="496.6" r="8.5" fill="url(#g-ember)" opacity="0.212"/><circle cx="489" cy="496.6" r="2.1" fill="#ff8a1f" opacity="0.212"/><circle cx="1754.8" cy="458" r="2.2" fill="#ffe9a8" opacity="0.28800000000000003"/><circle cx="2024" cy="952.3" r="8.9" fill="url(#g-ember)" opacity="0.317"/><circle cx="2024" cy="952.3" r="2.2" fill="#ff8a1f" opacity="0.317"/><circle cx="205.4" cy="1079.5" r="4.8" fill="#ff5a1f" opacity="0.5379999999999999"/><circle cx="2341.7" cy="924.8" r="2.6" fill="#ff8a1f" opacity="0.25"/><circle cx="2282.7" cy="770.4" r="1.8" fill="#ff5a1f" opacity="0.531"/><circle cx="2206.4" cy="1040.3" r="12.8" fill="url(#g-ember)" opacity="0.88"/><circle cx="2206.4" cy="1040.3" r="3.2" fill="#ff8a1f" opacity="0.88"/><circle cx="2183.6" cy="846.8" r="2" fill="#ff5a1f" opacity="0.297"/><circle cx="1862.6" cy="942.1" r="12.5" fill="url(#g-ember)" opacity="0.562"/><circle cx="1862.6" cy="942.1" r="3.1" fill="#ffc24a" opacity="0.562"/><circle cx="435.2" cy="1078.6" r="6.9" fill="url(#g-ember)" opacity="0.764"/><circle cx="435.2" cy="1078.6" r="1.7" fill="#ff8a1f" opacity="0.764"/><circle cx="1708.8" cy="769.2" r="15.6" fill="url(#g-ember)" opacity="0.257"/><circle cx="1708.8" cy="769.2" r="3.9" fill="#ff8a1f" opacity="0.257"/><circle cx="1111.5" cy="569.3" r="9.5" fill="url(#g-ember)" opacity="0.494"/><circle cx="1111.5" cy="569.3" r="2.4" fill="#ffc24a" opacity="0.494"/><circle cx="444.8" cy="995" r="3.5" fill="#ff5a1f" opacity="0.525"/><circle cx="1332" cy="872.5" r="3.4" fill="#ff8a1f" opacity="0.24"/><circle cx="1213" cy="430.5" r="3.3" fill="#ffc24a" opacity="0.569"/><circle cx="661" cy="877" r="4.5" fill="#ff5a1f" opacity="0.46"/><circle cx="1953.5" cy="887.2" r="2.8" fill="#ff5a1f" opacity="0.39399999999999996"/><circle cx="468.6" cy="617" r="2.1" fill="#ff8a1f" opacity="0.456"/><circle cx="2328.3" cy="521.7" r="2.5" fill="#ff8a1f" opacity="0.385"/><circle cx="1766.3" cy="1019.6" r="4.2" fill="#ff8a1f" opacity="0.649"/><circle cx="1573.2" cy="640.9" r="2.5" fill="#ffc24a" opacity="0.5429999999999999"/><circle cx="557.3" cy="762" r="3.1" fill="#ff5a1f" opacity="0.46799999999999997"/><circle cx="1243.6" cy="804.3" r="11.7" fill="url(#g-ember)" opacity="0.39899999999999997"/><circle cx="1243.6" cy="804.3" r="2.9" fill="#ffc24a" opacity="0.39899999999999997"/><circle cx="1568.6" cy="796.3" r="2.9" fill="#ff8a1f" opacity="0.499"/><circle cx="1088.1" cy="643.6" r="2.6" fill="#ff8a1f" opacity="0.569"/><circle cx="1436.6" cy="683.8" r="15" fill="url(#g-ember)" opacity="0.449"/><circle cx="1436.6" cy="683.8" r="3.7" fill="#ffc24a" opacity="0.449"/><circle cx="470.6" cy="1058.9" r="19.3" fill="url(#g-ember)" opacity="0.545"/><circle cx="470.6" cy="1058.9" r="4.8" fill="#ff5a1f" opacity="0.545"/><circle cx="75.2" cy="652.9" r="5.8" fill="url(#g-ember)" opacity="0.569"/><circle cx="75.2" cy="652.9" r="1.4" fill="#ff8a1f" opacity="0.569"/><circle cx="720" cy="522.8" r="2.1" fill="#ffc24a" opacity="0.46299999999999997"/><circle cx="927.1" cy="37.8" r="1.7" fill="#ff5a1f" opacity="0.532"/><circle cx="581.5" cy="760.5" r="2.1" fill="#ffc24a" opacity="0.542"/><circle cx="1270.7" cy="640.3" r="15.2" fill="url(#g-ember)" opacity="0.312"/><circle cx="1270.7" cy="640.3" r="3.8" fill="#ffc24a" opacity="0.312"/><circle cx="30.4" cy="1012.8" r="2.5" fill="#ff5a1f" opacity="0.519"/><circle cx="1103.9" cy="357.8" r="3" fill="#ffe9a8" opacity="0.504"/><circle cx="704.2" cy="916.7" r="4.5" fill="#ffc24a" opacity="0.452"/><circle cx="1837.8" cy="902" r="3.5" fill="#ff5a1f" opacity="0.445"/><circle cx="998.8" cy="473" r="12.9" fill="url(#g-ember)" opacity="0.331"/><circle cx="998.8" cy="473" r="3.2" fill="#ff8a1f" opacity="0.331"/><circle cx="2137.9" cy="50.2" r="1" fill="#ff5a1f" opacity="0.225"/><circle cx="986.1" cy="571.1" r="3.4" fill="#ffc24a" opacity="0.5539999999999999"/><circle cx="1286.3" cy="751.9" r="3.9" fill="#ff8a1f" opacity="0.431"/><circle cx="212.3" cy="985.3" r="2.7" fill="#ff5a1f" opacity="0.485"/><circle cx="2090.5" cy="589" r="9.2" fill="url(#g-ember)" opacity="0.391"/><circle cx="2090.5" cy="589" r="2.3" fill="#ff8a1f" opacity="0.391"/><circle cx="2361.8" cy="1003.8" r="2.8" fill="#ff5a1f" opacity="0.927"/><circle cx="1237.5" cy="715.1" r="3.9" fill="#ffe9a8" opacity="0.4"/><circle cx="596" cy="865.4" r="2.3" fill="#ffc24a" opacity="0.389"/><circle cx="324" cy="523.8" r="3.2" fill="#ffe9a8" opacity="0.547"/><circle cx="1778.2" cy="840.5" r="2.1" fill="#ffc24a" opacity="0.565"/><circle cx="291.2" cy="550" r="3.7" fill="#ffe9a8" opacity="0.396"/><circle cx="1922" cy="990.6" r="3" fill="#ffc24a" opacity="0.723"/><circle cx="169.1" cy="775.3" r="8.7" fill="url(#g-ember)" opacity="0.355"/><circle cx="169.1" cy="775.3" r="2.2" fill="#ff5a1f" opacity="0.355"/><circle cx="576.4" cy="771.2" r="6.1" fill="url(#g-ember)" opacity="0.242"/><circle cx="576.4" cy="771.2" r="1.5" fill="#ff8a1f" opacity="0.242"/><circle cx="179.7" cy="968.2" r="2.2" fill="#ffc24a" opacity="0.7759999999999999"/><circle cx="2199.1" cy="353.7" r="4.7" fill="url(#g-ember)" opacity="0.309"/><circle cx="2199.1" cy="353.7" r="1.2" fill="#ffc24a" opacity="0.309"/><circle cx="1826.6" cy="871.4" r="15.9" fill="url(#g-ember)" opacity="0.308"/><circle cx="1826.6" cy="871.4" r="4" fill="#ff5a1f" opacity="0.308"/><circle cx="294.4" cy="330.1" r="2.1" fill="#ff8a1f" opacity="0.534"/><circle cx="938.2" cy="915.2" r="1.8" fill="#ff8a1f" opacity="0.35"/><circle cx="269.3" cy="43.5" r="1.1" fill="#ffe9a8" opacity="0.359"/><circle cx="1175.6" cy="70.6" r="2.1" fill="#ff8a1f" opacity="0.56"/><circle cx="1742.5" cy="976.4" r="3.4" fill="#ff5a1f" opacity="0.616"/><circle cx="1809.5" cy="28.9" r="1.4" fill="#ff8a1f" opacity="0.489"/><circle cx="2388.1" cy="1034.3" r="1.8" fill="#ff5a1f" opacity="0.8640000000000001"/><circle cx="1047.8" cy="1071.4" r="17.4" fill="url(#g-ember)" opacity="0.373"/><circle cx="1047.8" cy="1071.4" r="4.4" fill="#ff5a1f" opacity="0.373"/><circle cx="2136.2" cy="755.3" r="11.5" fill="url(#g-ember)" opacity="0.428"/><circle cx="2136.2" cy="755.3" r="2.9" fill="#ffc24a" opacity="0.428"/><circle cx="335.3" cy="681.5" r="14" fill="url(#g-ember)" opacity="0.3"/><circle cx="335.3" cy="681.5" r="3.5" fill="#ffc24a" opacity="0.3"/><circle cx="1244.3" cy="1079.9" r="19.6" fill="url(#g-ember)" opacity="0.746"/><circle cx="1244.3" cy="1079.9" r="4.9" fill="#ff8a1f" opacity="0.746"/><circle cx="1020.4" cy="542.8" r="13.6" fill="url(#g-ember)" opacity="0.5579999999999999"/><circle cx="1020.4" cy="542.8" r="3.4" fill="#ffe9a8" opacity="0.5579999999999999"/><circle cx="2364.9" cy="35.3" r="5.8" fill="url(#g-ember)" opacity="0.501"/><circle cx="2364.9" cy="35.3" r="1.4" fill="#ff5a1f" opacity="0.501"/><circle cx="1396.8" cy="531.8" r="1.7" fill="#ffc24a" opacity="0.324"/><circle cx="2329.2" cy="840.6" r="6.5" fill="url(#g-ember)" opacity="0.419"/><circle cx="2329.2" cy="840.6" r="1.6" fill="#ffe9a8" opacity="0.419"/></g>
+        <g id="fringe"><use href="#flame" transform="translate(320 1059.8) scale(0.16 0.16399999999999998)"/><use href="#flame" transform="translate(369.1 1064) scale(0.29600000000000004 0.29)"/><use href="#flame" transform="translate(418.4 1067.5) scale(0.28300000000000003 0.301)"/><use href="#flame" transform="translate(474.2 1065.6) scale(0.242 0.22)"/><use href="#flame" transform="translate(507.4 1067.4) scale(0.35700000000000004 0.419)"/><use href="#flame" transform="translate(543.2 1067.7) scale(0.366 0.392)"/><use href="#flame" transform="translate(586.2 1074) scale(0.389 0.418)"/><use href="#flame" transform="translate(638.4 1075.9) scale(0.34600000000000003 0.311)"/><use href="#flame" transform="translate(672.5 1072.4) scale(0.379 0.42700000000000005)"/><use href="#flame" transform="translate(700.9 1069.7) scale(0.248 0.226)"/><use href="#flame" transform="translate(728.9 1069) scale(0.244 0.29)"/><use href="#flame" transform="translate(778.4 1067.8) scale(0.36 0.377)"/><use href="#flame" transform="translate(808.9 1068.6) scale(0.21 0.21100000000000002)"/><use href="#flame" transform="translate(840.8 1066.3) scale(0.19899999999999998 0.24600000000000002)"/><use href="#flame" transform="translate(871.3 1065.8) scale(0.364 0.354)"/><use href="#flame" transform="translate(906.3 1060.5) scale(0.254 0.213)"/><use href="#flame" transform="translate(962.5 1061.7) scale(0.321 0.305)"/><use href="#flame" transform="translate(1007.8 1067.4) scale(0.486 0.428)"/><use href="#flame" transform="translate(1037.6 1069.1) scale(0.369 0.41200000000000003)"/><use href="#flame" transform="translate(1067.9 1069.9) scale(0.335 0.348)"/><use href="#flame" transform="translate(1112.7 1069.1) scale(0.408 0.379)"/><use href="#flame" transform="translate(1161 1071.3) scale(0.37200000000000005 0.386)"/><use href="#flame" transform="translate(1208.6 1072.8) scale(0.185 0.20600000000000002)"/><use href="#flame" transform="translate(1248.4 1075.4) scale(0.365 0.373)"/><use href="#flame" transform="translate(1304.5 1070.9) scale(0.34700000000000003 0.429)"/><use href="#flame" transform="translate(1339.1 1065.2) scale(0.315 0.377)"/><use href="#flame" transform="translate(1385.5 1065.2) scale(0.20800000000000002 0.218)"/><use href="#flame" transform="translate(1430.9 1064.6) scale(0.265 0.255)"/><use href="#flame" transform="translate(1460.5 1066.7) scale(0.264 0.305)"/><use href="#flame" transform="translate(1512.4 1063.3) scale(0.41200000000000003 0.358)"/><use href="#flame" transform="translate(1570.1 1061.6) scale(0.32799999999999996 0.294)"/><use href="#pine" transform="translate(340 1059.8) scale(0.441 0.53)" fill="#070302"/><use href="#snag" transform="translate(498 1065.3) scale(0.474 0.452)" fill="#070302"/><use href="#pine" transform="translate(686.5 1068.3) scale(0.556 0.614)" fill="#070302"/><use href="#pine" transform="translate(849.6 1064.4) scale(0.529 0.621)" fill="#070302"/><use href="#snag" transform="translate(1066.6 1067.8) scale(0.5670000000000001 0.605)" fill="#070302"/><use href="#pine" transform="translate(1208.3 1070.8) scale(0.512 0.662)" fill="#070302"/><use href="#pine" transform="translate(1363.7 1062.1) scale(0.578 0.5760000000000001)" fill="#070302"/><use href="#pine" transform="translate(1577.3 1060.4) scale(0.434 0.473)" fill="#070302"/><path d="M-10 1090L-10 1068.7L5 1068.3L20 1067.1L35 1067L50 1067.4L65 1066.9L80 1064.9L95 1063.3L110 1063.5L125 1065L140 1065.5L155 1064.8L170 1064.3L185 1065L200 1065.9L215 1065.1L230 1062.5L245 1060L260 1058.9L275 1058.4L290 1056.9L305 1054.7L320 1053.8L335 1055.1L350 1057.1L365 1058L380 1057.9L395 1058.6L410 1060.5L425 1062L440 1061.6L455 1060.1L470 1059.5L485 1060.4L500 1061.4L515 1061.2L530 1060.8L545 1062L560 1064.8L575 1067.3L590 1068.1L605 1067.9L620 1068.5L635 1069.8L650 1069.8L665 1067.8L680 1065.1L695 1063.8L710 1063.8L725 1063.3L740 1061.7L755 1060.4L770 1060.9L785 1062.5L800 1063.1L815 1062L830 1060.6L845 1060.3L860 1060.5L875 1059.3L890 1056.7L905 1054.6L920 1054.4L935 1055.4L950 1055.9L965 1055.6L980 1056.3L995 1058.8L1010 1061.7L1025 1063.2L1040 1063L1055 1063L1070 1064.1L1085 1065.1L1100 1064.5L1115 1062.9L1130 1062.3L1145 1063.6L1160 1065.2L1175 1065.8L1190 1065.6L1205 1066.4L1220 1068.4L1235 1069.9L1250 1069.3L1265 1067.3L1280 1065.9L1295 1065.4L1310 1064.4L1325 1061.8L1340 1059L1355 1057.9L1370 1058.5L1385 1059.2L1400 1058.6L1415 1057.9L1430 1058.5L1445 1060.2L1460 1060.7L1475 1059.4L1490 1057.6L1505 1057.1L1520 1057.5L1535 1057.3L1550 1056.1L1565 1055.4L1580 1056.8L1595 1059.5L1610 1061.6L1625 1062.4L1640 1063.3L1655 1065.5L1670 1067.8L1685 1068.3L1700 1067L1715 1065.7L1730 1065.7L1745 1066.2L1760 1065.6L1775 1064L1790 1063.5L1805 1064.8L1820 1066.6L1835 1066.9L1850 1066L1865 1065.5L1880 1065.9L1895 1065.9L1910 1064L1925 1060.8L1930 1090Z" fill="#070302"/></g>
+        <g id="fire-title"><use href="#flame" transform="translate(60 1073.2) scale(0.266 0.306)"/><use href="#flame" transform="translate(112.6 1069.8) scale(0.29600000000000004 0.379)"/><use href="#flame" transform="translate(162.2 1070.4) scale(0.605 0.6679999999999999)"/><use href="#flame" transform="translate(202.1 1071.9) scale(0.914 0.856)"/><use href="#flame" transform="translate(237.2 1067.1) scale(0.5920000000000001 0.653)"/><use href="#flame" transform="translate(267.6 1064.7) scale(0.6940000000000001 0.85)"/><use href="#flame" transform="translate(311.2 1060.1) scale(0.569 0.674)"/><use href="#flame" transform="translate(369.5 1064) scale(1.135 1.175)"/><use href="#flame" transform="translate(417.9 1067.4) scale(0.6709999999999999 0.647)"/><use href="#flame" transform="translate(460.6 1065.7) scale(1.0090000000000001 1.166)"/><use href="#flame" transform="translate(513.1 1067.3) scale(0.493 0.61)"/><use href="#flame" transform="translate(573.7 1073.1) scale(0.8190000000000001 0.86)"/><use href="#flame" transform="translate(605.9 1073.9) scale(1.195 1.18)"/><use href="#flame" transform="translate(663.1 1074.1) scale(0.563 0.659)"/><use href="#flame" transform="translate(696.4 1069.8) scale(0.7879999999999999 0.951)"/><use href="#flame" transform="translate(749.2 1066.7) scale(0.621 0.718)"/><use href="#flame" transform="translate(798.9 1069.1) scale(1.034 1.02)"/><use href="#flame" transform="translate(830.8 1066.6) scale(0.555 0.625)"/><use href="#flame" transform="translate(887.9 1063.1) scale(0.39399999999999996 0.40299999999999997)"/><use href="#pine" transform="translate(100 1067.1) scale(1.075 1.172)" fill="#070302"/><use href="#pine" transform="translate(254.6 1063.2) scale(1.051 1.5319999999999998)" fill="#070302"/><use href="#snag" transform="translate(387.5 1062.1) scale(0.765 1.285)" fill="#070302"/><use href="#snag" transform="translate(562.6 1069.3) scale(0.9490000000000001 1.4880000000000002)" fill="#070302"/><use href="#pine" transform="translate(801.3 1067.1) scale(0.912 1.348)" fill="#070302"/></g>
+        <g id="fire-team"><use href="#flame" transform="translate(110 1069.5) scale(0.16699999999999998 0.17800000000000002)"/><use href="#flame" transform="translate(149.7 1071.2) scale(0.7 0.6990000000000001)"/><use href="#flame" transform="translate(192.3 1071.6) scale(1.0070000000000001 1.068)"/><use href="#flame" transform="translate(244.3 1066.1) scale(0.831 0.9570000000000001)"/><use href="#flame" transform="translate(276.5 1064.3) scale(1.264 1.318)"/><use href="#flame" transform="translate(313.8 1059.9) scale(1.187 1.151)"/><use href="#flame" transform="translate(344.4 1062.4) scale(1.365 1.399)"/><use href="#flame" transform="translate(383.2 1063.9) scale(1.442 1.389)"/><use href="#flame" transform="translate(428.5 1068.1) scale(1.536 1.3969999999999998)"/><use href="#flame" transform="translate(484 1066.3) scale(1.442 1.368)"/><use href="#flame" transform="translate(523.1 1066.9) scale(1.238 1.2830000000000001)"/><use href="#flame" transform="translate(582.3 1073.9) scale(0.7709999999999999 0.8109999999999999)"/><use href="#flame" transform="translate(642.7 1076) scale(1.341 1.3840000000000001)"/><use href="#flame" transform="translate(701.4 1069.7) scale(1.39 1.287)"/><use href="#flame" transform="translate(739.7 1067.7) scale(0.879 0.823)"/><use href="#flame" transform="translate(800.7 1069.1) scale(1.074 1.367)"/><use href="#flame" transform="translate(846.4 1066.3) scale(1.129 1.3330000000000002)"/><use href="#flame" transform="translate(882.9 1064) scale(0.659 0.72)"/><use href="#flame" transform="translate(941.9 1061.8) scale(1.1909999999999998 1.357)"/><use href="#flame" transform="translate(972 1061.7) scale(0.638 0.684)"/><use href="#flame" transform="translate(1009.9 1067.7) scale(0.907 1.189)"/><use href="#flame" transform="translate(1041 1069) scale(1.0290000000000001 1.188)"/><use href="#flame" transform="translate(1072.1 1070.3) scale(0.7140000000000001 0.863)"/><use href="#flame" transform="translate(1119.5 1068.5) scale(1.38 1.3019999999999998)"/><use href="#flame" transform="translate(1154 1070.6) scale(1.068 1.117)"/><use href="#flame" transform="translate(1214.2 1073.6) scale(0.909 0.9990000000000001)"/><use href="#flame" transform="translate(1268.5 1072.8) scale(1.2329999999999999 1.171)"/><use href="#flame" transform="translate(1321.7 1068.5) scale(0.695 0.79)"/><use href="#flame" transform="translate(1378.5 1065) scale(0.644 0.775)"/><use href="#flame" transform="translate(1411.1 1064) scale(0.867 1.136)"/><use href="#flame" transform="translate(1445.5 1066.2) scale(0.892 0.982)"/><use href="#flame" transform="translate(1491.1 1063.5) scale(0.7929999999999999 0.753)"/><use href="#flame" transform="translate(1537.3 1063.2) scale(0.848 0.9570000000000001)"/><use href="#flame" transform="translate(1577.4 1062.4) scale(0.9109999999999999 1.189)"/><use href="#flame" transform="translate(1623.1 1068.3) scale(0.63 0.807)"/><use href="#flame" transform="translate(1664.4 1073) scale(0.607 0.664)"/><use href="#flame" transform="translate(1720.1 1071.6) scale(0.816 0.759)"/><use href="#flame" transform="translate(1779.6 1069.7) scale(0.504 0.584)"/><use href="#pine" transform="translate(150 1069.1) scale(0.943 1.7280000000000002)" fill="#070302"/><use href="#pine" transform="translate(351.5 1061.2) scale(0.8320000000000001 1.679)" fill="#070302"/><use href="#snag" transform="translate(583.8 1071.9) scale(0.818 1.413)" fill="#070302"/><use href="#snag" transform="translate(764.5 1064.5) scale(0.905 1.286)" fill="#070302"/><use href="#pine" transform="translate(997.6 1063.3) scale(0.8290000000000001 1.609)" fill="#070302"/><use href="#pine" transform="translate(1183.2 1069.6) scale(1.061 1.5019999999999998)" fill="#070302"/><use href="#pine" transform="translate(1403.9 1062.3) scale(1.077 1.52)" fill="#070302"/><use href="#pine" transform="translate(1607.7 1065.4) scale(0.711 1.445)" fill="#070302"/><use href="#snag" transform="translate(1743.3 1070.2) scale(0.8290000000000001 1.476)" fill="#070302"/></g>
+        <!-- The cross of the fire service with a flame in the middle. -->
+        <g id="badge">
+          <g fill="#b3200a" fill-opacity="0.55" stroke="#ffb454" stroke-width="3" stroke-linejoin="round">
+            <path id="badge-arm" d="M0-22L-34-86Q0-102 34-86Z" />
+            <use href="#badge-arm" transform="rotate(90)" />
+            <use href="#badge-arm" transform="rotate(180)" />
+            <use href="#badge-arm" transform="rotate(270)" />
+          </g>
+          <circle r="38" fill="#120a08" stroke="#ffb454" stroke-width="3" />
+          <circle r="30" fill="none" stroke="#ff7a12" stroke-width="1.5" stroke-dasharray="3 5" />
+          <use href="#flame" transform="translate(-2 24) scale(0.3)" />
+        </g>
+        <!-- A thermometer on the left edge: it is filled a step higher on every slide. -->
+        <g id="thermo">
+          <rect x="32" y="146" width="16" height="800" rx="8" fill="#0b0706" fill-opacity="0.7" stroke="#ffb454" stroke-opacity="0.75" stroke-width="1.5" />
+          <circle cx="40" cy="950" r="17" fill="#ff3b0a" stroke="#ffb454" stroke-opacity="0.6" stroke-width="1.5" />
+          <path d="M54 150h12M54 261h8M54 373h12M54 484h8M54 596h12M54 707h8M54 819h12M54 930h8" stroke="#ffb454" stroke-opacity="0.6" stroke-width="2" />
+        </g>
+      </defs>
+    </svg>
     <!-- 1. Title -->
     <section class="slide title">
+      <div class="fx" aria-hidden="true">
+        <svg class="fx-scene" viewBox="-60 -60 2040 1200" preserveAspectRatio="none"><use href="#scene" /></svg>
+        <svg class="fx-front" viewBox="0 0 1920 1080">
+          <use href="#embers" transform="translate(0 0)" />
+          <use href="#fire-title" />
+          <use href="#thermo" />
+          <rect x="36" y="818.6" width="8" height="121.4" rx="4" fill="url(#g-thermo)" />
+        </svg>
+      </div>
       <p class="kicker">NASA Space Apps Challenge 2026 · Team Catharsis</p>
       <div class="text">
         <h1>Burn Calendar</h1>
@@ -277,6 +467,15 @@
 
     <!-- 2. The problem -->
     <section class="slide">
+      <div class="fx" aria-hidden="true">
+        <svg class="fx-scene" viewBox="260 -60 2040 1200" preserveAspectRatio="none"><use href="#scene" /></svg>
+        <svg class="fx-front" viewBox="0 0 1920 1080">
+          <use href="#embers" transform="translate(-70 0)" />
+          <use href="#fringe" transform="translate(1920 0) scale(-1 1)" /><use href="#badge" transform="translate(1736 140) scale(0.82)" />
+          <use href="#thermo" />
+          <rect x="36" y="707.1" width="8" height="232.9" rx="4" fill="url(#g-thermo)" />
+        </svg>
+      </div>
       <p class="kicker">The problem</p>
       <h2>Two sensors count the same fires on two different scales</h2>
       <div>
@@ -313,6 +512,15 @@
 
     <!-- 3. The solution -->
     <section class="slide">
+      <div class="fx" aria-hidden="true">
+        <svg class="fx-scene" viewBox="580 -60 2040 1200" preserveAspectRatio="none"><use href="#scene" /></svg>
+        <svg class="fx-front" viewBox="0 0 1920 1080">
+          <use href="#embers" transform="translate(-140 0)" />
+          <use href="#fringe" /><use href="#badge" transform="translate(1736 140) scale(0.82)" />
+          <use href="#thermo" />
+          <rect x="36" y="595.7" width="8" height="344.3" rx="4" fill="url(#g-thermo)" />
+        </svg>
+      </div>
       <p class="kicker">The solution</p>
       <h2>One unit for 26 years, shown as a calendar for any area</h2>
       <div>
@@ -341,6 +549,15 @@
 
     <!-- 4. The solution, continued: what it answers and what you can do with it -->
     <section class="slide">
+      <div class="fx" aria-hidden="true">
+        <svg class="fx-scene" viewBox="900 -60 2040 1200" preserveAspectRatio="none"><use href="#scene" /></svg>
+        <svg class="fx-front" viewBox="0 0 1920 1080">
+          <use href="#embers" transform="translate(-210 0)" />
+          <use href="#fringe" transform="translate(1920 0) scale(-1 1)" /><use href="#badge" transform="translate(1736 140) scale(0.82)" />
+          <use href="#thermo" />
+          <rect x="36" y="484.3" width="8" height="455.7" rx="4" fill="url(#g-thermo)" />
+        </svg>
+      </div>
       <p class="kicker">The solution</p>
       <h2>Is this month unusual for this place?</h2>
       <div>
@@ -366,6 +583,15 @@
 
     <!-- 5. NASA data and how the result was checked -->
     <section class="slide">
+      <div class="fx" aria-hidden="true">
+        <svg class="fx-scene" viewBox="1220 -60 2040 1200" preserveAspectRatio="none"><use href="#scene" /></svg>
+        <svg class="fx-front" viewBox="0 0 1920 1080">
+          <use href="#embers" transform="translate(-280 0)" />
+          <use href="#fringe" /><use href="#badge" transform="translate(1736 140) scale(0.82)" />
+          <use href="#thermo" />
+          <rect x="36" y="372.9" width="8" height="567.1" rx="4" fill="url(#g-thermo)" />
+        </svg>
+      </div>
       <p class="kicker">NASA data</p>
       <h2>Built on NASA FIRMS, checked on years the method has never seen</h2>
       <div>
@@ -425,6 +651,15 @@
 
     <!-- 6. Plans -->
     <section class="slide">
+      <div class="fx" aria-hidden="true">
+        <svg class="fx-scene" viewBox="1540 -60 2040 1200" preserveAspectRatio="none"><use href="#scene" /></svg>
+        <svg class="fx-front" viewBox="0 0 1920 1080">
+          <use href="#embers" transform="translate(-350 0)" />
+          <use href="#fringe" transform="translate(1920 0) scale(-1 1)" /><use href="#badge" transform="translate(1736 140) scale(0.82)" />
+          <use href="#thermo" />
+          <rect x="36" y="261.4" width="8" height="678.6" rx="4" fill="url(#g-thermo)" />
+        </svg>
+      </div>
       <p class="kicker">What is next</p>
       <h2>From a calendar to an early-warning tool</h2>
       <div>
@@ -461,6 +696,15 @@
 
     <!-- 7. Team -->
     <section class="slide">
+      <div class="fx" aria-hidden="true">
+        <svg class="fx-scene" viewBox="1860 -60 2040 1200" preserveAspectRatio="none"><use href="#scene" /></svg>
+        <svg class="fx-front" viewBox="0 0 1920 1080">
+          <use href="#embers" transform="translate(-420 0)" />
+          <use href="#fire-team" /><use href="#badge" transform="translate(1736 140) scale(0.82)" />
+          <use href="#thermo" />
+          <rect x="36" y="150" width="8" height="790" rx="4" fill="url(#g-thermo)" />
+        </svg>
+      </div>
       <p class="kicker">Team Catharsis</p>
       <h2>A fire history people can compare across a quarter of a century</h2>
       <div>

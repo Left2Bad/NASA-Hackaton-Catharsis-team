@@ -87,7 +87,10 @@ the app's features and the links, taken from the repository and the live site.
 The pitch deck (`docs/demo/slides/`) and the storyboard of the video (`docs/demo/README.md`) were drafted with
 Claude Code (Claude Fable 5.2; slides 6 and 7 were finished with Claude Opus 5.5). The pictures in the deck are real
 screenshots of the running application on real FIRMS data, taken by a script (`frontend/scripts/demo-shots.mjs`). None
-of the screenshots or numbers is AI-generated, and the deck has no generated illustrations, music or voice-over.
+of the screenshots or numbers is AI-generated, and the deck has no music or voice-over. The fire-themed design of the
+deck (the blurred backdrop of a burning ridge, the flames, embers, badge and thermometer) is vector artwork written
+as SVG and CSS code inside `slides.html` with Claude Code (Claude Fable 5.2); it uses no image-generation model and
+no outside pictures.
 
 The 30-second pitch video is built from real screenshots of the live site (https://nasa.pin-planet.org), taken by a
 script; nothing in its picture is generated except what is drawn on top: the zoom, the highlight rings, the pointer, the

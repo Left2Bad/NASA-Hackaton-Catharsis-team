@@ -1,6 +1,6 @@
 name: frontend
 
-# Zone of developer B. Runs only when frontend/ or contract/ change,
+# Web application. Runs only when frontend/ or contract/ change,
 # so a failure here does not block backend pull requests.
 # The steps are skipped while the folder has no package.json.
 

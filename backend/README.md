@@ -1,9 +1,7 @@
-# backend/ — developer A zone
+# backend/: the API
 
 A FastAPI API. It reads the ready-made files from `data/` (DuckDB, read-only) and serves responses
 strictly following the contract `contract/openapi.yaml`.
-
-Tasks from the spec: A6 (skeleton, `/health`, `/meta`, `/calendar`), A11 (the remaining endpoints, limits, errors), A13 (deployment).
 
 ## Running
 

@@ -1,6 +1,6 @@
 name: backend
 
-# Developer A zone. Runs only on changes in pipeline/, backend/, contract/ or the pinned versions,
+# Data pipeline and API. Runs only on changes in pipeline/, backend/, contract/ or the pinned versions,
 # so a failure here does not block frontend PRs.
 # Installs with constraints.txt (the exact versions the tests pass with) on every supported Python.
 

@@ -1,6 +1,6 @@
 name: contract
 
-# Shared zone. Checks that openapi.yaml is valid and the examples match it.
+# API contract, shared by both sides. Checks that openapi.yaml is valid and the examples match it.
 
 on:
   push:

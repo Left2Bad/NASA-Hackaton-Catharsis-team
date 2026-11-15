@@ -10,9 +10,9 @@ and ESDIS: https://www.earthdata.nasa.gov/data/tools/firms
 
 | What we used | Product | How we got it | Link |
 | --- | --- | --- | --- |
-| MODIS Collection 6.1 active fires, Terra + Aqua, November 2000 – 2025 (standard processing) | MCD14ML (monthly standard-quality locations, served by FIRMS) | FIRMS yearly country summaries ("Download yearly summary by country") on the Archive Download page | https://firms.modaps.eosdis.nasa.gov/download/, files at https://firms.modaps.eosdis.nasa.gov/country/ |
-| VIIRS 375 m active fires, Suomi NPP, January 2012 – 2025 (standard processing) | VNP14IMGTML (standard-quality locations, served by FIRMS) | FIRMS yearly country summaries | https://firms.modaps.eosdis.nasa.gov/download/ |
-| VIIRS 375 m active fires, NOAA-20 (JPSS-1), April 2018 – 2025 (standard processing) | VJ114IMGTML (standard-quality locations, served by FIRMS) | FIRMS yearly country summaries | https://firms.modaps.eosdis.nasa.gov/download/ |
+| MODIS active fires, Terra + Aqua, November 2000 – 2025 (standard processing): Collection 6 for 2000–2022 and Collection 6.1 from 2023, as served in the FIRMS yearly archives | MCD14ML (monthly standard-quality locations, served by FIRMS) | FIRMS yearly country summaries ("Download yearly summary by country") on the Archive Download page | https://firms.modaps.eosdis.nasa.gov/download/, files at https://firms.modaps.eosdis.nasa.gov/country/ |
+| VIIRS 375 m active fires, Collection 2, Suomi NPP, January 2012 – 2025 (standard processing) | VNP14IMGTML (standard-quality locations, served by FIRMS) | FIRMS yearly country summaries | https://firms.modaps.eosdis.nasa.gov/download/ |
+| VIIRS 375 m active fires, Collection 2, NOAA-20 (JPSS-1), April 2018 – 2025 (standard processing) | VJ114IMGTML (standard-quality locations, served by FIRMS) | FIRMS yearly country summaries | https://firms.modaps.eosdis.nasa.gov/download/ |
 | 2026: MODIS, VIIRS Suomi NPP and VIIRS NOAA-20, standard (SP) and near-real-time (NRT) | sources `MODIS_SP`, `MODIS_NRT`, `VIIRS_SNPP_SP`, `VIIRS_SNPP_NRT`, `VIIRS_NOAA20_SP`, `VIIRS_NOAA20_NRT` | FIRMS Area API with a free MAP_KEY | https://firms.modaps.eosdis.nasa.gov/api/area/ |
 
 Product pages and documentation:
@@ -94,5 +94,6 @@ script drafted with Claude Code. The background music is not generated: "Music b
 synthesized in code. Sources: `docs/demo/video/`.
 
 Synthetic numbers exist only in `contract/examples/` (made by `contract/tools/generate_examples.py`), in the
-development mocks of the frontend and in the backend test fixtures, and they are marked as synthetic. The live site,
-the deck and every result in this repository use only real FIRMS data.
+development mocks of the frontend, in the backend test fixtures and in the early development screenshots `b3-*` to
+`b9-*` in `docs/demo/screenshots/` (taken on the mocks before the real API), and they are marked as synthetic. The live
+site, the deck and every other result in this repository use only real FIRMS data.

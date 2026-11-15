@@ -173,13 +173,13 @@ const B = {
   nowLevel: { x: 1062, y: 186, w: 516, h: 30 },
   dlButtons: { x: 1061, y: 718, w: 735, h: 80 },
   dlPoints: { x: 1219, y: 721, w: 125, h: 33 },
-  dlDates: { x: 1061, y: 826, w: 425, h: 33 },
+  dlDates: { x: 1061, y: 826, w: 448, h: 33 },
   chartVal: { x: 612, y: 248, w: 696, h: 205 },
   bias: { x: 788, y: 118, w: 70, h: 46 },
 };
 
 // ---------- the timeline (seconds; voice_nasa words with the 0.5 s pause after "The jump is gone.") ----------
-const T = { s2: 3.25, s3: 7.42, s4: 10.5, s5: 12.12, s6: 15.8, s6b: 17.85, s7: 20.6, s8: 22.7, end: 25.75 };
+const T = { s2: 3.25, s3: 7.42, s4: 10.5, s5: 12.12, s6: 15.8, s6b: 17.85, s7: 20.6, s8: 22.7, end: 26.25 };
 
 export const Pitch: React.FC = () => {
   const f = useCurrentFrame();
@@ -305,8 +305,8 @@ export const Pitch: React.FC = () => {
     layers.push(
       <AbsoluteFill key="s8" style={{ opacity: fade(T.s8) }}>
         <Shot src="09-method-val" v={v} />
-        <Ring v={v} b={B.chartVal} t={t} at={22.8} until={24.15} color="#8a3fd1" label="fitted 2012–20, tested on 2021–25" labelSide="below" />
-        <Ring v={v} b={B.bias} t={t} at={24.2} until={25.85} label="total bias +4.2 %, years never used in fitting" labelSide="below" />
+        <Ring v={v} b={B.chartVal} t={t} at={22.8} until={24.2} color="#8a3fd1" label="fitted 2012–20, tested on 2021–25" labelSide="below" />
+        <Ring v={v} b={B.bias} t={t} at={24.25} until={26.35} label="Northern California: total bias +4.2 % on unseen years" labelSide="below" />
       </AbsoluteFill>,
     );
   }
@@ -321,10 +321,10 @@ export const Pitch: React.FC = () => {
         <AbsoluteFill style={{ filter: "blur(10px) saturate(0.9)" }}><Shot src="03-harm" v={v} /></AbsoluteFill>
         <AbsoluteFill style={{ background: "linear-gradient(180deg, #0b1220e6, #0b1220f2)" }} />
         <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", fontFamily: FONT, color: "#fff", textAlign: "center", paddingBottom: 90 }}>
-          <div style={{ ...up(25.8), font: `800 120px ${FONT}`, letterSpacing: -2 }}>Burn Calendar</div>
-          <div style={{ ...up(26.0), font: `500 42px ${FONT}`, color: "#c9d4e6", marginTop: 12 }}>One fire record from MODIS and VIIRS, 2000 to today</div>
-          <div style={{ ...up(26.2), font: `800 76px ${FONT}`, color: ORANGE, marginTop: 48 }}>nasa.pin-planet.org</div>
-          <div style={{ ...up(26.4), font: `600 36px ${FONT}`, color: "#e8eef8", marginTop: 34 }}>Open source · Data: NASA FIRMS (MODIS and VIIRS 375 m hot spots)</div>
+          <div style={{ ...up(26.3), font: `800 120px ${FONT}`, letterSpacing: -2 }}>Burn Calendar</div>
+          <div style={{ ...up(26.45), font: `500 42px ${FONT}`, color: "#c9d4e6", marginTop: 12 }}>One fire record from MODIS and VIIRS, 2000 to today</div>
+          <div style={{ ...up(26.9), font: `800 76px ${FONT}`, color: ORANGE, marginTop: 48 }}>nasa.pin-planet.org</div>
+          <div style={{ ...up(26.75), font: `600 36px ${FONT}`, color: "#e8eef8", marginTop: 34 }}>Open source · Data: NASA FIRMS (MODIS and VIIRS 375 m hot spots)</div>
           <div style={{ ...up(26.6), font: `500 32px ${FONT}`, color: "#9fb0c9", marginTop: 14 }}>Team Catharsis · NASA Space Apps Challenge 2026</div>
         </AbsoluteFill>
       </AbsoluteFill>,

@@ -19,6 +19,7 @@ The server this was written for has 8 GB of RAM, of which about 3 GB are free (o
   restarts, and the neighbours are not pushed into swap.
 - DuckDB is limited inside that cap: `DUCKDB_MEMORY_LIMIT=1536MB`, `DUCKDB_THREADS=2`. Larger sorts spill to
   `BURN_SPILL_DIR` on disk (at most 4 GB, `SPILL_LIMIT` in `backend/app/main.py`).
+- `api` may use at most 1.5 CPUs (`cpus` in `docker-compose.yml`), so the neighbours keep a core.
 - One uvicorn worker: one DuckDB connection, one memory limit, one `/calendar` cache.
 - The image build (npm + Vite) needs about 1 GB more for a few minutes during a deploy.
 
@@ -34,16 +35,21 @@ mkdir -p /srv/burn-calendar/dl && cd /srv/burn-calendar/dl
 curl -LO https://github.com/Left2Bad/NASA-Hackaton-Catharsis-team/releases/download/data-2026-11-13/FIRMS_data_2026-11-13.zip
 sha256sum FIRMS_data_2026-11-13.zip   # compare with SHA256SUMS.txt of the release
 unzip -q FIRMS_data_2026-11-13.zip -d /srv/burn-calendar   # creates /srv/burn-calendar/data (1.0 GB)
+# without unzip: python3 -m zipfile -e FIRMS_data_2026-11-13.zip /srv/burn-calendar
 ```
 
-Then copy `data/points_serve/` (5.7 GB, 51 files; made by `pipeline/points_serve.py`) to
+The single detections for the map and the hot spot CSV, `data/points_serve/` (5.7 GB, 51 files), are not in the
+release because of their size. Make them with the pipeline (`data/README.md`, steps 0, 1, 5 and 6: download the FIRMS
+archives, convert them, then `python pipeline/points_serve.py`; the archives are 9.3 GB and the conversion needs
+about 9 GB of RAM, so do it on a workstation, not on the server). Copy the folder to
 `/srv/burn-calendar/data/points_serve/`, for example with `rsync -avP data/points_serve/ root@<server>:/srv/burn-calendar/data/points_serve/`,
-and compare the file sizes. Do not copy `data/raw/` or the full `data/points/`.
+and compare the sizes (`du -sb` gives 6077284776 bytes for the 2026-11-13 data). Do not copy `data/raw/` or the full
+`data/points/`. Without `points_serve/` everything works except the hot spots on the map and their CSV.
 
 Prepare the folders the containers mount:
 
 ```bash
-chmod -R go-w /srv/burn-calendar/data
+chmod -R a+rX,go-w /srv/burn-calendar/data     # readable by the api user (uid 10001), not writable
 mkdir -p /srv/burn-calendar/data/_tmp            # mount point of the spill folder inside the read-only data
 mkdir -p /srv/burn-calendar/spill && chown 10001:10001 /srv/burn-calendar/spill   # uid of the api user
 ```
@@ -86,6 +92,8 @@ curl -s https://<domain>/api/v1/meta | head -c 400
 curl -s -o /dev/null -w '%{http_code} %{size_download} %{time_total}s\n' -H 'Content-Type: application/json' \
   -d '{"geometry":{"type":"Polygon","coordinates":[[[61,51],[71,51],[71,55],[61,55],[61,51]]]}}' \
   https://<domain>/api/v1/calendar
+curl -s -o /dev/null -w '%{http_code} %{size_download}
+' -H 'Content-Type: application/json'   -d '{"geometry":{"type":"Polygon","coordinates":[[[61,51],[71,51],[71,55],[61,55],[61,51]]]},"year":2025,"month":5}'   https://<domain>/api/v1/points   # 200 and a few MB: points_serve/ is mounted
 docker stats --no-stream      # api should stay well below its cap
 ```
 
@@ -94,7 +102,8 @@ Open the site: the calendars of the three example areas show real data and the "
 ## Updating the data
 
 Replace the files in `/srv/burn-calendar/data` (stop the stack first or swap the whole folder) and restart the
-resource in Coolify: the API reads the data folder at start.
+resource in Coolify: the API reads the data folder at start. A new folder needs the same preparation as above: the
+`_tmp/` mount point, `points_serve/` and `chmod -R a+rX,go-w`.
 
 ## Measured on the demo server (2026-11-14)
 

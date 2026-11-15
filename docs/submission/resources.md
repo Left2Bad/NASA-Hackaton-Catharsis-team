@@ -10,7 +10,7 @@ and ESDIS: https://www.earthdata.nasa.gov/data/tools/firms
 
 | What we used | Product | How we got it | Link |
 | --- | --- | --- | --- |
-| MODIS active fires, Terra + Aqua, November 2000 – 2025 (standard processing): Collection 6 for 2000–2022 and Collection 6.1 from 2023, as served in the FIRMS yearly archives | MCD14ML (monthly standard-quality locations, served by FIRMS) | FIRMS yearly country summaries ("Download yearly summary by country") on the Archive Download page | https://firms.modaps.eosdis.nasa.gov/download/, files at https://firms.modaps.eosdis.nasa.gov/country/ |
+| MODIS active fires, Terra from November 2000 and Aqua from mid-2002, to 2025 (standard processing): Collection 6 for 2000–2022 and Collection 6.1 from 2023, as served in the FIRMS yearly archives | MCD14ML (monthly standard-quality locations, served by FIRMS) | FIRMS yearly country summaries ("Download yearly summary by country") on the Archive Download page | https://firms.modaps.eosdis.nasa.gov/download/, files at https://firms.modaps.eosdis.nasa.gov/country/ |
 | VIIRS 375 m active fires, Collection 2, Suomi NPP, January 2012 – 2025 (standard processing) | VNP14IMGTML (standard-quality locations, served by FIRMS) | FIRMS yearly country summaries | https://firms.modaps.eosdis.nasa.gov/download/ |
 | VIIRS 375 m active fires, Collection 2, NOAA-20 (JPSS-1), April 2018 – 2025 (standard processing) | VJ114IMGTML (standard-quality locations, served by FIRMS) | FIRMS yearly country summaries | https://firms.modaps.eosdis.nasa.gov/download/ |
 | 2026: MODIS, VIIRS Suomi NPP and VIIRS NOAA-20, standard (SP) and near-real-time (NRT) | sources `MODIS_SP`, `MODIS_NRT`, `VIIRS_SNPP_SP`, `VIIRS_SNPP_NRT`, `VIIRS_NOAA20_SP`, `VIIRS_NOAA20_NRT` | FIRMS Area API with a free MAP_KEY | https://firms.modaps.eosdis.nasa.gov/api/area/ |
@@ -81,7 +81,8 @@ with Claude Code (Claude Opus 5.5 and Claude Fable 5.2); the Russian original of
 `docs/methodology.ru.md`.
 
 The text of the Space Apps project page was written by the team in Russian; Claude Code (Claude Opus 5.5) translated
-it into English and corrected the grammar, without adding content.
+it into English and corrected the grammar. At the team's request it also added the validation numbers, the list of
+the app's features and the links, taken from the repository and the live site.
 
 The pitch deck (`docs/demo/slides/`) and the storyboard of the video (`docs/demo/README.md`) were drafted with
 Claude Code (Claude Fable 5.2; slides 6 and 7 were finished with Claude Opus 5.5). The pictures in the deck are real
@@ -89,7 +90,7 @@ screenshots of the running application on real FIRMS data, taken by a script (`f
 of the screenshots or numbers is AI-generated, and the deck has no generated illustrations, music or voice-over.
 
 The 30-second pitch video is built from real screenshots of the live site (https://nasa.pin-planet.org), taken by a
-script; nothing in it is generated except what is drawn on top: the zoom, the highlight rings, the pointer, the
+script; nothing in its picture is generated except what is drawn on top: the zoom, the highlight rings, the pointer, the
 captions and the end card were made in code with Remotion (https://www.remotion.dev/), written with Claude Code
 (Claude Opus 5.5). Its voice-over is generated with **ElevenLabs** (https://elevenlabs.io, model eleven_v3) from a
 script drafted with Claude Code. The background music is not generated: "Music by Dmitrii Spis from Pixabay"
